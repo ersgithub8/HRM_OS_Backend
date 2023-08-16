@@ -1,0 +1,451 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id         Int       @id @default(autoincrement())
+  firstName  String?
+  lastName   String?
+  userName   String    @unique
+  password   String
+  email      String?   @unique
+  phone      String?   @unique
+  // address
+  street     String?
+  city       String?
+  state      String?
+  zipCode    String?
+  country    String?
+  joinDate   DateTime?
+  leaveDate  DateTime?
+  employeeId String?   @unique
+  bloodGroup String?
+  image      String?
+
+  employmentStatus   employmentStatus? @relation(fields: [employmentStatusId], references: [id])
+  employmentStatusId Int?
+  department         department?       @relation(fields: [departmentId], references: [id])
+  departmentId       Int?
+  role               role?             @relation(fields: [roleId], references: [id])
+  roleId             Int?
+  shift              shift?            @relation(fields: [shiftId], references: [id])
+  shiftId            Int?
+  leavePolicy        leavePolicy?      @relation(fields: [leavePolicyId], references: [id])
+  leavePolicyId      Int?
+  weeklyHoliday      weeklyHoliday?    @relation(fields: [weeklyHolidayId], references: [id])
+  weeklyHolidayId    Int?
+
+  attendance         attendance[]
+  leaveApplication   leaveApplication[]
+  payslip            payslip[]
+  educations         education[]
+  salaryHistory      salaryHistory[]
+  designationHistory designationHistory[]
+  awardHistory       awardHistory[]
+  status             Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  project            project[]
+  projectTeamMember  projectTeamMember[]
+}
+
+model education {
+  id           Int       @id @default(autoincrement())
+  user         user      @relation(fields: [userId], references: [id])
+  userId       Int
+  degree       String
+  institution  String
+  fieldOfStudy String
+  result       String
+  startDate    DateTime
+  endDate      DateTime?
+
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// manage salary history of employee
+model salaryHistory {
+  id        Int       @id @default(autoincrement())
+  user      user      @relation(fields: [userId], references: [id])
+  userId    Int
+  salary    Float
+  startDate String
+  endDate   DateTime?
+  comment   String?
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model designation {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  designationHistory designationHistory[]
+
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model department {
+  id     Int     @id @default(autoincrement())
+  name   String
+  status Boolean @default(true)
+  user   user[]
+}
+
+model employmentStatus {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  colourValue String
+  description String?
+
+  user user[]
+
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// designation history of employee
+model designationHistory {
+  id            Int         @id @default(autoincrement())
+  user          user        @relation(fields: [userId], references: [id])
+  userId        Int
+  designation   designation @relation(fields: [designationId], references: [id])
+  designationId Int
+  startDate     DateTime
+  endDate       DateTime?
+  comment       String?
+}
+
+model shift {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  startTime DateTime @db.Time
+  endTime   DateTime @db.Time
+  workHour  Float
+  user      user[]
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model award {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  description  String?
+  image        String?
+  status       Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  awardHistory awardHistory[]
+}
+
+model awardHistory {
+  id          Int      @id @default(autoincrement())
+  user        user     @relation(fields: [userId], references: [id])
+  userId      Int
+  award       award    @relation(fields: [awardId], references: [id])
+  awardId     Int
+  awardedDate DateTime
+  comment     String?
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model attendance {
+  id            Int       @id @default(autoincrement())
+  user          user      @relation(fields: [userId], references: [id])
+  userId        Int
+  inTime        DateTime
+  outTime       DateTime?
+  ip            String?
+  comment       String?
+  punchBy       Int?
+  totalHour     Float?
+  inTimeStatus  String?
+  outTimeStatus String?
+  status        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model leaveApplication {
+  id              Int       @id @default(autoincrement())
+  user            user      @relation(fields: [userId], references: [id])
+  userId          Int
+  leaveType       String
+  leaveFrom       DateTime
+  leaveTo         DateTime
+  acceptLeaveFrom DateTime?
+  acceptLeaveTo   DateTime?
+  acceptLeaveBy   Int?
+  leaveDuration   Int?
+  reason          String?
+  reviewComment   String?
+  attachment      String?
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model payslip {
+  id                Int      @id @default(autoincrement())
+  user              user     @relation(fields: [userId], references: [id])
+  userId            Int
+  salaryMonth       Int
+  salaryYear        Int
+  salary            Float
+  paidLeave         Int
+  unpaidLeave       Int
+  monthlyHoliday    Int
+  publicHoliday     Int
+  workDay           Int
+  shiftWiseWorkHour Float
+  monthlyWorkHour   Float
+  hourlySalary      Float
+  workingHour       Float
+  salaryPayable     Float
+  bonus             Float
+  bonusComment      String?
+  deduction         Float
+  deductionComment  String?
+  totalPayable      Float
+  paymentStatus     String   @default("UNPAID")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // userId, salaryMonth and salaryYear are composite unique keys
+  @@unique([userId, salaryMonth, salaryYear])
+}
+
+model announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model leavePolicy {
+  id               Int      @id @default(autoincrement())
+  name             String   @unique
+  paidLeaveCount   Int
+  unpaidLeaveCount Int
+  user             user[]
+  status           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model weeklyHoliday {
+  id        Int      @id @default(autoincrement())
+  name      String
+  startDay  String
+  endDay    String
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      user[]
+}
+
+//project management schema
+model publicHoliday {
+  id        Int      @id @default(autoincrement())
+  name      String
+  date      DateTime
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model project {
+  id               Int           @id @default(autoincrement())
+  projectManager   user          @relation(fields: [projectManagerId], references: [id])
+  projectManagerId Int
+  name             String
+  startDate        DateTime
+  endDate          DateTime
+  description      String
+  status           String        @default("PENDING") //progress, on hold, or completed
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  milestone        milestone[]
+  task             task[]
+  projectTeam      projectTeam[]
+  taskStatus       taskStatus[]
+}
+
+model milestone {
+  id          Int      @id @default(autoincrement())
+  project     project  @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId   Int
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  description String
+  status      String   @default("PENDING") //progress, completed, or delayed.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  task        task[]
+}
+
+model task {
+  id             Int            @id @default(autoincrement())
+  project        project        @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId      Int
+  milestone      milestone?     @relation(fields: [milestoneId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  milestoneId    Int?
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  completionTime Float?
+  description    String
+  priority       priority       @relation(fields: [priorityId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  priorityId     Int
+  status         Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  assignedTask   assignedTask[]
+  taskStatus     taskStatus     @relation(fields: [taskStatusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  taskStatusId   Int
+}
+
+model taskStatus {
+  id        Int     @id @default(autoincrement())
+  project   project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId Int
+  name      String
+  status    Boolean @default(true)
+  task      task[]
+
+  @@unique([projectId, name])
+}
+
+model priority {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  status Boolean @default(true)
+  task   task[]
+}
+
+model projectTeam {
+  id                Int                 @id @default(autoincrement())
+  projectTeamName   String
+  project           project             @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectId         Int
+  status            Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  assignedTask      assignedTask[]
+  projectTeamMember projectTeamMember[]
+}
+
+model projectTeamMember {
+  id            Int         @id @default(autoincrement())
+  projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectTeamId Int
+  user          user        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId        Int
+  status        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model assignedTask {
+  id            Int         @id @default(autoincrement())
+  task          task        @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  taskId        Int
+  projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  projectTeamId Int
+  status        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model role {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  status         Boolean          @default(true)
+  rolePermission rolePermission[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  user           user[]
+}
+
+model permission {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  rolePermission rolePermission[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+// role_id and permission_id are composite unique keys
+model rolePermission {
+  id            Int        @id @default(autoincrement())
+  role          role       @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role_id       Int
+  permission    permission @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  permission_id Int
+  status        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([role_id, permission_id])
+}
+
+model account {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  type       String
+  subAccount subAccount[]
+}
+
+model subAccount {
+  id         Int           @id @default(autoincrement())
+  name       String        @unique
+  account    account       @relation(fields: [account_id], references: [id])
+  account_id Int
+  debit      transaction[] @relation("debit")
+  credit     transaction[] @relation("credit")
+  status     Boolean       @default(true)
+}
+
+model transaction {
+  id          Int        @id @default(autoincrement())
+  date        DateTime
+  debit       subAccount @relation("debit", fields: [debit_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  debit_id    Int
+  credit      subAccount @relation("credit", fields: [credit_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  credit_id   Int
+  particulars String
+  amount      Float
+  type        String?
+  related_id  Int?
+  status      Boolean    @default(true)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+}
+
+model appSetting {
+  id           Int    @id @default(autoincrement())
+  company_name String
+  tag_line     String
+  address      String
+  phone        String
+  email        String
+  website      String
+  footer       String
+}
