@@ -58,7 +58,7 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   try {
     const join_date = new Date(req.body.joinDate);
-    const leave_date = new Date(req.body.leaveDate);
+    const leave_date = req.body.leaveDate ? new Date(req.body.leaveDate) : null;
 
     const hash = await bcrypt.hash(req.body.password, saltRounds);
     const createUser = await prisma.user.create({
@@ -89,7 +89,7 @@ const register = async (req, res) => {
           create: {
             designationId: req.body.designationId,
             startDate: new Date(req.body.designationStartDate),
-            endDate: new Date(req.body.designationEndDate),
+            endDate:req.body.designationEndDate ? new Date(req.body.designationEndDate) : null,
             comment: req.body.designationComment,
           },
         },
@@ -97,7 +97,7 @@ const register = async (req, res) => {
           create: {
             salary: req.body.salary,
             startDate: new Date(req.body.salaryStartDate),
-            endDate: new Date(req.body.salaryEndDate),
+            endDate: req.body.salaryEndDate ? new Date(req.body.salaryEndDate) : null,
             comment: req.body.salaryComment,
           },
         },
