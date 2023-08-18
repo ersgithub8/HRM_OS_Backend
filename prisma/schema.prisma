@@ -15,6 +15,8 @@ model user {
   password   String
   email      String?   @unique
   phone      String?   @unique
+  resetPasswordToken   String?
+  resetPasswordExpires  DateTime @default(now())
   // address
   street     String?
   city       String?

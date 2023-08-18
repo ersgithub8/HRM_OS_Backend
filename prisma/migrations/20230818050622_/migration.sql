@@ -7,6 +7,8 @@ CREATE TABLE "user" (
     "password" TEXT NOT NULL,
     "email" TEXT,
     "phone" TEXT,
+    "resetPasswordToken" TEXT,
+    "resetPasswordExpires" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "street" TEXT,
     "city" TEXT,
     "state" TEXT,
