@@ -50,6 +50,19 @@ CREATE TABLE "education" (
 );
 
 -- CreateTable
+CREATE TABLE "location" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "latitude" TEXT,
+    "longitude" TEXT,
+    "locationName" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "location_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "salaryHistory" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
@@ -527,6 +540,9 @@ ALTER TABLE "user" ADD CONSTRAINT "user_weeklyHolidayId_fkey" FOREIGN KEY ("week
 
 -- AddForeignKey
 ALTER TABLE "education" ADD CONSTRAINT "education_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "location" ADD CONSTRAINT "location_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "salaryHistory" ADD CONSTRAINT "salaryHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

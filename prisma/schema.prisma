@@ -46,6 +46,7 @@ model user {
   leaveApplication   leaveApplication[]
   payslip            payslip[]
   educations         education[]
+  locationsHistory        location[]
   salaryHistory      salaryHistory[]
   designationHistory designationHistory[]
   awardHistory       awardHistory[]
@@ -68,6 +69,18 @@ model education {
   endDate      DateTime?
 
   status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//manage location
+model location {
+  id           Int       @id @default(autoincrement())
+  user         user      @relation(fields: [userId], references: [id])
+  userId       Int
+  latitude     String?
+  longitude    String?
+  locationName String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

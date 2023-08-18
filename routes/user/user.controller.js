@@ -115,6 +115,11 @@ const register = async (req, res) => {
             };
           }),
         },
+        locationsHistory: {
+          create: {
+            locationName:req.body.locationName ? req.body.locationName : null,
+          },
+        },
       },
     });
     const { password, ...userWithoutPassword } = createUser;
@@ -136,6 +141,7 @@ const getAllUser = async (req, res) => {
           },
           salaryHistory: true,
           educations: true,
+          locationsHistory: true,
           employmentStatus: true,
           department: true,
           role: true,
@@ -169,6 +175,7 @@ const getAllUser = async (req, res) => {
             },
           },
           salaryHistory: true,
+          locationsHistory: true,
           educations: true,
           employmentStatus: true,
           department: true,
@@ -204,6 +211,7 @@ const getAllUser = async (req, res) => {
           },
           salaryHistory: true,
           educations: true,
+          locationsHistory: true,
           employmentStatus: true,
           department: true,
           role: true,
@@ -240,6 +248,7 @@ const getSingleUser = async (req, res) => {
       },
       salaryHistory: true,
       educations: true,
+      location: true,
       employmentStatus: true,
       department: true,
       role: true,
@@ -401,72 +410,55 @@ const deleteSingleUser = async (req, res) => {
   }
 };
 
-// exports.changepassword = async (req, res) => {
-//   console.log(req.body)
+const changepassword = async (req, res) => {
+  try {
+    const { oldpassword, newpassword,email } = req.body;
 
-//   if (!req.body.oldpassword || !req.body.newpassword) {
-//       res.status(400).send({
-//           message: 'Please provide both old and new password.'
-//       });
-//   }
-//   user = await findUserByUsername(req.user.username);
-//   if(user == null || !(user instanceof User)) {
-//       res.status(403).send({
-//           message: "Invalid Credentials!"
-//       });
-//   } else {
-//       if(user.verifyPassword(req.body.oldpassword)) {
-//           user.update({password: req.body.newpassword}, {
-//               where: {id: user.id}
-//           });
-//           res.status(200).send({
-//               message: "Password Updated Successfully!"
-//           })
-//       } else {
-//           res.status(403).send({
-//               message: "Invalid Old Password! Please recheck."
-//           });
-//       }
-//   }
-// }
-// const users_forgot_password = async (req, res) => {
-//   try {
-//     const { email } = req.body;
+    if (!oldpassword || !newpassword) {
+      return res.status(400).json({
+        message: 'Please provide both old and new passwords.',
+        error: true,
+      });
+    }
+    const user = await prisma.user.findUnique({
+      where: { email: email }, // Change here
+    });
 
-//     const user = await prisma.user.findUnique({
-//       where: { email: email },
-//     });
+    if (!user) {
+      return res.status(404).json({
+        message: 'User Not Found.',
+        error: true,
+      });
+    }
 
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
+    const isPasswordMatch = await bcrypt.compare(oldpassword, user.password);
 
-//     const resetPasswordToken = crypto.randomBytes(20).toString('hex');
-//     const resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        message: 'Old password is incorrect.',
+        error: true,
+      });
+    }
 
-//     await prisma.user.update({
-//       where: { email: email }, // Use email to identify the user
-//       data: {
-//         resetPasswordToken: resetPasswordToken,
-//         resetPasswordExpires: resetPasswordExpires,
-//       },
-//     });
+    const hashedPassword = await bcrypt.hash(newpassword, saltRounds);
 
-//     const firstName = user.firstName;
-// console.log(firstName);
-//     // Call your sendEmail function here
-//     await sendEmail("requestForgotPassword", {
-//       token: resetPasswordToken, // Use resetPasswordToken here
-//       email: req.body.email, // Use email from req.body here
-//       companyname: firstName,
-//     });
+    await prisma.user.update({
+      where: { email: email }, // Change here
+      data: { password: hashedPassword },
+    });
 
-//     return res.status(200).json({ message: 'Email sent with reset instructions',email: user.email, });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: 'Something went wrong' });
-//   }
-// };
+    return res.status(200).json({
+      message: 'Password Changed Successfully',
+      error: false,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: 'Something went wrong',
+      error: true,
+    });
+  }
+};
 
 const users_forgot_password = async (req, res) => {
   try {
@@ -568,5 +560,6 @@ module.exports = {
   updateSingleUser,
   deleteSingleUser,
   users_forgot_password,
-  users_resetpassword
+  users_resetpassword,
+  changepassword
 };
