@@ -248,7 +248,7 @@ const getSingleUser = async (req, res) => {
       },
       salaryHistory: true,
       educations: true,
-      location: true,
+      locationsHistory: true,
       employmentStatus: true,
       department: true,
       role: true,
@@ -487,7 +487,9 @@ const users_forgot_password = async (req, res) => {
     await sendEmail("requestForgotPassword", {
       token: resetPasswordToken, // Use resetPasswordToken here
       email: req.body.email, // Use email from req.body here
-      userName: user.userName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+
     });
 
     return res.status(200).json({ message: 'Email sent with reset instructions', email: user.email });

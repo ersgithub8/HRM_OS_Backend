@@ -141,61 +141,6 @@ const getAllLocation = async (req, res) => {
   }
 };
 
-// const getSingleLocation = async (req, res) => {
-//     try {
-//       const singleLocation = await prisma.location.findUnique({
-//         where: {
-//           id: Number(req.params.id),
-//         },
-//         include: {
-//           user: {
-//             select: {
-//               id: true,
-//               firstName: true,
-//               lastName: true,
-//               userName: true,
-//               role: {
-//                 select: {
-//                   name: true,
-//                   id: true,
-//                 },
-//               },
-//               designationHistory: {
-//                 orderBy: [
-//                   {
-//                     id: "desc",
-//                   },
-//                 ],
-//                 take: 1,
-//                 select: {
-//                   designation: {
-//                     select: {
-//                       name: true,
-//                       id: true,
-//                     },
-//                   },
-//                 },
-//               },
-//             },
-//           },
-//         },
-//       });
-  
-//       // Check if the user has permission to access the location
-//       if (
-//         (req.auth.sub !== singleLocation.user.id &&  // Use user.id directly
-//           !req.auth.permissions.includes("readAll-location")) ||
-//         !req.auth.permissions.includes("readSingle-location")
-//       ) {
-//         return res.status(401).json({ message: "Unauthorized" });
-//       }
-  
-//       return res.status(200).json(singleLocation);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   };
-
 const getSingleLocation = async (req, res) => {
     try {
       const singleLocation = await prisma.location.findUnique({
@@ -209,18 +154,39 @@ const getSingleLocation = async (req, res) => {
               firstName: true,
               lastName: true,
               userName: true,
-              email: true,
+              role: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+              designationHistory: {
+                orderBy: [
+                  {
+                    id: "desc",
+                  },
+                ],
+                take: 1,
+                select: {
+                  designation: {
+                    select: {
+                      name: true,
+                      id: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
       });
-      res.json(singleLocation);
+  
+  
+      return res.status(200).json(singleLocation);
     } catch (error) {
-      res.status(400).json(error.message);
-      console.log(error.message);
+      return res.status(400).json({ message: error.message });
     }
   };
- 
 
 const updateSingleLocation = async (req, res) => {
   try {

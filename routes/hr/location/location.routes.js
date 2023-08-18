@@ -13,23 +13,23 @@ const locationRoutes = express.Router();
 
 locationRoutes.post(
   "/",
-//   authorize("create-location"),
+  authorize(""),
   createSingleLocation
 );
 locationRoutes.get("/",
-//  authorize("readAll-location"),
+ authorize(""),
   getAllLocation);
 locationRoutes.get("/:id",
-//  authorize(""),
+ authorize(""),
   getSingleLocation);
 locationRoutes.put(
   "/:id",
-//   authorize("update-department"),
+  authorize(""),
   updateSingleLocation
 );
 locationRoutes.patch(
   "/:id",
-//   authorize("delete-department"),
+  authorize(""),
   deletedLocation
 );
 
