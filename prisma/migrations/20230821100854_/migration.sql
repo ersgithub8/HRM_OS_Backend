@@ -23,6 +23,7 @@ CREATE TABLE "user" (
     "departmentId" INTEGER,
     "roleId" INTEGER,
     "shiftId" INTEGER,
+    "locationId" INTEGER,
     "leavePolicyId" INTEGER,
     "weeklyHolidayId" INTEGER,
     "status" BOOLEAN NOT NULL DEFAULT true,
@@ -52,7 +53,6 @@ CREATE TABLE "education" (
 -- CreateTable
 CREATE TABLE "location" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
     "latitude" TEXT,
     "longitude" TEXT,
     "locationName" TEXT,
@@ -533,6 +533,9 @@ ALTER TABLE "user" ADD CONSTRAINT "user_roleId_fkey" FOREIGN KEY ("roleId") REFE
 ALTER TABLE "user" ADD CONSTRAINT "user_shiftId_fkey" FOREIGN KEY ("shiftId") REFERENCES "shift"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "user" ADD CONSTRAINT "user_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "location"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "user" ADD CONSTRAINT "user_leavePolicyId_fkey" FOREIGN KEY ("leavePolicyId") REFERENCES "leavePolicy"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -540,9 +543,6 @@ ALTER TABLE "user" ADD CONSTRAINT "user_weeklyHolidayId_fkey" FOREIGN KEY ("week
 
 -- AddForeignKey
 ALTER TABLE "education" ADD CONSTRAINT "education_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "location" ADD CONSTRAINT "location_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "salaryHistory" ADD CONSTRAINT "salaryHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

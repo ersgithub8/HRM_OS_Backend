@@ -298,6 +298,8 @@ const getLastAttendanceByUserId = async (req, res) => {
   }
 };
 
+//attendence search by date  
+
 module.exports = {
   createAttendance,
   getAllAttendance,

@@ -32,7 +32,6 @@ const createSingleLocation = async (req, res) => {
     try {
       const createdLocation = await prisma.location.create({
         data: {
-          userId: req.body.userId,
           locationName: req.body.locationName,
           latitude:req.body.latitude,
           longitude:req.body.longitude

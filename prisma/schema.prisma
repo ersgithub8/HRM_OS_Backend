@@ -37,6 +37,8 @@ model user {
   roleId             Int?
   shift              shift?            @relation(fields: [shiftId], references: [id])
   shiftId            Int?
+  location              location?            @relation(fields: [locationId], references: [id])
+  locationId            Int?
   leavePolicy        leavePolicy?      @relation(fields: [leavePolicyId], references: [id])
   leavePolicyId      Int?
   weeklyHoliday      weeklyHoliday?    @relation(fields: [weeklyHolidayId], references: [id])
@@ -46,7 +48,6 @@ model user {
   leaveApplication   leaveApplication[]
   payslip            payslip[]
   educations         education[]
-  locationsHistory        location[]
   salaryHistory      salaryHistory[]
   designationHistory designationHistory[]
   awardHistory       awardHistory[]
@@ -76,8 +77,7 @@ model education {
 //manage location
 model location {
   id           Int       @id @default(autoincrement())
-  user         user      @relation(fields: [userId], references: [id])
-  userId       Int
+   user      user[]
   latitude     String?
   longitude    String?
   locationName String?
