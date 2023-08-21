@@ -496,7 +496,7 @@ const users_forgot_password = async (req, res) => {
   }
 };
 
-const users_resetpassword = async (req, res) => {
+const users_otpmatch = async (req, res) => {
   try {
     const { email, resetPasswordToken, password } = req.body;
 
@@ -505,6 +505,52 @@ const users_resetpassword = async (req, res) => {
       where: {
         email: email,
         resetPasswordToken: resetPasswordToken,
+        resetPasswordExpires: {
+          gte: new Date(), // Ensure the field is a date type in your database
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Reset otp code is invalid or has expired",
+        error: true,
+      });
+    }
+
+    // Hash the new password
+    // const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Update the user's password and reset token/expiry
+    await prisma.user.update({
+      where: { email: email },
+      data: {
+        resetPasswordToken: resetPasswordToken,
+
+      },
+    });
+
+    res.status(200).json({
+      message: "Otp matched Successfully",
+      error: false,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Something went wrong.",
+    });
+  }
+};
+
+
+const users_resetpassword = async (req, res) => {
+  try {
+    const { email,  password } = req.body;
+
+    // Check if the reset password token is still valid (expires in the future)
+    const user = await prisma.user.findFirst({
+      where: {
+        email: email,
         resetPasswordExpires: {
           gte: new Date(), // Ensure the field is a date type in your database
         },
@@ -526,8 +572,9 @@ const users_resetpassword = async (req, res) => {
       where: { email: email },
       data: {
         password: hashedPassword,
-        resetPasswordToken: null,
-        resetPasswordExpires: undefined
+        resetPasswordToken:null,
+        resetPasswordExpires:undefined
+
       },
     });
 
@@ -548,9 +595,6 @@ const users_resetpassword = async (req, res) => {
 
 
 
-
-
-
 module.exports = {
   login,
   register,
@@ -559,6 +603,7 @@ module.exports = {
   updateSingleUser,
   deleteSingleUser,
   users_forgot_password,
-  users_resetpassword,
-  changepassword
+  users_otpmatch,
+  changepassword,
+  users_resetpassword
 };

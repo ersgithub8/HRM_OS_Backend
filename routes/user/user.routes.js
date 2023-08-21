@@ -9,6 +9,7 @@ const {
   deleteSingleUser,
   changepassword,
   users_forgot_password,
+  users_otpmatch,
   users_resetpassword
 } = require("./user.controller.js");
 const userRoutes = express.Router();
@@ -23,7 +24,9 @@ userRoutes.put("/:id", authorize("update-user"), updateSingleUser); // authentic
 userRoutes.patch("/:id", authorize("delete-user"), deleteSingleUser); // deleteUser only
 userRoutes.post("/changepassword",authorize(""),changepassword); 
 userRoutes.post("/forgot", users_forgot_password); // public route
-userRoutes.post("/reset", users_resetpassword); // public route
+userRoutes.post("/otp", users_otpmatch); // public route
+userRoutes.post("/restpassword", users_resetpassword); // public route
+
 
 
 

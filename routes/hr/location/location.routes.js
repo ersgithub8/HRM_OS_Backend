@@ -12,7 +12,7 @@ const authorize = require("../../../utils/authorize"); // authentication middlew
 const locationRoutes = express.Router();
 
 locationRoutes.post(
-  "/",
+  "/addlocation",
   authorize(""),
   createSingleLocation
 );
