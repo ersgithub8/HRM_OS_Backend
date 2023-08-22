@@ -212,7 +212,7 @@ const deletedLocation = async (req, res) => {
             id: Number(req.params.id),
           },
         });
-        return res.status(200).json({message:"Loaction deleted successfully"});
+        return res.status(200).json({deletedLocation});
       } catch (error) {
         return res.status(400).json(error.message);
       }

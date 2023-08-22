@@ -41,6 +41,7 @@ const endpoints = [
   "taskTime",
   "priority",
   "assignedTask",
+  "location"
 ];
 
 const permissionTypes = ["create", "readAll", "readSingle", "update", "delete"];
