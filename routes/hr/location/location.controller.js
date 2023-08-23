@@ -96,6 +96,7 @@ const getAllLocation = async (req, res) => {
           {
             id: "asc",
           },
+          
         ],
         skip: Number(skip),
         take: Number(limit),
