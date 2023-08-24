@@ -17,6 +17,11 @@ const login = async (req, res) => {
         u.userName === req.body.userName &&
         bcrypt.compareSync(req.body.password, u.password)
     );
+
+    if (!user) {
+      console.log("User not found or password doesn't match");
+      return res.status(400).json({ message: "Username or password is incorrect" });
+    }
     // get permission from user roles
     const permissions = await prisma.role.findUnique({
       where: {
@@ -49,9 +54,6 @@ const login = async (req, res) => {
         token,
       });
     }
-    return res
-      .status(400)
-      .json({ message: "userName or password is incorrect" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
