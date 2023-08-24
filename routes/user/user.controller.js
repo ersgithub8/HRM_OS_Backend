@@ -416,26 +416,17 @@ const updateSingleUserprofile = async (req, res) => {
     if (req.auth.permissions.includes("update-user")) {
       updateData = {
         ...updateData,
-
+        image: req.body.image,
         userName: req.body.userName,
-        password: hash,
         phone: req.body.phone,
         street: req.body.street,
         zipCode: req.body.zipCode,
-        joinDate: join_date,
-        leaveDate: leave_date,
-        image: req.body.image,
-        employeeId: req.body.employeeId,
-        bloodGroup: req.body.bloodGroup,
-        employmentStatusId: req.body.employmentStatusId,
-        departmentId: req.body.departmentId,
-        roleId: req.body.roleId,
-        shiftId: req.body.shiftId,
-        locationId: req.body.locationId,
-        leavePolicyId: req.body.leavePolicyId,
-        weeklyHolidayId: req.body.weeklyHolidayId,
+        // Validating and parsing joinDate and leaveDate
+        joinDate: req.body.joinDate ? new Date(req.body.joinDate) : null,
+        leaveDate: req.body.leaveDate ? new Date(req.body.leaveDate) : null,
       };
-    } else {
+    }
+     else {
       // owner can change only password
       updateData.password = req.body.password;
     }
