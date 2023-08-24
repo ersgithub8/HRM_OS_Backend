@@ -427,7 +427,6 @@ const updateSingleUserprofile = async (req, res) => {
           leaveDate: leave_date,
           employeeId: req.body.employeeId,
           bloodGroup: req.body.bloodGroup,
-          image: req.body.image,
           employmentStatusId: req.body.employmentStatusId,
           departmentId: req.body.departmentId,
           roleId: req.body.roleId,
