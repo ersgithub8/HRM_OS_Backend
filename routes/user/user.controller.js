@@ -14,13 +14,21 @@ const login = async (req, res) => {
     const allUser = await prisma.user.findMany();
     const user = allUser.find(
       (u) =>
-        u.userName === req.body.userName &&
-        bcrypt.compareSync(req.body.password, u.password)
-    );
+      u.userName === req.body.userName
+  );
+
 
     if (!user) {
       console.log("User not found or password doesn't match");
-      return res.status(400).json({ message: "Username or password is incorrect" });
+      return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
+    }
+    const passwordMatches = bcrypt.compareSync(req.body.password, user.password);
+
+    if (!passwordMatches) {
+      console.log("Password doesn't match");
+      return res.status(400).json({
+        message: "Authentication failed. Password  is incorrect.",
+      });
     }
     // get permission from user roles
     const permissions = await prisma.role.findUnique({
