@@ -10,7 +10,9 @@ const {
   changepassword,
   users_forgot_password,
   users_otpmatch,
-  users_resetpassword
+  users_resetpassword,
+  updateSingleUserprofile,
+  updateSingleUserphone
 } = require("./user.controller.js");
 const userRoutes = express.Router();
 
@@ -21,6 +23,8 @@ userRoutes.post("/register",
 userRoutes.get("/", authorize("readAll-user"), getAllUser); // readUser only
 userRoutes.get("/:id", authorize("readSingle-user"), getSingleUser); // authenticated users can read their own and readUser
 userRoutes.put("/:id", authorize("update-user"), updateSingleUser); // authenticated users can update their own and updateUser
+userRoutes.put("/profile/:id", authorize("update-user"), updateSingleUserprofile); // authenticated users can update their own and updateUser
+userRoutes.put("/phone/:id", authorize("update-user"), updateSingleUserphone); // authenticated users can update their own and updateUser
 userRoutes.patch("/:id", authorize("delete-user"), deleteSingleUser); // deleteUser only
 userRoutes.post("/changepassword",authorize(""),changepassword); 
 userRoutes.post("/forgot", users_forgot_password); // public route

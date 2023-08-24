@@ -394,6 +394,122 @@ const updateSingleUser = async (req, res) => {
   }
 };
 
+const updateSingleUserprofile = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+    return res.status(401).json({
+      message: "Unauthorized. You can only edit your own record.",
+    });
+  }
+
+  try {
+    let updateData = {
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      email: req.body.email,
+      city: req.body.city,
+      state: req.body.state,
+      country: req.body.country,
+      image: req.body.image,
+    };
+
+    if (req.auth.permissions.includes("update-user")) {
+      updateData = {
+        ...updateData,
+       
+          userName: req.body.userName,
+          password: hash,
+          phone: req.body.phone,
+          street: req.body.street,
+          zipCode: req.body.zipCode,
+          joinDate: join_date,
+          leaveDate: leave_date,
+          employeeId: req.body.employeeId,
+          bloodGroup: req.body.bloodGroup,
+          image: req.body.image,
+          employmentStatusId: req.body.employmentStatusId,
+          departmentId: req.body.departmentId,
+          roleId: req.body.roleId,
+          shiftId: req.body.shiftId,
+          locationId: req.body.locationId,
+          leavePolicyId: req.body.leavePolicyId,
+          weeklyHolidayId: req.body.weeklyHolidayId,
+      };
+    } else {
+      // owner can change only password
+      updateData.password = req.body.password;
+    }
+
+    const updateUser = await prisma.user.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: updateData,
+    });
+
+    const { password, ...userWithoutPassword } = updateUser;
+    return res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const updateSingleUserphone = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+    return res.status(401).json({
+      message: "Unauthorized. You can only edit your own record.",
+    });
+  }
+
+  try {
+    let updateData = {
+      phone: req.body.phone,
+    };
+
+    if (req.auth.permissions.includes("update-user")) {
+      updateData = {
+        ...updateData,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        city: req.body.city,
+        state: req.body.state,
+        country: req.body.country,
+        image: req.body.image,
+        userName: req.body.userName,
+        phone: req.body.phone,
+        street: req.body.street,
+        zipCode: req.body.zipCode,
+        // Validating and parsing joinDate and leaveDate
+        joinDate: req.body.joinDate ? new Date(req.body.joinDate) : null,
+        leaveDate: req.body.leaveDate ? new Date(req.body.leaveDate) : null,
+        // Rest of the fields...
+      };
+    } else {
+      // owner can change only password
+      updateData.password = req.body.password;
+    }
+
+    const updateUser = await prisma.user.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: updateData,
+    });
+
+    const { password, ...userWithoutPassword } = updateUser;
+    return res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
 const deleteSingleUser = async (req, res) => {
   // const id = parseInt(req.params.id);
   // only allow admins to delete other user records
@@ -615,5 +731,7 @@ module.exports = {
   users_forgot_password,
   users_otpmatch,
   changepassword,
-  users_resetpassword
+  users_resetpassword,
+  updateSingleUserprofile,
+  updateSingleUserphone
 };
