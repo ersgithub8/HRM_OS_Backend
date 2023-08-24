@@ -14,8 +14,8 @@ const login = async (req, res) => {
     const allUser = await prisma.user.findMany();
     const user = allUser.find(
       (u) =>
-      u.userName === req.body.userName
-  );
+        u.userName === req.body.userName
+    );
 
 
     if (!user) {
@@ -95,7 +95,7 @@ const register = async (req, res) => {
         departmentId: req.body.departmentId,
         roleId: req.body.roleId,
         shiftId: req.body.shiftId,
-        locationId: req.body.locationId?req.body.locationId:null,
+        locationId: req.body.locationId ? req.body.locationId : null,
         leavePolicyId: req.body.leavePolicyId,
         weeklyHolidayId: req.body.weeklyHolidayId,
         designationHistory: {
@@ -124,7 +124,7 @@ const register = async (req, res) => {
               startDate: new Date(e.studyStartDate),
               endDate: new Date(e.studyEndDate),
             };
-        }),
+          }),
         },
       },
     });
@@ -411,29 +411,29 @@ const updateSingleUserprofile = async (req, res) => {
       city: req.body.city,
       state: req.body.state,
       country: req.body.country,
-      image: req.body.image,
     };
 
     if (req.auth.permissions.includes("update-user")) {
       updateData = {
         ...updateData,
-       
-          userName: req.body.userName,
-          password: hash,
-          phone: req.body.phone,
-          street: req.body.street,
-          zipCode: req.body.zipCode,
-          joinDate: join_date,
-          leaveDate: leave_date,
-          employeeId: req.body.employeeId,
-          bloodGroup: req.body.bloodGroup,
-          employmentStatusId: req.body.employmentStatusId,
-          departmentId: req.body.departmentId,
-          roleId: req.body.roleId,
-          shiftId: req.body.shiftId,
-          locationId: req.body.locationId,
-          leavePolicyId: req.body.leavePolicyId,
-          weeklyHolidayId: req.body.weeklyHolidayId,
+
+        userName: req.body.userName,
+        password: hash,
+        phone: req.body.phone,
+        street: req.body.street,
+        zipCode: req.body.zipCode,
+        joinDate: join_date,
+        leaveDate: leave_date,
+        image: req.body.image,
+        employeeId: req.body.employeeId,
+        bloodGroup: req.body.bloodGroup,
+        employmentStatusId: req.body.employmentStatusId,
+        departmentId: req.body.departmentId,
+        roleId: req.body.roleId,
+        shiftId: req.body.shiftId,
+        locationId: req.body.locationId,
+        leavePolicyId: req.body.leavePolicyId,
+        weeklyHolidayId: req.body.weeklyHolidayId,
       };
     } else {
       // owner can change only password
@@ -534,7 +534,7 @@ const deleteSingleUser = async (req, res) => {
 
 const changepassword = async (req, res) => {
   try {
-    const { oldpassword, newpassword,email } = req.body;
+    const { oldpassword, newpassword, email } = req.body;
 
     if (!oldpassword || !newpassword) {
       return res.status(400).json({
@@ -670,7 +670,7 @@ const users_otpmatch = async (req, res) => {
 
 const users_resetpassword = async (req, res) => {
   try {
-    const { email,  password } = req.body;
+    const { email, password } = req.body;
 
     // Check if the reset password token is still valid (expires in the future)
     const user = await prisma.user.findFirst({
@@ -697,8 +697,8 @@ const users_resetpassword = async (req, res) => {
       where: { email: email },
       data: {
         password: hashedPassword,
-        resetPasswordToken:null,
-        resetPasswordExpires:undefined
+        resetPasswordToken: null,
+        resetPasswordExpires: undefined
 
       },
     });
