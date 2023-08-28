@@ -466,6 +466,17 @@ const updateSingleUserphone = async (req, res) => {
   }
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
     let updateData = {
       phone: req.body.phone,
     };
@@ -473,20 +484,19 @@ const updateSingleUserphone = async (req, res) => {
     if (req.auth.permissions.includes("update-user")) {
       updateData = {
         ...updateData,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        city: req.body.city,
-        state: req.body.state,
-        country: req.body.country,
-        image: req.body.image,
-        userName: req.body.userName,
-        phone: req.body.phone,
-        street: req.body.street,
-        zipCode: req.body.zipCode,
+        firstName: req.body.firstName|| existingUser.firstName,
+        lastName: req.body.lastName|| existingUser.lastName,
+        email: req.body.email|| existingUser.email,
+        city: req.body.city|| existingUser.city,
+        state: req.body.state|| existingUser.state,
+        country: req.body.country|| existingUser.country,
+        image: req.body.image|| existingUser.image,
+        userName: req.body.userName|| existingUser.userName,
+        street: req.body.street|| existingUser.street,
+        zipCode: req.body.zipCode|| existingUser.zipCode,
         // Validating and parsing joinDate and leaveDate
-        joinDate: req.body.joinDate ? new Date(req.body.joinDate) : null,
-        leaveDate: req.body.leaveDate ? new Date(req.body.leaveDate) : null,
+        joinDate: req.body.joinDate|| existingUser.joinDate,
+        leaveDate: req.body.leaveDate|| existingUser.leaveDate,
         // Rest of the fields...
       };
     } else {
