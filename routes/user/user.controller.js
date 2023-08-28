@@ -404,6 +404,17 @@ const updateSingleUserprofile = async (req, res) => {
   }
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
     let updateData = {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
@@ -416,14 +427,13 @@ const updateSingleUserprofile = async (req, res) => {
     if (req.auth.permissions.includes("update-user")) {
       updateData = {
         ...updateData,
-        image: req.body.image,
-        userName: req.body.userName,
-        phone: req.body.phone,
-        street: req.body.street,
-        zipCode: req.body.zipCode,
-        // Validating and parsing joinDate and leaveDate
-        joinDate: req.body.joinDate ? new Date(req.body.joinDate) : null,
-        leaveDate: req.body.leaveDate ? new Date(req.body.leaveDate) : null,
+        image: req.body.image|| existingUser.image,
+        userName: req.body.userName|| existingUser.userName,
+        phone: req.body.phone|| existingUser.phone,
+        street: req.body.street|| existingUser.street,
+        zipCode: req.body.zipCode|| existingUser.zipCode,
+        joinDate: req.body.joinDate|| existingUser.joinDate,
+        leaveDate: req.body.leaveDate|| existingUser.leaveDate,
       };
     }
      else {
