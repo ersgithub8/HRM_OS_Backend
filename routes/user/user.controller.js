@@ -449,7 +449,10 @@ const updateSingleUserprofile = async (req, res) => {
     });
 
     const { password, ...userWithoutPassword } = updateUser;
-    return res.status(200).json(userWithoutPassword);
+    return res.status(200).json({
+      userWithoutPassword,
+      message:"User profile updated successfully"
+    });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ message: error.message });
@@ -512,7 +515,10 @@ const updateSingleUserphone = async (req, res) => {
     });
 
     const { password, ...userWithoutPassword } = updateUser;
-    return res.status(200).json(userWithoutPassword);
+    return res.status(200).json({
+      userWithoutPassword,
+      message:"Phonenumber updated successfully"
+    });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ message: error.message });
