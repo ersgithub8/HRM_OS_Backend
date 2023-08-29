@@ -1,6 +1,7 @@
 const { getPagination } = require("../../../utils/query");
 const moment = require("moment");
 const prisma = require("../../../utils/prisma");
+const { Op } = require("sequelize"); // Assuming you're using Sequelize for PostgreSQL
 
 //create a new employee
 const createAttendance = async (req, res) => {
@@ -298,6 +299,80 @@ const getLastAttendanceByUserId = async (req, res) => {
   }
 };
 
+
+const search = async (req, res) => {
+  if (!req.auth.permissions.includes("readAll-attendance")) {
+    return res.status(401).json({ message: "You are not able to access this route." });
+  }
+
+  const { skip, limit } = getPagination(req.query);
+
+  try {
+    const whereCondition = {};
+
+    if (req.query.query !== "all") {
+      if (req.query.inTime) {
+        const startDate = new Date(req.query.inTime);
+        startDate.setUTCHours(0, 0, 0, 0); // Set time to the start of the day in UTC
+        if (!isNaN(startDate)) {
+          whereCondition.inTime = {
+            gte: startDate,
+          };
+        } else {
+          return res.status(400).json({ message: "Invalid startdate format." });
+        }
+      } else {
+        return res.status(400).json({ message: "startdate is required." });
+      }
+    }
+
+    const allAttendance = await prisma.attendance.findMany({
+      orderBy: [{ id: "asc" }],
+      skip: Number(skip),
+      take: Number(limit),
+      where: whereCondition,
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    const punchBy = await prisma.user.findMany({
+      where: {
+        id: { in: allAttendance.map((item) => item.punchBy) },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+
+    const result = allAttendance.map((attendance) => {
+      return {
+        ...attendance,
+        punchBy: punchBy,
+      };
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+
+
+
+
+
+
 //attendence search by date  
 
 module.exports = {
@@ -306,4 +381,5 @@ module.exports = {
   getSingleAttendance,
   getAttendanceByUserId,
   getLastAttendanceByUserId,
+  search,
 };
