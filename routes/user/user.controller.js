@@ -393,6 +393,8 @@ const getSingleUser = async (req, res) => {
 //     return res.status(500).json({ message: error.message });
 //   }
 // };
+
+
 const updateSingleUser = async (req, res) => {
   const id = parseInt(req.params.id);
 
@@ -805,6 +807,8 @@ const users_resetpassword = async (req, res) => {
     });
   }
 };
+
+
 
 
 

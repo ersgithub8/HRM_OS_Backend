@@ -29,6 +29,7 @@
     "dotenv": "^14.3.2",
     "ejs": "^3.1.9",
     "express": "^4.17.2",
+    "express-fileupload": "^1.4.0",
     "express-jwt": "^7.7.5",
     "express-rate-limit": "^6.6.0",
     "googleapis": "^110.0.0",

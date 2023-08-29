@@ -8,7 +8,8 @@ const cors = require("cors");
 /* variables */
 // express app instance
 const app = express();
-
+const fileupload = require("express-fileupload");
+app.use(fileupload());
 // holds all the allowed origins for cors access
 let allowedOrigins = [
   "http://localhost:3000",
@@ -71,6 +72,8 @@ app.use("/setting", require("./routes/setting/setting.routes"));
 app.use("/email", require("./routes/email/email.routes"));
 app.use("/department", require("./routes/hr/department/department.routes"));
 app.use("/location", require("./routes/hr/location/location.routes"));
+app.use("/upload", require("./routes/hr/uploadimage/uploadimg.routes"));
+
 app.use(
   "/employment-status",
   require("./routes/hr/employmentStatus/employmentStatus.routes")
