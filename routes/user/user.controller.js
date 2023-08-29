@@ -327,72 +327,146 @@ const getSingleUser = async (req, res) => {
   return res.status(200).json(userWithoutPassword);
 };
 
+// const updateSingleUser = async (req, res) => {
+//   const id = parseInt(req.params.id);
+//   // only allow admins and owner to edit other user records. use truth table to understand the logic
+
+//   if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+//     return res.status(401).json({
+//       message: "Unauthorized. You can only edit your own record.",
+//     });
+//   }
+//   try {
+//     // admin can change all fields
+//     if (req.auth.permissions.includes("update-user")) {
+//       const hash = await bcrypt.hash(req.body.password, saltRounds);
+//       const join_date = new Date(req.body.joinDate);
+//       const leave_date = new Date(req.body.leaveDate);
+//       const updateUser = await prisma.user.update({
+//         where: {
+//           id: Number(req.params.id),
+//         },
+//         data: {
+//           firstName: req.body.firstName,
+//           lastName: req.body.lastName,
+//           userName: req.body.userName,
+//           password: hash,
+//           email: req.body.email,
+//           phone: req.body.phone,
+//           street: req.body.street,
+//           city: req.body.city,
+//           state: req.body.state,
+//           zipCode: req.body.zipCode,
+//           country: req.body.country,
+//           joinDate: join_date,
+//           leaveDate: leave_date,
+//           employeeId: req.body.employeeId,
+//           bloodGroup: req.body.bloodGroup,
+//           image: req.body.image,
+//           employmentStatusId: req.body.employmentStatusId,
+//           departmentId: req.body.departmentId,
+//           roleId: req.body.roleId,
+//           shiftId: req.body.shiftId,
+//           locationId: req.body.locationId,
+//           leavePolicyId: req.body.leavePolicyId,
+//           weeklyHolidayId: req.body.weeklyHolidayId,
+//         },
+//       });
+//       const { password, ...userWithoutPassword } = updateUser;
+//       return res.status(200).json(userWithoutPassword);
+//     } else {
+//       // owner can change only password
+//       const hash = await bcrypt.hash(req.body.password, saltRounds);
+//       const updateUser = await prisma.user.update({
+//         where: {
+//           id: Number(req.params.id),
+//         },
+//         data: {
+//           password: hash,
+//         },
+//       });
+//       const { password, ...userWithoutPassword } = updateUser;
+//       return res.status(200).json(userWithoutPassword);
+//     }
+//   } catch (error) {
+//     console.log(error.message);
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 const updateSingleUser = async (req, res) => {
   const id = parseInt(req.params.id);
-  // only allow admins and owner to edit other user records. use truth table to understand the logic
 
   if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
     return res.status(401).json({
       message: "Unauthorized. You can only edit your own record.",
     });
   }
+
   try {
-    // admin can change all fields
-    if (req.auth.permissions.includes("update-user")) {
-      const hash = await bcrypt.hash(req.body.password, saltRounds);
-      const join_date = new Date(req.body.joinDate);
-      const leave_date = new Date(req.body.leaveDate);
-      const updateUser = await prisma.user.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          userName: req.body.userName,
-          password: hash,
-          email: req.body.email,
-          phone: req.body.phone,
-          street: req.body.street,
-          city: req.body.city,
-          state: req.body.state,
-          zipCode: req.body.zipCode,
-          country: req.body.country,
-          joinDate: join_date,
-          leaveDate: leave_date,
-          employeeId: req.body.employeeId,
-          bloodGroup: req.body.bloodGroup,
-          image: req.body.image,
-          employmentStatusId: req.body.employmentStatusId,
-          departmentId: req.body.departmentId,
-          roleId: req.body.roleId,
-          shiftId: req.body.shiftId,
-          locationId: req.body.locationId,
-          leavePolicyId: req.body.leavePolicyId,
-          weeklyHolidayId: req.body.weeklyHolidayId,
-        },
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found.",
       });
-      const { password, ...userWithoutPassword } = updateUser;
-      return res.status(200).json(userWithoutPassword);
+    }
+    let updateData = {
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      phone: req.body.phone,
+      street: req.body.street,
+      city: req.body.city,
+      state: req.body.state,
+      zipCode: req.body.zipCode,
+      country: req.body.country,
+      departmentId: req.body.departmentId,
+      roleId: req.body.roleId,
+      shiftId: req.body.shiftId,
+      locationId: req.body.locationId,
+      leavePolicyId: req.body.leavePolicyId,
+      weeklyHolidayId: req.body.weeklyHolidayId,
+    };
+
+    if (req.auth.permissions.includes("update-user")) {
+      updateData = {
+        ...updateData,
+        email: req.body.email || existingUser.email, // Use || operator instead of |
+        image: req.body.image || existingUser.image,
+        employeeId: req.body.employeeId || existingUser.employeeId,
+        bloodGroup: req.body.bloodGroup || existingUser.bloodGroup,
+        userName: req.body.userName || existingUser.userName,
+        joinDate: req.body.joinDate || existingUser.joinDate,
+        leaveDate: req.body.leaveDate || existingUser.leaveDate,
+        employmentStatusId:
+          req.body.employmentStatusId || existingUser.employmentStatusId,
+      };
     } else {
       // owner can change only password
-      const hash = await bcrypt.hash(req.body.password, saltRounds);
-      const updateUser = await prisma.user.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          password: hash,
-        },
-      });
-      const { password, ...userWithoutPassword } = updateUser;
-      return res.status(200).json(userWithoutPassword);
+      updateData.password = req.body.password;
     }
+
+    const updateUser = await prisma.user.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: updateData,
+    });
+
+    const { password, ...userWithoutPassword } = updateUser;
+    return res.status(200).json({
+      userWithoutPassword,
+      message: "User profile updated successfully",
+    });
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 const updateSingleUserprofile = async (req, res) => {
   const id = parseInt(req.params.id);
