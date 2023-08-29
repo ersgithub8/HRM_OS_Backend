@@ -502,21 +502,13 @@ const search = async (req, res) => {
 };
 
 const updateSingleAttendence = async (req, res) => {
-  const id = parseInt(req.params.id);
-
-  if (id !== req.auth.sub && !req.auth.permissions.includes("update-attendence")) {
-    return res.status(401).json({
-      message: "Unauthorized. You can only edit your own record.",
-    });
-  }
-
   try {
     const existingUser = await prisma.attendance.findUnique({
       where: {
-        id: id,
+        userId: parseInt(req.params.id),
       },
     });
-
+    
     if (!existingUser) {
       return res.status(404).json({
         message: "User not found.",
@@ -526,7 +518,7 @@ const updateSingleAttendence = async (req, res) => {
       inTime:req.body.inTime,
           outTime:req.body.outTime,
     };
-
+    
     if (req.auth.permissions.includes("update-attendence")) {
       updateData = {
         ...updateData,
@@ -544,16 +536,16 @@ const updateSingleAttendence = async (req, res) => {
       },
       data: updateData,
     });
-
+    
     return res.status(200).json({
       updateUser,
       message: "Attendence  updated successfully",
     });
   } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({ message: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
+
 
 
 
