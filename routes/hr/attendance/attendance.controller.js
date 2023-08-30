@@ -64,7 +64,7 @@ const createAttendance = async (req, res) => {
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
           date: req.body.date ? req.body.date : new Date(),
-          attendenceStatus: "Present",
+          attendenceStatus:req.body.attendenceStatus ? req.body.attendenceStatus:"Present",
           ip: req.body.ip ? req.body.ip : null,
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
