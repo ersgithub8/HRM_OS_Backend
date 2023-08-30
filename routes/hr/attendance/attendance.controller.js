@@ -46,6 +46,21 @@ const createAttendance = async (req, res) => {
         },
       },
     });
+    
+  const existingCheckOut = await prisma.attendance.findFirst({
+    where: {
+      userId: id,
+      outTime: {
+        gte: today.toDate(),
+        lt: tomorrow.toDate(),
+      },
+    },
+  });
+    if (attendance&&existingCheckOut) {
+      return res.status(400).json({
+        message: "Attendance has already been marked for today.",
+      });
+    }
 
     if (req.query.query === "manualPunch") {
       const inTime = new Date();
