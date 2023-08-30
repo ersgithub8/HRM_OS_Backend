@@ -81,7 +81,7 @@ const createAttendance = async (req, res) => {
           comment: req.body.comment ? req.body.comment : null,
           ip: req.body.ip ? req.body.ip : null,
           date: req.body.date ? req.body.date :new Date(),
-          attendenceStatus: "Present",
+          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"Present",
           inTimeStatus: isEarly ? "Early" : isLate ? "Late" : "On Time",
           outTimeStatus: null,
         },
