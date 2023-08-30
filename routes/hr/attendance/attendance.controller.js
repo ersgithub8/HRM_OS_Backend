@@ -57,6 +57,8 @@ const createAttendance = async (req, res) => {
           inTimeStatus: req.body.inTimeStatus ? req.body.inTimeStatus : null,
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
+          date: req.body.date ? req.body.date : null,
+          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : null,
           ip: req.body.ip ? req.body.ip : null,
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
@@ -442,27 +444,24 @@ const search = async (req, res) => {
   try {
     const whereCondition = {};
 
-    if (req.query=== "all") {
+    if (req.query.query !== "all") {
       if (req.query.inTime) {
         const startDate = new Date(req.query.inTime);
-        startDate.setUTCHours(0, 0, 0, 0);
         if (!isNaN(startDate)) {
           whereCondition.inTime = {
-            gte: startDate,
+            gte: startDate.toISOString(),
           };
         } else {
           return res.status(400).json({ message: "Invalid inTime format." });
         }
-      } else {
-        return res.status(400).json({ message: "inTime is required." });
       }
 
       if (req.query.outTime) {
         const endDate = new Date(req.query.outTime);
-        endDate.setUTCHours(23, 59, 59, 999);
         if (!isNaN(endDate)) {
+          endDate.setUTCHours(23, 59, 59, 999);
           whereCondition.outTime = {
-            lte: endDate,
+            lte: endDate.toISOString(),
           };
         } else {
           return res.status(400).json({ message: "Invalid outTime format." });
@@ -471,7 +470,10 @@ const search = async (req, res) => {
 
       if (req.query.firstName) {
         whereCondition.user = {
-          firstName: { contains: req.query.firstName, mode: "insensitive" },
+          firstName: {
+            contains: req.query.firstName,
+            mode: "insensitive",
+          },
         };
       }
     }
@@ -514,6 +516,85 @@ const search = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
+
+// const search = async (req, res) => {
+//   const { skip, limit } = getPagination(req.query);
+
+//   try {
+//     const whereCondition = {};
+
+//     if (req.query.inTime) {
+//       const startDate = new Date(req.query.inTime);
+//       if (!isNaN(startDate)) {
+//         whereCondition.inTime = {
+//           gte: startDate.toISOString(),
+//         };
+//       } else {
+//         return res.status(400).json({ message: "Invalid inTime format." });
+//       }
+//     }
+
+//     if (req.query.outTime) {
+//       const endDate = new Date(req.query.outTime);
+//       if (!isNaN(endDate)) {
+//         endDate.setUTCHours(23, 59, 59, 999);
+//         whereCondition.outTime = {
+//           lte: endDate.toISOString(),
+//         };
+//       } else {
+//         return res.status(400).json({ message: "Invalid outTime format." });
+//       }
+//     }
+
+//     const allAttendance = await prisma.attendance.findMany({
+//       orderBy: [{ id: "asc" }],
+//       skip: Number(skip),
+//       take: Number(limit),
+//       where: whereCondition,
+//       include: {
+//         user: {
+//           select: {
+//             firstName: true,
+//             lastName: true,
+//           },
+//         },
+//       },
+//     });
+
+//     const punchBy = await prisma.user.findMany({
+//       where: {
+//         id: { in: allAttendance.map((item) => item.punchBy) },
+//       },
+//       select: {
+//         id: true,
+//         firstName: true,
+//         lastName: true,
+//       },
+//     });
+
+//     const result = allAttendance.map((attendance) => {
+//       return {
+//         ...attendance,
+//         punchBy: punchBy,
+//       };
+//     });
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
+
+
+
+
+
 
 
 
