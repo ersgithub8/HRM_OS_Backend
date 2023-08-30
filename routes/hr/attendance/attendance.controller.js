@@ -74,6 +74,8 @@ const createAttendance = async (req, res) => {
           punchBy: req.auth.sub,
           comment: req.body.comment ? req.body.comment : null,
           ip: req.body.ip ? req.body.ip : null,
+          date: req.body.date ? req.body.date : null,
+          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : null,
           inTimeStatus: isEarly ? "Early" : isLate ? "Late" : "On Time",
           outTimeStatus: null,
         },
