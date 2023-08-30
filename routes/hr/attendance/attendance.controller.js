@@ -61,7 +61,6 @@ const createAttendance = async (req, res) => {
           attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : null,
           ip: req.body.ip ? req.body.ip : null,
           totalHour: parseFloat(totalHours.toFixed(3)),
-          
         },
       });
       return res.status(201).json(newAttendance);
