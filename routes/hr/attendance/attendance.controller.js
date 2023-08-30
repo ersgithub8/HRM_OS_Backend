@@ -58,7 +58,7 @@ const createAttendance = async (req, res) => {
   });
     if (attendance&&existingCheckOut) {
       return res.status(400).json({
-        message: "Attendance has already been marked for today.",
+        message: "Clock in has already been marked for today.",
       });
     }
 
@@ -84,7 +84,10 @@ const createAttendance = async (req, res) => {
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
       });
-      return res.status(201).json(newAttendance);
+      return res.status(201).json({
+        newAttendance,
+        message:"Clock in Successfully"
+      });
     } else if (attendance === null) {
       const inTime = new Date(moment.now());
       const newAttendance = await prisma.attendance.create({
@@ -101,7 +104,10 @@ const createAttendance = async (req, res) => {
           outTimeStatus: null,
         },
       });
-      return res.status(201).json(newAttendance);
+      return res.status(201).json({
+        newAttendance,
+        message:"Clock in Successfully"
+      });
     } else  {
       const outTime = new Date(moment.now());
       const totalHours = Math.abs(outTime - attendance.inTime) / 36e5;
@@ -116,7 +122,10 @@ const createAttendance = async (req, res) => {
           outTimeStatus: isOutEarly ? "Early" : isOutLate ? "Late" : "On Time",
         },
       });
-      return res.status(200).json(newAttendance);
+      return res.status(200).json({
+        newAttendance,
+        message:"Clock out Successfully"
+      });
     }
   } catch (error) {
     return res.status(400).json({ message: error.message });
