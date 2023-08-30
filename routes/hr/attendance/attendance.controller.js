@@ -397,11 +397,56 @@ const getSingleAttendance = async (req, res) => {
   }
 };
 
+// const getAttendanceByUserId = async (req, res) => {
+//   try {
+//     const allAttendance = await prisma.attendance.findMany({
+//       where: {
+//         userId: parseInt(req.params.id),
+//       },
+//       orderBy: [
+//         {
+//           id: "asc",
+//         },
+//       ],
+//       include: {
+//         user: {
+//           select: {
+//             firstName: true,
+//             lastName: true,
+//           },
+//         },
+//       },
+//     });
+
+//     const punchBy = await prisma.user.findMany({
+//       where: {
+//         id: { in: allAttendance.map((item) => item.punchBy) },
+//       },
+//       select: {
+//         id: true,
+//         firstName: true,
+//         lastName: true,
+//       },
+//     });
+//     const result = allAttendance.map((attendance) => {
+//       return {
+//         ...attendance,
+//         punchBy: punchBy,
+//       };
+//     });
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 const getAttendanceByUserId = async (req, res) => {
   try {
+    const userId = parseInt(req.params.id);
     const allAttendance = await prisma.attendance.findMany({
       where: {
-        userId: parseInt(req.params.id),
+        userId: userId,
       },
       orderBy: [
         {
@@ -428,18 +473,40 @@ const getAttendanceByUserId = async (req, res) => {
         lastName: true,
       },
     });
-    const result = allAttendance.map((attendance) => {
-      return {
-        ...attendance,
-        punchBy: punchBy,
-      };
+
+    // Calculate total present, total leave, and total absent
+    let totalPresent = 0;
+    let totalLeave = 0;
+    let totalAbsent = 0;
+
+    allAttendance.forEach((attendance) => {
+      if (attendance.attendenceStatus === "Present") {
+        totalPresent++;
+      } else if (attendance.attendenceStatus === "Leave") {
+        totalLeave++;
+      } else if (attendance.attendenceStatus === "Absent") {
+        totalAbsent++;
+      }
     });
+
+    const result = {
+      attendanceData: allAttendance.map((attendance) => {
+        return {
+          ...attendance,
+          punchBy: punchBy,
+        };
+      }),
+      totalPresent: totalPresent,
+      totalLeave: totalLeave,
+      totalAbsent: totalAbsent,
+    };
 
     return res.status(200).json(result);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 // get the last attendance of a user
 const getLastAttendanceByUserId = async (req, res) => {
