@@ -34,17 +34,22 @@ const createAttendance = async (req, res) => {
     const isEarly = moment().isBefore(startTime);
     const isOutEarly = moment().isAfter(endTime);
     const isOutLate = moment().isBefore(endTime);
+    const today = moment().startOf('day');
+    const tomorrow = moment(today).add(1, 'days');
 
     const attendance = await prisma.attendance.findFirst({
       where: {
         userId: id,
-        outTime: null,
+        inTime: {
+          gte: today.toDate(),
+          lt: tomorrow.toDate(),
+        },
       },
     });
 
     if (req.query.query === "manualPunch") {
-      const inTime = new Date(req.body.inTime);
-      const outTime = new Date(req.body.outTime);
+      const inTime = new Date();
+      const outTime = new Date();
 
       const totalHours = Math.abs(outTime - inTime) / 36e5;
 
@@ -58,7 +63,7 @@ const createAttendance = async (req, res) => {
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
           date: req.body.date ? req.body.date : null,
-          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : null,
+          attendenceStatus: "Present",
           ip: req.body.ip ? req.body.ip : null,
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
@@ -75,13 +80,13 @@ const createAttendance = async (req, res) => {
           comment: req.body.comment ? req.body.comment : null,
           ip: req.body.ip ? req.body.ip : null,
           date: req.body.date ? req.body.date : null,
-          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : null,
+          attendenceStatus: "Present",
           inTimeStatus: isEarly ? "Early" : isLate ? "Late" : "On Time",
           outTimeStatus: null,
         },
       });
       return res.status(201).json(newAttendance);
-    } else {
+    } else  {
       const outTime = new Date(moment.now());
       const totalHours = Math.abs(outTime - attendance.inTime) / 36e5;
 

@@ -191,7 +191,7 @@ model attendance {
   inTimeStatus  String?
   outTimeStatus String?
   attendenceStatus  String?    
-  date          String 
+  date          DateTime  @default(now()) 
   status        Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

@@ -176,7 +176,7 @@ CREATE TABLE "attendance" (
     "inTimeStatus" TEXT,
     "outTimeStatus" TEXT,
     "attendenceStatus" TEXT,
-    "date" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
