@@ -467,9 +467,16 @@ const getAttendanceByUserId = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
+            designationHistory: { // Assuming the designation information is in a related model
+              select: {
+                designation: true,
+                // Add other fields from designationHistory if needed
+              },
+            },
           },
         },
       },
+      
     });
 
     const punchBy = await prisma.user.findMany({
