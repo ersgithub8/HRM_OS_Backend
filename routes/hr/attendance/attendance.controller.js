@@ -437,28 +437,42 @@ const getLastAttendanceByUserId = async (req, res) => {
 
 
 const search = async (req, res) => {
-  if (!req.auth.permissions.includes("readAll-attendance")) {
-    return res.status(401).json({ message: "You are not able to access this route." });
-  }
-
   const { skip, limit } = getPagination(req.query);
 
   try {
     const whereCondition = {};
 
-    if (req.query.query !== "all") {
+    if (req.query=== "all") {
       if (req.query.inTime) {
         const startDate = new Date(req.query.inTime);
-        startDate.setUTCHours(0, 0, 0, 0); // Set time to the start of the day in UTC
+        startDate.setUTCHours(0, 0, 0, 0);
         if (!isNaN(startDate)) {
           whereCondition.inTime = {
             gte: startDate,
           };
         } else {
-          return res.status(400).json({ message: "Invalid startdate format." });
+          return res.status(400).json({ message: "Invalid inTime format." });
         }
       } else {
-        return res.status(400).json({ message: "startdate is required." });
+        return res.status(400).json({ message: "inTime is required." });
+      }
+
+      if (req.query.outTime) {
+        const endDate = new Date(req.query.outTime);
+        endDate.setUTCHours(23, 59, 59, 999);
+        if (!isNaN(endDate)) {
+          whereCondition.outTime = {
+            lte: endDate,
+          };
+        } else {
+          return res.status(400).json({ message: "Invalid outTime format." });
+        }
+      }
+
+      if (req.query.firstName) {
+        whereCondition.user = {
+          firstName: { contains: req.query.firstName, mode: "insensitive" },
+        };
       }
     }
 
@@ -500,6 +514,9 @@ const search = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
 
 const updateSingleAttendence = async (req, res) => {
   try {
@@ -561,6 +578,8 @@ const deleteSingleAttendence = async (req, res) => {
       return res.status(400).json(error.message);
     }
 };
+
+
 
 
 

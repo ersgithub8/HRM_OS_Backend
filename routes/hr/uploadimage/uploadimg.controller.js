@@ -75,13 +75,13 @@ exports.delimage = async (req, res) => {
         function (err, data) {
           if (err) {
             console.log(err);
-            res.status(FORBIDDEN).json({
+            res.status(404).json({
               message: "Image Upload Failed " + err,
               error: true,
             });
           } else {
             console.log("image del");
-            res.status(SUCCESS).json({
+            res.status(200).json({
               message: "Image Delete Successfully",
               error: false,
             });
