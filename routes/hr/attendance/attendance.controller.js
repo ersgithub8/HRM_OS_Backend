@@ -496,9 +496,11 @@ const getAttendanceByUserId = async (req, res) => {
           punchBy: punchBy,
         };
       }),
-      totalPresent: totalPresent,
-      totalLeave: totalLeave,
-      totalAbsent: totalAbsent,
+      totaldays: {
+        totalPresent: totalPresent,
+        totalLeave: totalLeave,
+        totalAbsent: totalAbsent,
+      },
     };
 
     return res.status(200).json(result);
