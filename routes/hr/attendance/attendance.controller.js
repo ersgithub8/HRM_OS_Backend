@@ -526,6 +526,60 @@ const getLastAttendanceByUserId = async (req, res) => {
   }
 };
 
+// const getTodayAttendanceByUserId = async (req, res) => {
+//   try {
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+
+//     const todayAttendance = await prisma.attendance.findFirst({
+//       where: {
+//         userId: parseInt(req.params.id),
+//         inTime: {
+//           gte: today,
+//         },
+//       },
+//       orderBy: [
+//         {
+//           id: 'desc',
+//         },
+//       ],
+//     });
+
+//     const response = {
+//       inTime: null,
+//       outTime: null,
+//       totalHours: null,
+//     };
+
+//     if (!todayAttendance) {
+//       // If there's no attendance record for today, return the empty response
+//       return res.status(200).json(response);
+//     }
+
+//     if (todayAttendance.inTime) {
+//       response.inTime = todayAttendance.inTime;
+
+//       if (todayAttendance.outTime) {
+//         // If both check-in and check-out times are available, calculate and return total hours
+//         const checkInTime = new Date(todayAttendance.inTime);
+//         const checkOutTime = new Date(todayAttendance.outTime);
+//         const timeDiff = checkOutTime - checkInTime;
+//         const totalHours = timeDiff / (1000 * 60 * 60);
+//         response.outTime = todayAttendance.outTime;
+//         response.totalHours = totalHours;
+//       }
+
+//       // If only check-in time is available, return the response with check-in time
+//       return res.status(200).json(response);
+//     }
+
+//     // If no check-in time available, return the empty response
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
     const today = new Date();
@@ -549,6 +603,8 @@ const getTodayAttendanceByUserId = async (req, res) => {
       inTime: null,
       outTime: null,
       totalHours: null,
+      totalMinutes: null,
+      totalSeconds: null,
     };
 
     if (!todayAttendance) {
@@ -560,16 +616,19 @@ const getTodayAttendanceByUserId = async (req, res) => {
       response.inTime = todayAttendance.inTime;
 
       if (todayAttendance.outTime) {
-        // If both check-in and check-out times are available, calculate and return total hours
         const checkInTime = new Date(todayAttendance.inTime);
         const checkOutTime = new Date(todayAttendance.outTime);
         const timeDiff = checkOutTime - checkInTime;
-        const totalHours = timeDiff / (1000 * 60 * 60);
+        const totalHours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const totalMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const totalSeconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        
         response.outTime = todayAttendance.outTime;
-        response.totalHours = totalHours;
+        response.totalHours = totalHours.toString().padStart(2, '0');
+        response.totalMinutes = totalMinutes.toString().padStart(2, '0');
+        response.totalSeconds = totalSeconds.toString().padStart(2, '0');
       }
 
-      // If only check-in time is available, return the response with check-in time
       return res.status(200).json(response);
     }
 
@@ -579,6 +638,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 
 
