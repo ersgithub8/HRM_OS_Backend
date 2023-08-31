@@ -259,7 +259,7 @@ const getAllAttendance = async (req, res) => {
     const allAttendance = await prisma.attendance.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
       include: {
@@ -297,7 +297,7 @@ const getAllAttendance = async (req, res) => {
       const allAttendance = await prisma.attendance.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),
@@ -672,38 +672,23 @@ const search = async (req, res) => {
   try {
     const whereCondition = {};
 
-    if (req.query.query !== "all") {
-      if (req.query.inTime) {
-        const startDate = new Date(req.query.inTime);
-        if (!isNaN(startDate)) {
-          whereCondition.inTime = {
-            gte: startDate.toISOString(),
-          };
-        } else {
-          return res.status(400).json({ message: "Invalid inTime format." });
-        }
-      }
+    if (req.query.userId) {
+      whereCondition.userId = parseInt(req.query.userId);
+    } else {
+      return res.status(400).json({ message: "Missing userId parameter." });
+    }
 
-      if (req.query.outTime) {
-        const endDate = new Date(req.query.outTime);
-        if (!isNaN(endDate)) {
-          endDate.setUTCHours(23, 59, 59, 999);
-          whereCondition.outTime = {
-            lte: endDate.toISOString(),
-          };
-        } else {
-          return res.status(400).json({ message: "Invalid outTime format." });
-        }
-      }
-
-      if (req.query.firstName) {
-        whereCondition.user = {
-          firstName: {
-            contains: req.query.firstName,
-            mode: "insensitive",
-          },
+    if (req.query.createdAtFrom && req.query.createdAtTo) {
+      const startDate = new Date(req.query.createdAtFrom);
+      const endDate = new Date(req.query.createdAtTo);
+        endDate.setUTCHours(23, 59, 59, 999);
+        whereCondition.createdAt = {
+          gte: startDate.toISOString(),
+          lte: endDate.toISOString(),
         };
-      }
+      
+    } else {
+      return res.status(400).json({ message: "Missing createdAtFrom or createdAtTo parameter." });
     }
 
     const allAttendance = await prisma.attendance.findMany({
@@ -744,84 +729,6 @@ const search = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
-
-
-
-// const search = async (req, res) => {
-//   const { skip, limit } = getPagination(req.query);
-
-//   try {
-//     const whereCondition = {};
-
-//     if (req.query.inTime) {
-//       const startDate = new Date(req.query.inTime);
-//       if (!isNaN(startDate)) {
-//         whereCondition.inTime = {
-//           gte: startDate.toISOString(),
-//         };
-//       } else {
-//         return res.status(400).json({ message: "Invalid inTime format." });
-//       }
-//     }
-
-//     if (req.query.outTime) {
-//       const endDate = new Date(req.query.outTime);
-//       if (!isNaN(endDate)) {
-//         endDate.setUTCHours(23, 59, 59, 999);
-//         whereCondition.outTime = {
-//           lte: endDate.toISOString(),
-//         };
-//       } else {
-//         return res.status(400).json({ message: "Invalid outTime format." });
-//       }
-//     }
-
-//     const allAttendance = await prisma.attendance.findMany({
-//       orderBy: [{ id: "asc" }],
-//       skip: Number(skip),
-//       take: Number(limit),
-//       where: whereCondition,
-//       include: {
-//         user: {
-//           select: {
-//             firstName: true,
-//             lastName: true,
-//           },
-//         },
-//       },
-//     });
-
-//     const punchBy = await prisma.user.findMany({
-//       where: {
-//         id: { in: allAttendance.map((item) => item.punchBy) },
-//       },
-//       select: {
-//         id: true,
-//         firstName: true,
-//         lastName: true,
-//       },
-//     });
-
-//     const result = allAttendance.map((attendance) => {
-//       return {
-//         ...attendance,
-//         punchBy: punchBy,
-//       };
-//     });
-
-//     return res.status(200).json(result);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
-
-
-
-
-
 
 
 
