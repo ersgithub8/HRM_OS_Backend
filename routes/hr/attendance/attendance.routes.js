@@ -7,7 +7,9 @@ const {
   getAttendanceByUserId,
   getLastAttendanceByUserId,
   updateSingleAttendence,
-  deleteSingleAttendence
+  deleteSingleAttendence,
+  getTodayAttendanceByUserId,
+
 } = require("./attendance.controller");
 const authorize = require("../../../utils/authorize"); // authentication middleware
 
@@ -18,6 +20,8 @@ attendanceRoutes.get("/", authorize(""), getAllAttendance);
 attendanceRoutes.get("/:id", authorize(""), getSingleAttendance);
 attendanceRoutes.get("/:id/user", authorize(""), getAttendanceByUserId);
 attendanceRoutes.get("/:id/last", authorize(""), getLastAttendanceByUserId);
+attendanceRoutes.get("/:id/today", authorize(""), getTodayAttendanceByUserId);
+
 attendanceRoutes.put(
   "/:id",
   authorize(""),
