@@ -133,6 +133,140 @@ const createAttendance = async (req, res) => {
 };
 
 
+const createadminAttendance = async (req, res) => {
+  try {
+    const id = parseInt(req.body.userId);
+    const attendenceStatus = req.body.attendenceStatus || "Present";
+    const date = req.body.date || new Date();
+    if (
+      !(id === req.auth.sub) &&
+      !req.auth.permissions.includes("create-attendance")
+    ) {
+      return res.status(401).json({
+        message: "Unauthorized. You are not authorize to give attendance",
+      });
+    }
+    // get user shift
+    const user = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        shift: true,
+      },
+    });
+
+    // format time
+    const startTime = moment(user.shift.startTime, "h:mm A");
+    const endTime = moment(user.shift.endTime, "h:mm A");
+    const today = moment().startOf('day');
+    const tomorrow = moment(today).add(1, 'days');
+
+    const attendance = await prisma.attendance.findFirst({
+      where: {
+        userId: id,
+        inTime: {
+          gte: today.toDate(),
+          lt: tomorrow.toDate(),
+        },
+      },
+    });
+    
+  const existingCheckOut = await prisma.attendance.findFirst({
+    where: {
+      userId: id,
+      outTime: {
+        gte: today.toDate(),
+        lt: tomorrow.toDate(),
+      },
+    },
+  });
+
+    if (attendance && existingCheckOut) {
+      return res.status(400).json({
+        message: "Clock in has already been marked for today.",
+      });
+    }
+
+    if (req.query.query === "manualPunch") {
+      const inTime = null;
+      const outTime = null;
+      const totalHours = null;
+
+      const newAttendance = await prisma.attendance.create({
+        data: {
+          userId: id,
+          inTime: inTime,
+          outTime: outTime,
+          attendenceStatus: attendenceStatus,
+          date: date,
+          inTimeStatus: null,
+          outTimeStatus: null,
+          comment: null,
+          ip: null,
+          totalHour: totalHours,
+        },
+      });
+
+      return res.status(201).json({
+        newAttendance,
+        message: "Clock in Successfully"
+      });
+    } else if (attendance === null) {
+      const inTime = null;
+      const outTime = null;
+      const totalHours = null;
+
+      const newAttendance = await prisma.attendance.create({
+        data: {
+          userId: id,
+          inTime: inTime,
+          outTime: outTime,
+          attendenceStatus: attendenceStatus,
+          date: date,
+          inTimeStatus: null,
+          outTimeStatus: null,
+          comment: null,
+          ip: null,
+          totalHour: totalHours,
+        },
+      });
+
+      return res.status(201).json({
+        newAttendance,
+        message: "Clock in Successfully"
+      });
+    } else {
+      const outTime = new Date(moment.now());
+      const totalHours = Math.abs(outTime - attendance.inTime) / 36e5;
+
+      const updatedAttendance = await prisma.attendance.update({
+        where: {
+          id: attendance.id,
+        },
+        data: {
+          outTime: outTime,
+          totalHour: parseFloat(totalHours.toFixed(3)),
+          outTimeStatus: null,
+        },
+      });
+
+      return res.status(200).json({
+        updatedAttendance,
+        message: "Clock out Successfully"
+      });
+    }
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+
+
+
+
 // const createAttendance = async (req, res) => {
 //   try {
 //     const id = parseInt(req.body.userId);
@@ -849,4 +983,5 @@ module.exports = {
   updateSingleAttendence,
   deleteSingleAttendence,
   getTodayAttendanceByUserId,
+  createadminAttendance,
 };
