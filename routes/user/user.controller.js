@@ -69,6 +69,41 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
   try {
+    const existingUserByEmail = await prisma.user.findFirst({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    const existingUserByPhone = await prisma.user.findFirst({
+      where: {
+        phone: req.body.phone,
+      },
+    });
+    const existingUserByuserName = await prisma.user.findFirst({
+      where: {
+        userName: req.body.userName,
+      },
+    });
+    const existingUserByEmployeeId = await prisma.user.findFirst({
+      where: {
+        employeeId: req.body.employeeId,
+      },
+    });
+
+    if (existingUserByEmail) {
+      return res.status(400).json({ message: "Email already exists." });
+    }
+
+    if (existingUserByPhone) {
+      return res.status(400).json({ message: "Phone number already exists." });
+    }
+    if (existingUserByuserName) {
+      return res.status(400).json({ message: "UserName already exists." });
+    }
+    if (existingUserByEmployeeId) {
+      return res.status(400).json({ message: "EmployeeId already exists." });
+    }
     const join_date = new Date(req.body.joinDate);
     const leave_date = req.body.leaveDate ? new Date(req.body.leaveDate) : null;
 

@@ -665,7 +665,6 @@ const getTodayAttendanceByUserId = async (req, res) => {
   }
 };
 
-
 const search = async (req, res) => {
   try {
     const { createdAtFrom, createdAtTo, userId } = req.query;
