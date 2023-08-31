@@ -498,6 +498,7 @@ const updateSingleUserprofile = async (req, res) => {
       city: req.body.city,
       state: req.body.state,
       country: req.body.country,
+      street: req.body.street
     };
 
     if (req.auth.permissions.includes("update-user")) {
@@ -506,7 +507,6 @@ const updateSingleUserprofile = async (req, res) => {
         image: req.body.image|| existingUser.image,
         userName: req.body.userName|| existingUser.userName,
         phone: req.body.phone|| existingUser.phone,
-        street: req.body.street|| existingUser.street,
         zipCode: req.body.zipCode|| existingUser.zipCode,
         joinDate: req.body.joinDate|| existingUser.joinDate,
         leaveDate: req.body.leaveDate|| existingUser.leaveDate,
