@@ -1,7 +1,12 @@
 const { getPagination } = require("../../../utils/query");
 const moment = require("moment");
 const prisma = require("../../../utils/prisma");
-const { Op } = require("sequelize"); // Assuming you're using Sequelize for PostgreSQL
+const Sequelize  = require("sequelize"); // Assuming you're using Sequelize for PostgreSQL
+const Op = Sequelize.Op;
+const operatorsAliases = {
+  $between: Op.between, //create an alias for Op.between
+}
+
 
 //create a new employee
 const createAttendance = async (req, res) => {
@@ -661,41 +666,35 @@ const getTodayAttendanceByUserId = async (req, res) => {
 };
 
 
-
-
-
-
-
 const search = async (req, res) => {
-  const { skip, limit } = getPagination(req.query);
-
   try {
-    const whereCondition = {};
+    const { createdAtFrom, createdAtTo, userId } = req.query;
 
-    if (req.query.userId) {
-      whereCondition.userId = parseInt(req.query.userId);
-    } else {
-      return res.status(400).json({ message: "Missing userId parameter." });
+    if (!createdAtFrom || !createdAtTo || !userId) {
+      return res.status(400).json({ message: "Missing createdAtFrom, createdAtTo, or userId parameter." });
     }
 
-    if (req.query.createdAtFrom && req.query.createdAtTo) {
-      const startDate = new Date(req.query.createdAtFrom);
-      const endDate = new Date(req.query.createdAtTo);
-        endDate.setUTCHours(23, 59, 59, 999);
-        whereCondition.createdAt = {
-          gte: startDate.toISOString(),
-          lte: endDate.toISOString(),
-        };
-      
-    } else {
-      return res.status(400).json({ message: "Missing createdAtFrom or createdAtTo parameter." });
+    const startDate = new Date(createdAtFrom);
+    const endDate = new Date(createdAtTo);
+
+    if (isNaN(startDate) || isNaN(endDate)) {
+      return res.status(400).json({ message: "Invalid createdAtFrom or createdAtTo parameter." });
     }
 
-    const allAttendance = await prisma.attendance.findMany({
-      orderBy: [{ id: "asc" }],
-      skip: Number(skip),
-      take: Number(limit),
-      where: whereCondition,
+    const userIdInt = parseInt(userId);
+
+    if (isNaN(userIdInt)) {
+      return res.status(400).json({ message: "Invalid userId parameter." });
+    }
+
+    const attendanceRecords = await prisma.attendance.findMany({
+      where: {
+        userId: userIdInt,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
       include: {
         user: {
           select: {
@@ -706,33 +705,16 @@ const search = async (req, res) => {
       },
     });
 
-    const punchBy = await prisma.user.findMany({
-      where: {
-        id: { in: allAttendance.map((item) => item.punchBy) },
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
+    if (attendanceRecords.length === 0) {
+      return res.status(200).json([]); // Return empty array
+    }
 
-    const result = allAttendance.map((attendance) => {
-      return {
-        ...attendance,
-        punchBy: punchBy,
-      };
-    });
-
-    return res.status(200).json(result);
+    res.status(200).json(attendanceRecords);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching attendance records.' });
   }
 };
-
-
-
-
 
 const updateSingleAttendence = async (req, res) => {
   try {

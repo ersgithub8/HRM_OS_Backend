@@ -10,6 +10,7 @@ const {
   deleteSingleAttendence,
   getTodayAttendanceByUserId,
   createadminAttendance,
+  search
 
 } = require("./attendance.controller");
 const authorize = require("../../../utils/authorize"); // authentication middleware
@@ -18,6 +19,7 @@ const attendanceRoutes = express.Router();
 
 attendanceRoutes.post("/", authorize(""), createAttendance);
 attendanceRoutes.post("/create", authorize(""), createadminAttendance);
+attendanceRoutes.get("/search", authorize(""), search);
 attendanceRoutes.get("/", authorize(""), getAllAttendance);
 attendanceRoutes.get("/:id", authorize(""), getSingleAttendance);
 attendanceRoutes.get("/:id/user", authorize(""), getAttendanceByUserId);
