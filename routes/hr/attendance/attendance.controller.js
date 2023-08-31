@@ -84,7 +84,7 @@ const createAttendance = async (req, res) => {
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
       });
-      return res.status(201).json({
+      return res.status(200).json({
         newAttendance,
         message:"Clock in Successfully"
       });
@@ -104,7 +104,7 @@ const createAttendance = async (req, res) => {
           outTimeStatus: null,
         },
       });
-      return res.status(201).json({
+      return res.status(200).json({
         newAttendance,
         message:"Clock in Successfully"
       });
