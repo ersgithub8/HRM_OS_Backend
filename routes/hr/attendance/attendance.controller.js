@@ -471,32 +471,29 @@ const getAttendanceByUserId = async (req, res) => {
       },
     });
 
-    // Calculate total present, total leave, and total absent
-    let totalPresent = 0;
-    let totalLeave = 0;
-    let totalAbsent = 0;
-
-    allAttendance.forEach((attendance) => {
-      if (attendance.attendenceStatus === "Present") {
-        totalPresent++;
-      } else if (attendance.attendenceStatus === "Leave") {
-        totalLeave++;
-      } else if (attendance.attendenceStatus === "Absent") {
-        totalAbsent++;
-      }
-    });
-
     const result = {
       attendanceData: allAttendance.map((attendance) => {
-        return {
+        const response = {
           ...attendance,
           punchBy: punchBy,
+          totalHours: null,
+          totalMinutes: null,
         };
+
+        if (attendance.attendenceStatus === "Present" && attendance.inTime && attendance.outTime) {
+          const checkInTime = new Date(attendance.inTime);
+          const checkOutTime = new Date(attendance.outTime);
+          const timeDiff = checkOutTime - checkInTime;
+          response.totalHours = Math.floor(timeDiff / (1000 * 60 * 60)).toString().padStart(2, '0');
+          response.totalMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        }
+
+        return response;
       }),
       totaldays: {
-        totalPresent: totalPresent,
-        totalLeave: totalLeave,
-        totalAbsent: totalAbsent,
+        totalPresent: allAttendance.filter((attendance) => attendance.attendenceStatus === "Present").length,
+        totalLeave: allAttendance.filter((attendance) => attendance.attendenceStatus === "Leave").length,
+        totalAbsent: allAttendance.filter((attendance) => attendance.attendenceStatus === "Absent").length,
       },
     };
 
@@ -505,6 +502,85 @@ const getAttendanceByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
+
+// const getAttendanceByUserId = async (req, res) => {
+//   try {
+//     const userId = parseInt(req.params.id);
+//     const allAttendance = await prisma.attendance.findMany({
+//       where: {
+//         userId: userId,
+//       },
+//       orderBy: [
+//         {
+//           id: "asc",
+//         },
+//       ],
+//       include: {
+//         user: {
+//           select: {
+//             firstName: true,
+//             lastName: true,
+//             designationHistory: { // Assuming the designation information is in a related model
+//               select: {
+//                 designation: true,
+//                 // Add other fields from designationHistory if needed
+//               },
+//             },
+//           },
+//         },
+//       },
+      
+//     });
+
+//     const punchBy = await prisma.user.findMany({
+//       where: {
+//         id: { in: allAttendance.map((item) => item.punchBy) },
+//       },
+//       select: {
+//         id: true,
+//         firstName: true,
+//         lastName: true,
+//       },
+//     });
+
+//     // Calculate total present, total leave, and total absent
+//     let totalPresent = 0;
+//     let totalLeave = 0;
+//     let totalAbsent = 0;
+
+//     allAttendance.forEach((attendance) => {
+//       if (attendance.attendenceStatus === "Present") {
+//         totalPresent++;
+//       } else if (attendance.attendenceStatus === "Leave") {
+//         totalLeave++;
+//       } else if (attendance.attendenceStatus === "Absent") {
+//         totalAbsent++;
+//       }
+//     });
+
+//     const result = {
+//       attendanceData: allAttendance.map((attendance) => {
+//         return {
+//           ...attendance,
+//           punchBy: punchBy,
+//         };
+//       }),
+//       totaldays: {
+//         totalPresent: totalPresent,
+//         totalLeave: totalLeave,
+//         totalAbsent: totalAbsent,
+//       },
+//     };
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
 
 
 // get the last attendance of a user
