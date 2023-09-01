@@ -665,35 +665,76 @@ const getTodayAttendanceByUserId = async (req, res) => {
   }
 };
 
+// const search = async (req, res) => {
+//   try {
+//     const { createdAtFrom, createdAtTo, userId } = req.query;
+
+//     if (!createdAtFrom || !createdAtTo || !userId) {
+//       return res.status(400).json({ message: "Missing createdAtFrom, createdAtTo, or userId parameter." });
+//     }
+
+//     const startDate = new Date(createdAtFrom);
+//     const endDate = new Date(createdAtTo);
+
+//     if (isNaN(startDate) || isNaN(endDate)) {
+//       return res.status(400).json({ message: "Invalid createdAtFrom or createdAtTo parameter." });
+//     }
+
+//     const userIdInt = parseInt(userId);
+
+//     if (isNaN(userIdInt)) {
+//       return res.status(400).json({ message: "Invalid userId parameter." });
+//     }
+
+//     const attendanceRecords = await prisma.attendance.findMany({
+//       where: {
+//         userId: userIdInt,
+//         createdAt: {
+//           gte: startDate,
+//           lte: endDate,
+//         },
+//       },
+//       include: {
+//         user: {
+//           select: {
+//             firstName: true,
+//             lastName: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (attendanceRecords.length === 0) {
+//       return res.status(200).json([]);
+//     }
+
+//     res.status(200).json(attendanceRecords);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'An error occurred while fetching attendance records.' });
+//   }
+// };
+
+
 const search = async (req, res) => {
+  if (!req.auth.permissions.includes("readAll-attendance")) {
+    return res
+      .status(401)
+      .json({ message: "You are not able to access this route." });
+  }
+
+  const { query, userId, createdAtFrom, createdAtTo } = req.query;
+  const { skip, limit } = getPagination(req.query);
+
   try {
-    const { createdAtFrom, createdAtTo, userId } = req.query;
-
-    if (!createdAtFrom || !createdAtTo || !userId) {
-      return res.status(400).json({ message: "Missing createdAtFrom, createdAtTo, or userId parameter." });
-    }
-
-    const startDate = new Date(createdAtFrom);
-    const endDate = new Date(createdAtTo);
-
-    if (isNaN(startDate) || isNaN(endDate)) {
-      return res.status(400).json({ message: "Invalid createdAtFrom or createdAtTo parameter." });
-    }
-
-    const userIdInt = parseInt(userId);
-
-    if (isNaN(userIdInt)) {
-      return res.status(400).json({ message: "Invalid userId parameter." });
-    }
-
-    const attendanceRecords = await prisma.attendance.findMany({
-      where: {
-        userId: userIdInt,
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
+    let attendanceQuery = {
+      orderBy: [
+        {
+          id: "desc",
         },
-      },
+      ],
+      skip: Number(skip),
+      take: Number(limit),
       include: {
         user: {
           select: {
@@ -702,18 +743,82 @@ const search = async (req, res) => {
           },
         },
       },
-    });
+    };
 
-    if (attendanceRecords.length === 0) {
-      return res.status(200).json([]); // Return empty array
+    if (query === "all") {
+      const allAttendance = await prisma.attendance.findMany({
+        ...attendanceQuery,
+      });
+
+      const punchBy = await prisma.user.findMany({
+        where: {
+          id: { in: allAttendance.map((item) => item.punchBy) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      const result = allAttendance.map((attendance) => {
+        return {
+          ...attendance,
+          punchBy: punchBy,
+        };
+      });
+
+      return res.status(200).json(result);
+    } else if (userId && createdAtFrom && createdAtTo) {
+      const startDate = new Date(createdAtFrom);
+      const endDate = new Date(createdAtTo);
+
+      if (isNaN(startDate) || isNaN(endDate)) {
+        return res.status(400).json({ message: "Invalid date parameters." });
+      }
+
+      attendanceQuery = {
+        ...attendanceQuery,
+        where: {
+          inTime: {
+            gte: startDate,
+            lte: endDate,
+          },
+          userId: Number(userId),
+        },
+      };
+
+      const userAttendance = await prisma.attendance.findMany({
+        ...attendanceQuery,
+      });
+
+      const punchBy = await prisma.user.findMany({
+        where: {
+          id: { in: userAttendance.map((item) => item.punchBy) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      const result = userAttendance.map((attendance) => {
+        return {
+          ...attendance,
+          punchBy: punchBy,
+        };
+      });
+
+      return res.status(200).json(result);
+    } else {
+      return res.status(400).json({ message: "Invalid query parameters." });
     }
-
-    res.status(200).json(attendanceRecords);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching attendance records.' });
+    return res.status(500).json({ message: "An error occurred while fetching attendance records.", error: error.message });
   }
 };
+
 
 const updateSingleAttendence = async (req, res) => {
   try {
