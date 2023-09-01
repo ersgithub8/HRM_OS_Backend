@@ -451,7 +451,7 @@ const getAttendanceByUserId = async (req, res) => {
       },
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
       include: {
@@ -474,6 +474,8 @@ const getAttendanceByUserId = async (req, res) => {
     if (createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
+      endDate.setHours(23,59,59);
+
 
       // Validate startDate and endDate
       if (!isNaN(startDate) && !isNaN(endDate)) {
@@ -874,6 +876,8 @@ const search = async (req, res) => {
     } else if (userId && createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
+      endDate.setHours(23,59,59);
+      console.log(startDate,"djhsfj")
 
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
@@ -882,7 +886,7 @@ const search = async (req, res) => {
       attendanceQuery = {
         ...attendanceQuery,
         where: {
-          inTime: {
+          createdAt: {
             gte: startDate,
             lte: endDate,
           },
