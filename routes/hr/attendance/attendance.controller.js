@@ -487,6 +487,19 @@ const getAttendanceByUserId = async (req, res) => {
         return res.status(400).json({ message: "Invalid createdAtFrom or createdAtTo parameter." });
       }
     }
+    else {
+      // If no date range is provided, filter for today's date
+      const today = new Date();
+      const todayStartDate = new Date(today);
+      todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
+      const todayEndDate = new Date(today);
+      todayEndDate.setHours(23, 59, 59, 999); // Set time to the end of the day
+
+      attendanceQuery.where.createdAt = {
+        gte: todayStartDate,
+        lte: todayEndDate,
+      };
+    }
 
     // Fetch attendance records based on the constructed query
     const allAttendance = await prisma.attendance.findMany(attendanceQuery);
@@ -853,7 +866,7 @@ const search = async (req, res) => {
       const allAttendance = await prisma.attendance.findMany({
         ...attendanceQuery,
       });
-
+    
       const punchBy = await prisma.user.findMany({
         where: {
           id: { in: allAttendance.map((item) => item.punchBy) },
@@ -864,21 +877,32 @@ const search = async (req, res) => {
           lastName: true,
         },
       });
-
-      const result = allAttendance.map((attendance) => {
+    
+      // Filter records for today's date
+      const today = new Date();
+      const todayStartDate = new Date(today);
+      todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
+      const todayEndDate = new Date(today);
+      todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
+    
+      const todayAttendance = allAttendance.filter((attendance) => {
+        const inTime = new Date(attendance.inTime);
+        return inTime >= todayStartDate && inTime <= todayEndDate;
+      });
+    
+      const result = todayAttendance.map((attendance) => {
         return {
           ...attendance,
           punchBy: punchBy,
         };
       });
-
+    
       return res.status(200).json(result);
-    } else if (userId && createdAtFrom && createdAtTo) {
+    }
+     else if (userId && createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
       endDate.setHours(23,59,59);
-      console.log(startDate,"djhsfj")
-
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
       }
