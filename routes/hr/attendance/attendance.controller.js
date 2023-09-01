@@ -438,10 +438,14 @@ const getSingleAttendance = async (req, res) => {
 //   }
 // };
 
+
 const getAttendanceByUserId = async (req, res) => {
   try {
+    const { createdAtFrom, createdAtTo } = req.query;
     const userId = parseInt(req.params.id);
-    const allAttendance = await prisma.attendance.findMany({
+
+    // Define the base attendance query
+    let attendanceQuery = {
       where: {
         userId: userId,
       },
@@ -464,9 +468,28 @@ const getAttendanceByUserId = async (req, res) => {
           },
         },
       },
-      
-    });
+    };
 
+    // Check if createdAtFrom and createdAtTo query parameters are provided
+    if (createdAtFrom && createdAtTo) {
+      const startDate = new Date(createdAtFrom);
+      const endDate = new Date(createdAtTo);
+
+      // Validate startDate and endDate
+      if (!isNaN(startDate) && !isNaN(endDate)) {
+        attendanceQuery.where.createdAt = {
+          gte: startDate,
+          lte: endDate,
+        };
+      } else {
+        return res.status(400).json({ message: "Invalid createdAtFrom or createdAtTo parameter." });
+      }
+    }
+
+    // Fetch attendance records based on the constructed query
+    const allAttendance = await prisma.attendance.findMany(attendanceQuery);
+
+    // Fetch punchBy users
     const punchBy = await prisma.user.findMany({
       where: {
         id: { in: allAttendance.map((item) => item.punchBy) },
@@ -478,6 +501,7 @@ const getAttendanceByUserId = async (req, res) => {
       },
     });
 
+    // Construct the result object
     const result = {
       attendanceData: allAttendance.map((attendance) => {
         const response = {
@@ -509,6 +533,82 @@ const getAttendanceByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+// const getAttendanceByUserId = async (req, res) => {
+//   try {
+//   const {createdAtFrom, createdAtTo } = req.query;
+//     const userId = parseInt(req.params.id);
+//     const allAttendance = await prisma.attendance.findMany({
+//       where: {
+//         userId: userId,
+//       },
+//       orderBy: [
+//         {
+//           id: "asc",
+//         },
+//       ],
+//       include: {
+//         user: {
+//           select: {
+//             firstName: true,
+//             lastName: true,
+//             designationHistory: { // Assuming the designation information is in a related model
+//               select: {
+//                 designation: true,
+//                 // Add other fields from designationHistory if needed
+//               },
+//             },
+//           },
+//         },
+//       },
+      
+      
+//     });
+
+//     const punchBy = await prisma.user.findMany({
+//       where: {
+//         id: { in: allAttendance.map((item) => item.punchBy) },
+//       },
+//       select: {
+//         id: true,
+//         firstName: true,
+//         lastName: true,
+//       },
+//     });
+
+//     const result = {
+//       attendanceData: allAttendance.map((attendance) => {
+//         const response = {
+//           ...attendance,
+//           punchBy: punchBy,
+//           totalHours: null,
+//           totalMinutes: null,
+//         };
+
+//         if (attendance.attendenceStatus === "Present" && attendance.inTime && attendance.outTime) {
+//           const checkInTime = new Date(attendance.inTime);
+//           const checkOutTime = new Date(attendance.outTime);
+//           const timeDiff = checkOutTime - checkInTime;
+//           response.totalHours = Math.floor(timeDiff / (1000 * 60 * 60)).toString().padStart(2, '0');
+//           response.totalMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+//         }
+
+//         return response;
+//       }),
+//       totaldays: {
+//         totalPresent: allAttendance.filter((attendance) => attendance.attendenceStatus === "Present").length,
+//         totalLeave: allAttendance.filter((attendance) => attendance.attendenceStatus === "Leave").length,
+//         totalAbsent: allAttendance.filter((attendance) => attendance.attendenceStatus === "Absent").length,
+//       },
+//     };
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
 
 
 
