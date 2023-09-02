@@ -1002,7 +1002,7 @@ const search = async (req, res) => {
       todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
 
       attendanceQuery.where = {
-        inTime: {
+        createdAt: {
           gte: todayStartDate,
           lte: todayEndDate,
         },
@@ -1040,7 +1040,6 @@ const search = async (req, res) => {
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
       }
-
       // Find user by employeeId
       const user = await prisma.user.findUnique({
         where: {
