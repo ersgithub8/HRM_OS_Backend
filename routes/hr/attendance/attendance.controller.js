@@ -139,26 +139,23 @@ const createAttendance = async (req, res) => {
 
 const createadminAttendance = async (req, res) => {
   try {
-    const id = parseInt(req.body.userId);
-   const date= req.body.date ? req.body.date : new Date();
-   const attendenceStatus=req.body.attendenceStatus ? req.body.attendenceStatus:"Present";
-    if (
-      !(id === req.auth.sub) &&
-      !req.auth.permissions.includes("create-attendance")
-    ) {
-      return res.status(401).json({
-        message: "Unauthorized. You are not authorize to give attendance",
-      });
-    }
-    // get user shift
+    const employeeId = req.body.employeeId;
+    const date = req.body.date ? new Date(req.body.date) : new Date();
+    const attendenceStatus = req.body.attendenceStatus ? req.body.attendenceStatus : "Present";
+
+    // Fetch the user by employeeId
     const user = await prisma.user.findUnique({
       where: {
-        id: id,
+        employeeId: employeeId,
       },
       include: {
         shift: true,
       },
     });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found with the provided employeeId." });
+    }
 
     // format time
     const startTime = moment(user.shift.startTime, "h:mm A");
@@ -174,66 +171,155 @@ const createadminAttendance = async (req, res) => {
 
     const attendance = await prisma.attendance.findFirst({
       where: {
-        userId: id,
+        userId: user.id,
+        date: {
+          gte: today.toDate(),
+          lt: tomorrow.toDate(),
+        },
       },
     });
-    
-  const existingCheckOut = await prisma.attendance.findFirst({
-    where: {
-      userId: id,
-     
-    },
-  });
+
+    const existingCheckOut = await prisma.attendance.findFirst({
+      where: {
+        userId: user.id,
+        date: {
+          gte: today.toDate(),
+          lt: tomorrow.toDate(),
+        },
+      },
+    });
+
     if (req.query.query === "manualPunch") {
       const inTime = null;
-      const date = new Date();
       const outTime = null;
 
       const totalHours = null;
 
       const newAttendance = await prisma.attendance.create({
         data: {
-          userId: id,
+          userId: user.id, // Change to user.id instead of userId
           inTime: inTime,
           outTime: outTime,
           punchBy: req.auth.sub,
           inTimeStatus: req.body.inTimeStatus ? req.body.inTimeStatus : null,
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
-          date:date,
-          attendenceStatus:attendenceStatus,
+          date: date,
+          attendenceStatus: attendenceStatus,
           ip: req.body.ip ? req.body.ip : null,
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
       });
-      return res.status(200).json({
-        newAttendance,
-        message:"Admin mark attendence Successfully"
+
+      // Fetch all today's attendance records including the newly created one
+      const allAttendance = await prisma.attendance.findMany({
+        where: {
+          date: {
+            gte: today.toDate(),
+            lt: tomorrow.toDate(),
+          },
+        },
+        orderBy: [
+          {
+            id: "desc",
+          },
+        ],
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              employeeId: true,
+            },
+          },
+        },
       });
-    } else if (attendance === null) {
+
+      const punchBy = await prisma.user.findMany({
+        where: {
+          id: { in: allAttendance.map((item) => item.punchBy) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeId: true,
+        },
+      });
+
+      const result = allAttendance.map((attendance) => {
+        return {
+          ...attendance,
+          punchBy: punchBy,
+        };
+      });
+
+      return res.status(200).json(result);
+    } else if (!attendance) {
       const inTime = new Date("0000-01-01T00:00:00Z");
-      const outTime=new Date("0000-01-01T00:00:00Z")
+      const outTime = new Date("0000-01-01T00:00:00Z");
       const newAttendance = await prisma.attendance.create({
         data: {
-          userId: id,
+          userId: user.id, // Change to user.id instead of userId
           inTime: inTime,
           outTime: outTime,
           punchBy: req.auth.sub,
           comment: req.body.comment ? req.body.comment : null,
           ip: req.body.ip ? req.body.ip : null,
-          date:date,
-          attendenceStatus:attendenceStatus,
+          date: date,
+          attendenceStatus: attendenceStatus,
           inTimeStatus: null,
           outTimeStatus: null,
         },
       });
-      return res.status(200).json({
-        newAttendance,
-        message:"Admin mark attendence Successfully"
+
+      // Fetch all today's attendance records including the newly created one
+      const allAttendance = await prisma.attendance.findMany({
+        where: {
+          date: {
+            gte: today.toDate(),
+            lt: tomorrow.toDate(),
+          },
+        },
+        orderBy: [
+          {
+            id: "desc",
+          },
+        ],
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              employeeId: true,
+            },
+          },
+        },
       });
-    } else  {
+
+      const punchBy = await prisma.user.findMany({
+        where: {
+          id: { in: allAttendance.map((item) => item.punchBy) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeId: true,
+        },
+      });
+
+      const result = allAttendance.map((attendance) => {
+        return {
+          ...attendance,
+          punchBy: punchBy,
+        };
+      });
+
+      return res.status(200).json(result);
+    } else {
       const outTime = new Date("0000-01-01T00:00:00Z");
-      const totalHours =0;
+      const totalHours = 0;
 
       const newAttendance = await prisma.attendance.update({
         where: {
@@ -242,18 +328,62 @@ const createadminAttendance = async (req, res) => {
         data: {
           outTime: outTime,
           totalHour: null,
-          outTimeStatus:null,
+          outTimeStatus: null,
         },
       });
-      return res.status(200).json({
-        newAttendance,
-        message:"Admin mark attendence Successfully"
+
+      // Fetch all today's attendance records including the updated one
+      const allAttendance = await prisma.attendance.findMany({
+        where: {
+          date: {
+            gte: today.toDate(),
+            lt: tomorrow.toDate(),
+          },
+        },
+        orderBy: [
+          {
+            id: "desc",
+          },
+        ],
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              employeeId: true,
+            },
+          },
+        },
       });
+
+      const punchBy = await prisma.user.findMany({
+        where: {
+          id: { in: allAttendance.map((item) => item.punchBy) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeId: true,
+        },
+      });
+
+      const result = allAttendance.map((attendance) => {
+        return {
+          ...attendance,
+          punchBy: punchBy,
+        };
+      });
+
+      return res.status(200).json(result);
     }
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
 
 
 const getAllAttendance = async (req, res) => {
@@ -274,6 +404,8 @@ const getAllAttendance = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
+          employeeId:true,
+
           },
         },
       },
@@ -287,6 +419,8 @@ const getAllAttendance = async (req, res) => {
         id: true,
         firstName: true,
         lastName: true,
+        employeeId:true,
+
       },
     });
 
@@ -320,6 +454,8 @@ const getAllAttendance = async (req, res) => {
             select: {
               firstName: true,
               lastName: true,
+          employeeId:true,
+
             },
           },
         },
@@ -332,6 +468,7 @@ const getAllAttendance = async (req, res) => {
           id: true,
           firstName: true,
           lastName: true,
+          employeeId:true,
         },
       });
       const result = allAttendance.map((attendance) => {
@@ -488,12 +625,11 @@ const getAttendanceByUserId = async (req, res) => {
       }
     }
     else {
-      // If no date range is provided, filter for today's date
       const today = new Date();
       const todayStartDate = new Date(today);
-      todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
+      todayStartDate.setHours(0, 0, 0, 0); 
       const todayEndDate = new Date(today);
-      todayEndDate.setHours(23, 59, 59, 999); // Set time to the end of the day
+      todayEndDate.setHours(23, 59, 59, 999); 
 
       attendanceQuery.where.createdAt = {
         gte: todayStartDate,
@@ -501,10 +637,8 @@ const getAttendanceByUserId = async (req, res) => {
       };
     }
 
-    // Fetch attendance records based on the constructed query
     const allAttendance = await prisma.attendance.findMany(attendanceQuery);
 
-    // Fetch punchBy users
     const punchBy = await prisma.user.findMany({
       where: {
         id: { in: allAttendance.map((item) => item.punchBy) },
@@ -835,12 +969,10 @@ const getTodayAttendanceByUserId = async (req, res) => {
 
 const search = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
-    return res
-      .status(401)
-      .json({ message: "You are not able to access this route." });
+    return res.status(401).json({ message: "You are not able to access this route." });
   }
 
-  const { query, userId, createdAtFrom, createdAtTo } = req.query;
+  const { query, employeeId, createdAtFrom, createdAtTo } = req.query;
   const { skip, limit } = getPagination(req.query);
 
   try {
@@ -857,16 +989,29 @@ const search = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
+            employeeId: true,
           },
         },
       },
     };
 
     if (query === "all") {
+      const todayStartDate = new Date();
+      todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
+      const todayEndDate = new Date();
+      todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
+
+      attendanceQuery.where = {
+        inTime: {
+          gte: todayStartDate,
+          lte: todayEndDate,
+        },
+      };
+
       const allAttendance = await prisma.attendance.findMany({
         ...attendanceQuery,
       });
-    
+
       const punchBy = await prisma.user.findMany({
         where: {
           id: { in: allAttendance.map((item) => item.punchBy) },
@@ -875,47 +1020,44 @@ const search = async (req, res) => {
           id: true,
           firstName: true,
           lastName: true,
+          employeeId: true,
         },
       });
-    
-      // Filter records for today's date
-      const today = new Date();
-      const todayStartDate = new Date(today);
-      todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
-      const todayEndDate = new Date(today);
-      todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
-    
-      const todayAttendance = allAttendance.filter((attendance) => {
-        const inTime = new Date(attendance.inTime);
-        return inTime >= todayStartDate && inTime <= todayEndDate;
-      });
-    
-      const result = todayAttendance.map((attendance) => {
+
+      const result = allAttendance.map((attendance) => {
         return {
           ...attendance,
           punchBy: punchBy,
         };
       });
-    
+
       return res.status(200).json(result);
-    }
-     else if (userId && createdAtFrom && createdAtTo) {
+    } else if (employeeId && createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
-      endDate.setHours(23,59,59);
+      endDate.setHours(23, 59, 59);
+
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
       }
 
-      attendanceQuery = {
-        ...attendanceQuery,
+      // Find user by employeeId
+      const user = await prisma.user.findUnique({
         where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-          userId: Number(userId),
+          employeeId: employeeId,
         },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found with the provided employeeId." });
+      }
+
+      attendanceQuery.where = {
+        inTime: {
+          gte: startDate,
+          lte: endDate,
+        },
+        userId: user.id,
       };
 
       const userAttendance = await prisma.attendance.findMany({
@@ -930,6 +1072,7 @@ const search = async (req, res) => {
           id: true,
           firstName: true,
           lastName: true,
+          employeeId: true,
         },
       });
 
@@ -948,6 +1091,9 @@ const search = async (req, res) => {
     return res.status(500).json({ message: "An error occurred while fetching attendance records.", error: error.message });
   }
 };
+
+
+
 
 
 const updateSingleAttendence = async (req, res) => {
