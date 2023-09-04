@@ -639,7 +639,7 @@ const updateSingleUserphone = async (req, res) => {
 
 
 const deleteSingleUser = async (req, res) => {
-  // const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id);
   // only allow admins to delete other user records
   if (!req.auth.permissions.includes("delete-user")) {
     return res
