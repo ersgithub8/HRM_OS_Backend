@@ -320,6 +320,7 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json(result);
     } else {
+      const inTime = new Date("0000-01-01T00:00:00Z");
       const outTime = new Date("0000-01-01T00:00:00Z");
       const totalHours = 0;
 
@@ -329,7 +330,8 @@ const createadminAttendance = async (req, res) => {
         },
         data: {
           outTime: outTime,
-          totalHour: totalHours,
+          inTime:inTime,
+          totalHour: null,
           outTimeStatus: null,
           attendenceStatus: req.body.attendenceStatus, // Update the attendanceStatus here
         },
