@@ -387,12 +387,6 @@ const createadminAttendance = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
 const getAllAttendance = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
     return res
@@ -667,7 +661,7 @@ const getAttendanceByUserId = async (req, res) => {
           totalMinutes: null,
         };
 
-        if (attendance.attendenceStatus === "Present" && attendance.inTime && attendance.outTime) {
+        if (attendance.attendenceStatus === "present" && attendance.inTime && attendance.outTime) {
           const checkInTime = new Date(attendance.inTime);
           const checkOutTime = new Date(attendance.outTime);
           const timeDiff = checkOutTime - checkInTime;
@@ -678,9 +672,9 @@ const getAttendanceByUserId = async (req, res) => {
         return response;
       }),
       totaldays: {
-        totalPresent: allAttendance.filter((attendance) => attendance.attendenceStatus === "Present").length,
-        totalLeave: allAttendance.filter((attendance) => attendance.attendenceStatus === "Leave").length,
-        totalAbsent: allAttendance.filter((attendance) => attendance.attendenceStatus === "Absent").length,
+        totalPresent: allAttendance.filter((attendance) => attendance.attendenceStatus === "present").length,
+        totalLeave: allAttendance.filter((attendance) => attendance.attendenceStatus === "leave").length,
+        totalAbsent: allAttendance.filter((attendance) => attendance.attendenceStatus === "absent").length,
       },
     };
 
@@ -689,13 +683,6 @@ const getAttendanceByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
-
-
-
-
-
 
 // const getAttendanceByUserId = async (req, res) => {
 //   try {
@@ -1029,11 +1016,6 @@ const search = async (req, res) => {
   }
 };
 
-
-
-
-
-
 const updateSingleAttendence = async (req, res) => {
   try {
     const existingAttendence = await prisma.attendance.findUnique({
@@ -1094,16 +1076,6 @@ const deleteSingleAttendence = async (req, res) => {
       return res.status(400).json(error.message);
     }
 };
-
-
-
-
-
-
-
-
-
-
 
 
 //attendence search by date  
