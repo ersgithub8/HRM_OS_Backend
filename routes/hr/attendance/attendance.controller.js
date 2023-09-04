@@ -190,9 +190,9 @@ const createadminAttendance = async (req, res) => {
     });
 
     if (req.query.query === "manualPunch") {
-      const inTime = null;
-      const outTime = null;
-      const totalHours = null;
+      const inTime = new Date();
+      const outTime = new Date();
+      const totalHours = new Date();
 
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -255,8 +255,8 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json(result);
     } else if (!attendance) {
-      const inTime = new Date("0000-01-01T00:00:00Z");
-      const outTime = new Date("0000-01-01T00:00:00Z");
+      const inTime = new Date();
+      const outTime = new Date();
       const totalHours = 0;
 
       const newAttendance = await prisma.attendance.create({
@@ -320,8 +320,8 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json(result);
     } else {
-      const inTime = new Date("0000-01-01T00:00:00Z");
-      const outTime = new Date("0000-01-01T00:00:00Z");
+      const inTime = new Date();
+      const outTime = new Date();
       const totalHours = 0;
 
       const newAttendance = await prisma.attendance.update({
@@ -919,10 +919,10 @@ const search = async (req, res) => {
         } else if (attendance.attendenceStatus === "Absent") {
           absentCount++;
         }
-        else if (attendance.attendenceStatus === "Leave") {
+        else if (attendance.attendenceStatus === "leave") {
           leaveCount++;
         }
-        else if (attendance.attendenceStatus === "Holiday") {
+        else if (attendance.attendenceStatus === "holiday") {
           holidayCount++;
         }
         
@@ -986,10 +986,10 @@ const search = async (req, res) => {
         } else if (attendance.attendenceStatus === "Absent") {
           absentCount++;
         }
-        else if (attendance.attendenceStatus === "Leave") {
+        else if (attendance.attendenceStatus === "leave") {
           leaveCount++;
         }
-        else if (attendance.attendenceStatus === "Holiday") {
+        else if (attendance.attendenceStatus === "holiday") {
           holidayCount++;
         }
       });
