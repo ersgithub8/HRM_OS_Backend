@@ -84,7 +84,7 @@ const createAttendance = async (req, res) => {
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
           date: req.body.date ? req.body.date : new Date(),
-          attendenceStatus:req.body.attendenceStatus ? req.body.attendenceStatus:"Present",
+          attendenceStatus:req.body.attendenceStatus ? req.body.attendenceStatus:"present",
           ip: req.body.ip ? req.body.ip : null,
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
@@ -104,7 +104,7 @@ const createAttendance = async (req, res) => {
           comment: req.body.comment ? req.body.comment : null,
           ip: req.body.ip ? req.body.ip : null,
           date: req.body.date ? req.body.date :new Date(),
-          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"Present",
+          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"present",
           inTimeStatus: isEarly ? "Early" : isLate ? "Late" : "On Time",
           outTimeStatus: null,
         },
@@ -141,7 +141,7 @@ const createadminAttendance = async (req, res) => {
   try {
     const employeeId = req.body.employeeId;
     const date = req.body.date ? new Date(req.body.date) : new Date();
-    const attendenceStatus = req.body.attendenceStatus ? req.body.attendenceStatus : "Present";
+    const attendenceStatus = req.body.attendenceStatus ? req.body.attendenceStatus : "present";
 
     // Fetch the user by employeeId
     const user = await prisma.user.findUnique({
@@ -914,9 +914,9 @@ const search = async (req, res) => {
       let holidayCount=0
 
       allAttendance.forEach((attendance) => {
-        if (attendance.attendenceStatus === "Present") {
+        if (attendance.attendenceStatus === "present") {
           presentCount++;
-        } else if (attendance.attendenceStatus === "Absent") {
+        } else if (attendance.attendenceStatus === "absent") {
           absentCount++;
         }
         else if (attendance.attendenceStatus === "leave") {
@@ -981,9 +981,9 @@ const search = async (req, res) => {
       let holidayCount=0
     
       userAttendance.forEach((attendance) => {
-        if (attendance.attendenceStatus === "Present") {
+        if (attendance.attendenceStatus === "present") {
           presentCount++;
-        } else if (attendance.attendenceStatus === "Absent") {
+        } else if (attendance.attendenceStatus === "absent") {
           absentCount++;
         }
         else if (attendance.attendenceStatus === "leave") {
