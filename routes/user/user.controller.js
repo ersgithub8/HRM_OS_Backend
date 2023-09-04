@@ -22,6 +22,10 @@ const login = async (req, res) => {
       console.log("User not found or password doesn't match");
       return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
     }
+    if (!user.status) {
+      console.log("User not found or password doesn't match");
+      return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
+    }
     const passwordMatches = bcrypt.compareSync(req.body.password, user.password);
 
     if (!passwordMatches) {
