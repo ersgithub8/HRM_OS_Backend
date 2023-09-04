@@ -22,7 +22,7 @@ const getAllTaskStatus = async (req, res) => {
       const taskStatus = await prisma.taskStatus.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
       });
@@ -35,7 +35,7 @@ const getAllTaskStatus = async (req, res) => {
       const taskStatus = await prisma.taskStatus.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {
@@ -51,7 +51,7 @@ const getAllTaskStatus = async (req, res) => {
       const taskStatus = await prisma.taskStatus.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {

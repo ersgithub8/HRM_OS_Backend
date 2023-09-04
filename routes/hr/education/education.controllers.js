@@ -51,7 +51,7 @@ const getAllEducation = async (req, res) => {
     const allEducation = await prisma.education.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });
@@ -65,7 +65,7 @@ const getAllEducation = async (req, res) => {
         },
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),
@@ -81,7 +81,7 @@ const getAllEducation = async (req, res) => {
       const allEducation = await prisma.education.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {

@@ -58,7 +58,7 @@ const getAllShift = async (req, res) => {
     try {
       const getAllShift = await prisma.shift.findMany({
         orderBy: {
-          id: "asc",
+          id: "desc",
         },
       });
 
@@ -72,7 +72,7 @@ const getAllShift = async (req, res) => {
       // get all designation paginated
       const allShift = await prisma.shift.findMany({
         orderBy: {
-          id: "asc",
+          id: "desc",
         },
         skip: parseInt(skip),
         take: parseInt(limit),

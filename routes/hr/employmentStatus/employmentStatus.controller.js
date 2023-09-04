@@ -52,7 +52,7 @@ const getAllEmployment = async (req, res) => {
     const allEmployment = await prisma.employmentStatus.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });
@@ -63,7 +63,7 @@ const getAllEmployment = async (req, res) => {
       const allEmployment = await prisma.employmentStatus.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),

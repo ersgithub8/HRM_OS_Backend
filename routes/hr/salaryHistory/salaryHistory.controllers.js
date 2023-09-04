@@ -39,7 +39,7 @@ const getAllSalaryHistory = async (req, res) => {
     const allSalaryHistory = await prisma.salaryHistory.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });
@@ -53,7 +53,7 @@ const getAllSalaryHistory = async (req, res) => {
         },
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),
@@ -72,7 +72,7 @@ const getAllSalaryHistory = async (req, res) => {
         },
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),

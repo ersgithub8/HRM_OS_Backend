@@ -43,7 +43,7 @@ const getAllPublicHoliday = async (req, res) => {
     const allPublicHoliday = await prisma.publicHoliday.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });
@@ -55,7 +55,7 @@ const getAllPublicHoliday = async (req, res) => {
       const allPublicHoliday = await prisma.publicHoliday.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {
@@ -75,7 +75,7 @@ const getAllPublicHoliday = async (req, res) => {
       const allPublicHoliday = await prisma.publicHoliday.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {

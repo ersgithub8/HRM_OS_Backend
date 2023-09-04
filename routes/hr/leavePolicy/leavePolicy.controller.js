@@ -50,7 +50,7 @@ const getAllLeavePolicy = async (req, res) => {
     const allLeavePolicy = await prisma.leavePolicy.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
       include: {
@@ -72,7 +72,7 @@ const getAllLeavePolicy = async (req, res) => {
       const allLeavePolicy = await prisma.leavePolicy.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {
@@ -102,7 +102,7 @@ const getAllLeavePolicy = async (req, res) => {
       const allLeavePolicy = await prisma.leavePolicy.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {

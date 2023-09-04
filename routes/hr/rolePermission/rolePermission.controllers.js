@@ -38,7 +38,7 @@ const getAllRolePermission = async (req, res) => {
     const allRolePermission = await prisma.rolePermission.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
       include: {
@@ -53,7 +53,7 @@ const getAllRolePermission = async (req, res) => {
       const allRolePermission = await prisma.rolePermission.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),

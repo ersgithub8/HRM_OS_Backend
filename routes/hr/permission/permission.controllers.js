@@ -6,7 +6,7 @@ const getAllPermission = async (req, res) => {
     const allRole = await prisma.permission.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });
@@ -17,7 +17,7 @@ const getAllPermission = async (req, res) => {
       const allRole = await prisma.permission.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),

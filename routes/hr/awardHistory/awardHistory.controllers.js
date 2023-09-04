@@ -33,7 +33,7 @@ const getAllAwardHistory = async (req, res) => {
     const allAwardHistory = await prisma.awardHistory.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });

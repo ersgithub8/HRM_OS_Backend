@@ -52,7 +52,7 @@ const getAllLeave = async (req, res) => {
     const allLeave = await prisma.leaveApplication.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
       include: {
@@ -107,7 +107,7 @@ const getAllLeave = async (req, res) => {
       const allLeave = await prisma.leaveApplication.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),

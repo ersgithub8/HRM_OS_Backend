@@ -81,7 +81,7 @@ const getAllDepartment = async (req, res) => {
       },
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });
@@ -92,7 +92,7 @@ const getAllDepartment = async (req, res) => {
       const allDepartment = await prisma.department.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),

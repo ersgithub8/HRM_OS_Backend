@@ -45,7 +45,7 @@ const getAllRole = async (req, res) => {
     const allRole = await prisma.role.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });

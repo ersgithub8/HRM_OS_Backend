@@ -44,7 +44,7 @@ const getAllWeeklyHoliday = async (req, res) => {
     const allWeeklyHoliday = await prisma.weeklyHoliday.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
       include: {
@@ -66,7 +66,7 @@ const getAllWeeklyHoliday = async (req, res) => {
       const allWeeklyHoliday = await prisma.weeklyHoliday.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {
@@ -96,7 +96,7 @@ const getAllWeeklyHoliday = async (req, res) => {
       const allWeeklyHoliday = await prisma.weeklyHoliday.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {

@@ -50,7 +50,7 @@ const getAllAward = async (req, res) => {
     try {
       const allAward = await prisma.award.findMany({
         orderBy: {
-          id: "asc",
+          id: "desc",
         },
       });
       return res.status(200).json(allAward);
@@ -62,7 +62,7 @@ const getAllAward = async (req, res) => {
     try {
       const allAward = await prisma.award.findMany({
         orderBy: {
-          id: "asc",
+          id: "desc",
         },
         where: {
           status: false,
@@ -79,7 +79,7 @@ const getAllAward = async (req, res) => {
     try {
       const allAward = await prisma.award.findMany({
         orderBy: {
-          id: "asc",
+          id: "desc",
         },
         where: {
           status: true,

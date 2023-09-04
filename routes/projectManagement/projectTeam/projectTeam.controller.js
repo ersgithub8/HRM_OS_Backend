@@ -38,7 +38,7 @@ const getAllProjectTeam = async (req, res) => {
       const projectTeam = await prisma.projectTeam.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
       });
@@ -51,7 +51,7 @@ const getAllProjectTeam = async (req, res) => {
       const projectTeam = await prisma.projectTeam.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {
@@ -67,7 +67,7 @@ const getAllProjectTeam = async (req, res) => {
       const projectTeam = await prisma.projectTeam.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {
