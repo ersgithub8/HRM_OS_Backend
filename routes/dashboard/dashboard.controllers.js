@@ -3,7 +3,11 @@ const prisma = require("../../utils/prisma");
 const getDashboardData = async (req, res) => {
   try {
     // calculate total number of users
-    const totalUsers = await prisma.user.count();
+    const totalUsers =await prisma.user.count({
+      where: {
+        status: true,
+      },
+    });;
     // calculate total salary from all users
     const salaryByUser = await prisma.user.findMany({
       include: {

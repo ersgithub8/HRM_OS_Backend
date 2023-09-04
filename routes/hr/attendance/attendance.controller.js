@@ -910,7 +910,12 @@ const search = async (req, res) => {
       let absentCount = 0;
       let leaveCount=0;
       let holidayCount=0
-      const totalUsers = await prisma.user.count();
+      const totalUsers =await prisma.user.count({
+        where: {
+          status: true,
+        },
+      });
+      
 
       allAttendance.forEach((attendance) => {
         if (attendance.attendenceStatus === "present") {
@@ -979,7 +984,12 @@ const search = async (req, res) => {
       let absentCount = 0;
       let leaveCount=0;
       let holidayCount=0
-      const totalUsers = await prisma.user.count();
+      const totalUsers = await prisma.user.count({
+        where: {
+          status: true,
+        },
+      });
+      
     
       userAttendance.forEach((attendance) => {
         if (attendance.attendenceStatus === "present") {
