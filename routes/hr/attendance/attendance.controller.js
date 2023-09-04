@@ -967,6 +967,130 @@ const getTodayAttendanceByUserId = async (req, res) => {
 // };
 
 
+// const search = async (req, res) => {
+//   if (!req.auth.permissions.includes("readAll-attendance")) {
+//     return res.status(401).json({ message: "You are not able to access this route." });
+//   }
+
+//   const { query, employeeId, createdAtFrom, createdAtTo } = req.query;
+//   const { skip, limit } = getPagination(req.query);
+
+//   try {
+//     let attendanceQuery = {
+//       orderBy: [
+//         {
+//           id: "desc",
+//         },
+//       ],
+//       skip: Number(skip),
+//       take: Number(limit),
+//       include: {
+//         user: {
+//           select: {
+//             firstName: true,
+//             lastName: true,
+//             employeeId: true,
+//           },
+//         },
+//       },
+//     };
+
+//     if (query === "all") {
+//       const todayStartDate = new Date();
+//       todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
+//       const todayEndDate = new Date();
+//       todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
+
+//       attendanceQuery.where = {
+//         createdAt: {
+//           gte: todayStartDate,
+//           lte: todayEndDate,
+//         },
+//       };
+
+//       const allAttendance = await prisma.attendance.findMany({
+//         ...attendanceQuery,
+//       });
+
+//       const punchBy = await prisma.user.findMany({
+//         where: {
+//           id: { in: allAttendance.map((item) => item.punchBy) },
+//         },
+//         select: {
+//           id: true,
+//           firstName: true,
+//           lastName: true,
+//           employeeId: true,
+//         },
+//       });
+
+//       const result = allAttendance.map((attendance) => {
+//         return {
+//           ...attendance,
+//           punchBy: punchBy,
+//         };
+//       });
+
+//       return res.status(200).json(result);
+    // } else if (employeeId && createdAtFrom && createdAtTo) {
+    //   const startDate = new Date(createdAtFrom);
+    //   const endDate = new Date(createdAtTo);
+    //   endDate.setHours(23, 59, 59);
+
+    //   if (isNaN(startDate) || isNaN(endDate)) {
+    //     return res.status(400).json({ message: "Invalid date parameters." });
+    //   }
+    //   // Find user by employeeId
+    //   const user = await prisma.user.findUnique({
+    //     where: {
+    //       employeeId: employeeId,
+    //     },
+    //   });
+
+    //   if (!user) {
+    //     return res.status(404).json({ message: "User not found with the provided employeeId." });
+    //   }
+
+    //   attendanceQuery.where = {
+    //     inTime: {
+    //       gte: startDate,
+    //       lte: endDate,
+    //     },
+    //     userId: user.id,
+    //   };
+
+    //   const userAttendance = await prisma.attendance.findMany({
+    //     ...attendanceQuery,
+    //   });
+
+    //   const punchBy = await prisma.user.findMany({
+    //     where: {
+    //       id: { in: userAttendance.map((item) => item.punchBy) },
+    //     },
+    //     select: {
+    //       id: true,
+    //       firstName: true,
+    //       lastName: true,
+    //       employeeId: true,
+    //     },
+    //   });
+
+    //   const result = userAttendance.map((attendance) => {
+    //     return {
+    //       ...attendance,
+    //       punchBy: punchBy,
+    //     };
+    //   });
+
+    //   return res.status(200).json(result);
+    // } else {
+//       return res.status(400).json({ message: "Invalid query parameters." });
+//     }
+//   } catch (error) {
+//     return res.status(500).json({ message: "An error occurred while fetching attendance records.", error: error.message });
+//   }
+// };
+
 const search = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
     return res.status(401).json({ message: "You are not able to access this route." });
@@ -1024,33 +1148,61 @@ const search = async (req, res) => {
         },
       });
 
-      const result = allAttendance.map((attendance) => {
-        return {
-          ...attendance,
-          punchBy: punchBy,
-        };
+      // Count present and absent records
+      let presentCount = 0;
+      let absentCount = 0;
+      let leaveCount=0;
+      let holidayCount=0
+
+      allAttendance.forEach((attendance) => {
+        if (attendance.attendenceStatus === "Present") {
+          presentCount++;
+        } else if (attendance.attendenceStatus === "Absent") {
+          absentCount++;
+        }
+        else if (attendance.attendenceStatus === "Leave") {
+          leaveCount++;
+        }
+        else if (attendance.attendenceStatus === "Holiday") {
+          holidayCount++;
+        }
+        
       });
 
+      const result = {
+        totalPresent: presentCount,
+        totalAbsent: absentCount,
+        totalLeaves:leaveCount,
+        totalHoliday:holidayCount,
+        attendanceData: allAttendance.map((attendance) => {
+          return {
+            ...attendance,
+            punchBy: punchBy,
+          };
+        }),
+      };
+
       return res.status(200).json(result);
-    } else if (employeeId && createdAtFrom && createdAtTo) {
+    }else if (employeeId && createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
       endDate.setHours(23, 59, 59);
-
+    
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
       }
+      
       // Find user by employeeId
       const user = await prisma.user.findUnique({
         where: {
           employeeId: employeeId,
         },
       });
-
+    
       if (!user) {
         return res.status(404).json({ message: "User not found with the provided employeeId." });
       }
-
+    
       attendanceQuery.where = {
         inTime: {
           gte: startDate,
@@ -1058,11 +1210,31 @@ const search = async (req, res) => {
         },
         userId: user.id,
       };
-
+    
       const userAttendance = await prisma.attendance.findMany({
         ...attendanceQuery,
       });
-
+    
+      // Calculate total present leaves and absent records
+      let presentCount = 0;
+      let absentCount = 0;
+      let leaveCount=0;
+      let holidayCount=0
+    
+      userAttendance.forEach((attendance) => {
+        if (attendance.attendenceStatus === "Present") {
+          presentCount++;
+        } else if (attendance.attendenceStatus === "Absent") {
+          absentCount++;
+        }
+        else if (attendance.attendenceStatus === "Leave") {
+          leaveCount++;
+        }
+        else if (attendance.attendenceStatus === "Holiday") {
+          holidayCount++;
+        }
+      });
+    
       const punchBy = await prisma.user.findMany({
         where: {
           id: { in: userAttendance.map((item) => item.punchBy) },
@@ -1074,22 +1246,30 @@ const search = async (req, res) => {
           employeeId: true,
         },
       });
-
-      const result = userAttendance.map((attendance) => {
-        return {
-          ...attendance,
-          punchBy: punchBy,
-        };
-      });
-
+    
+      const result = {
+        totalPresent: presentCount,
+        totalAbsent: absentCount,
+        totalLeaves:leaveCount,
+        totalHoliday:holidayCount,
+        attendanceData: userAttendance.map((attendance) => {
+          return {
+            ...attendance,
+            punchBy: punchBy,
+          };
+        }),
+      };
+    
       return res.status(200).json(result);
-    } else {
+    }
+     else {
       return res.status(400).json({ message: "Invalid query parameters." });
     }
   } catch (error) {
     return res.status(500).json({ message: "An error occurred while fetching attendance records.", error: error.message });
   }
 };
+
 
 
 
