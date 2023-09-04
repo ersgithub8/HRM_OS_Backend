@@ -268,7 +268,8 @@ const getAllUser = async (req, res) => {
             const { password, ...userWithoutPassword } = u;
             return userWithoutPassword;
           })
-          .sort((a, b) => a.id - b.id)
+          .sort((a, b) => b.id - a.id)
+
       );
     } catch (error) {
       return res.status(500).json({ message: error.message });
