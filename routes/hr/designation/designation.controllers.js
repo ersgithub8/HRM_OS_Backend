@@ -60,7 +60,7 @@ const getAllDesignation = async (req, res) => {
       // get all designation
       const allDesignation = await prisma.designation.findMany({
         orderBy: {
-          id: "asc",
+          id: "desc",
         },
       });
       return res.status(200).json(allDesignation);
@@ -73,7 +73,7 @@ const getAllDesignation = async (req, res) => {
       // get all designation paginated
       const allDesignation = await prisma.designation.findMany({
         orderBy: {
-          id: "asc",
+          id: "desc",
         },
         skip: parseInt(skip),
         take: parseInt(limit),
@@ -189,7 +189,7 @@ const allDesignationWiseEmployee = async (req, res) => {
     // get all designation and map it with the result
     const allDesignation = await prisma.designation.findMany({
       orderBy: {
-        id: "asc",
+        id: "desc",
       },
     });
 

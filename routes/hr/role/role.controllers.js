@@ -59,7 +59,7 @@ const getAllRole = async (req, res) => {
         },
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         skip: Number(skip),
@@ -76,7 +76,7 @@ const getAllRole = async (req, res) => {
       const allRole = await prisma.role.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
         ],
         where: {

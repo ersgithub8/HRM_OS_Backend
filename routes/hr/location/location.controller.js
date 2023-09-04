@@ -83,7 +83,7 @@ const getAllLocation = async (req, res) => {
       },
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
     });
