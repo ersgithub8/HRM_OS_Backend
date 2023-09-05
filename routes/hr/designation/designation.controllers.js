@@ -326,6 +326,7 @@ const deleteSingleDesignation = async (req, res) => {
 
     if (userCountWithDesignation > 0) {
       return res.status(400).json({
+        
         message: `Cannot delete designation. It is assigned ${userCountWithDesignation} users`,
       });
     }
