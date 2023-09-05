@@ -38,7 +38,7 @@ designationRoutes.put(
   updateSingleDesignation
 );
 
-designationRoutes.delete(
+designationRoutes.patch(
   "/:id",
   authorize("delete-designation"),
   deleteSingleDesignation
