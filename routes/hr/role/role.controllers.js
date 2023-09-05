@@ -152,16 +152,21 @@ const deleteSingleRole = async (req, res) => {
   const roleId = parseInt(req.params.id);
 
   try {
-    // Check if any users are still using this role
     const usersWithRole = await prisma.user.findMany({
       where: {
         roleId: roleId,
       },
+      select: {
+        employeeId: true,
+      },
     });
 
     if (usersWithRole.length > 0) {
+      const userIDsWithRole = usersWithRole.map((user) => user.employeeId);
+
       return res.status(400).json({
         message: "Cannot delete role. It is still assigned to some users.",
+        usersWithRole: userIDsWithRole, // Include the user IDs in the response
       });
     }
 
@@ -181,6 +186,7 @@ const deleteSingleRole = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 
 module.exports = {

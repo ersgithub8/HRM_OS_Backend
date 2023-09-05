@@ -232,20 +232,25 @@ const deletedDepartment = async (req, res) => {
   const departmentId = parseInt(req.params.id);
 
   try {
-    // Check if any users are assigned to this department
+    
     const usersWithDepartment = await prisma.user.findMany({
       where: {
         departmentId: departmentId,
       },
+      select: {
+        employeeId: true,
+      },
     });
 
     if (usersWithDepartment.length > 0) {
+      const userIDsWithDepartment = usersWithDepartment.map((user) => user.employeeId);
+
       return res.status(400).json({
-        message: "Department is assigned to users and cannot be deleted.",
+        message: "Cannot delete role. It is still assigned to some users.",
+        usersDepartment: userIDsWithDepartment,
       });
     }
 
-    // If no users are assigned to the department, you can proceed with deletion
     const deletedDepartment = await prisma.department.delete({
       where: {
         id: departmentId,
