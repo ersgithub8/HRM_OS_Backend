@@ -642,28 +642,92 @@ const updateSingleUserphone = async (req, res) => {
 };
 
 
+// const deleteSingleUser = async (req, res) => {
+//   const id = parseInt(req.params.id);
+//   // only allow admins to delete other user records
+//   if (!req.auth.permissions.includes("delete-user")) {
+//     return res
+//       .status(401)
+//       .json({ message: "Unauthorized. Only admin can delete." });
+//   }
+//   try {
+//     const deleteUser = await prisma.user.update({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       data: {
+//         status: req.body.status,
+//       },
+//     });
+//     return res.status(200).json({ message: "User deleted successfully" });
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 const deleteSingleUser = async (req, res) => {
-  const id = parseInt(req.params.id);
-  // only allow admins to delete other user records
+  const userId = parseInt(req.params.id);
+  // Check if the user exists
+  const userExists = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!userExists) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Check if the requesting user has permission to delete
   if (!req.auth.permissions.includes("delete-user")) {
     return res
       .status(401)
       .json({ message: "Unauthorized. Only admin can delete." });
   }
+
   try {
-    const deleteUser = await prisma.user.update({
+    // Delete related data from foreign tables
+    await prisma.attendance.deleteMany({
+      where: { userId: userId },
+    });
+
+    await prisma.leaveApplication.deleteMany({
+      where: { userId: userId },
+    });
+    await prisma.salaryHistory.deleteMany({
       where: {
-        id: Number(req.params.id),
-      },
-      data: {
-        status: req.body.status,
+        userId: userId,
       },
     });
+    await prisma.attendance.deleteMany({
+      where: {
+        userId: userId,
+      },
+    });
+    await prisma.designationHistory.deleteMany({
+      where: {
+        userId: userId,
+      },
+    });
+
+    await prisma.payslip.deleteMany({
+      where: { userId: userId },
+    });
+
+    await prisma.education.deleteMany({
+      where: { userId: userId },
+    });
+
+    // Add similar deleteMany calls for other related tables
+
+    // Delete the user
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
     return res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 const changepassword = async (req, res) => {
   try {
