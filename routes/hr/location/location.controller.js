@@ -94,7 +94,7 @@ const getAllLocation = async (req, res) => {
       const allLocation = await prisma.location.findMany({
         orderBy: [
           {
-            id: "asc",
+            id: "desc",
           },
           
         ],

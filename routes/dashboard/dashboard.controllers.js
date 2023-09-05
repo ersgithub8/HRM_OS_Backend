@@ -7,7 +7,7 @@ const getDashboardData = async (req, res) => {
       where: {
         status: true,
       },
-    });;
+    });
     // calculate total salary from all users
     const salaryByUser = await prisma.user.findMany({
       include: {
