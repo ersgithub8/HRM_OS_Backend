@@ -313,6 +313,24 @@ const deleteSingleDesignation = async (req, res) => {
   const designationId = parseInt(req.params.id);
 
   try {
+    // Check if any users have a designation history with the specified designation
+    const userCountWithDesignation = await prisma.user.count({
+      where: {
+        designationHistory: {
+          some: {
+            designationId: designationId,
+          },
+        },
+      },
+    });
+
+    if (userCountWithDesignation > 0) {
+      return res.status(400).json({
+        message: `Cannot delete designation. It is assigned ${userCountWithDesignation} users`,
+      });
+    }
+
+    // If no users have the designation, you can proceed with deletion
     const relatedHistoryRecords = await prisma.designationHistory.findMany({
       where: {
         designationId: designationId,
@@ -320,7 +338,6 @@ const deleteSingleDesignation = async (req, res) => {
     });
 
     if (relatedHistoryRecords.length > 0) {
-    
       await prisma.designationHistory.deleteMany({
         where: {
           designationId: designationId,
@@ -340,12 +357,13 @@ const deleteSingleDesignation = async (req, res) => {
 
     return res.status(200).json({
       deletedDesignation,
-      message:"Designation is deleted successfully"
+      message: "Designation is deleted successfully",
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
+
 
 
 module.exports = {
