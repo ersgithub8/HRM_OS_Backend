@@ -292,22 +292,61 @@ const singleDesignationWiseEmployee = async (req, res) => {
   }
 };
 
+// const deleteSingleDesignation = async (req, res) => {
+//   try {
+//     const deletedDesignation = await prisma.designation.delete({
+//       where: {
+//         id: parseInt(req.params.id),
+//       },
+//     });
+
+//     if (!deletedDesignation) {
+//       return res.status(404).json({ message: "Designation delete to failed" });
+//     }
+//     return res.status(200).json(deletedDesignation);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 const deleteSingleDesignation = async (req, res) => {
+  const designationId = parseInt(req.params.id);
+
   try {
+    const relatedHistoryRecords = await prisma.designationHistory.findMany({
+      where: {
+        designationId: designationId,
+      },
+    });
+
+    if (relatedHistoryRecords.length > 0) {
+    
+      await prisma.designationHistory.deleteMany({
+        where: {
+          designationId: designationId,
+        },
+      });
+    }
+
     const deletedDesignation = await prisma.designation.delete({
       where: {
-        id: parseInt(req.params.id),
+        id: designationId,
       },
     });
 
     if (!deletedDesignation) {
-      return res.status(404).json({ message: "Designation delete to failed" });
+      return res.status(404).json({ message: "Designation delete failed" });
     }
-    return res.status(200).json(deletedDesignation);
+
+    return res.status(200).json({
+      deletedDesignation,
+      message:"Designation is deleted successfully"
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   createSingleDesignation,
