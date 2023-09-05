@@ -212,21 +212,56 @@ const updateSingleDepartment = async (req, res) => {
   }
 };
 
+// const deletedDepartment = async (req, res) => {
+//   try {
+//     const deletedDepartment = await prisma.department.update({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       data: {
+//         status: req.body.status,
+//       },
+//     });
+//     return res.status(200).json(deletedDepartment);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 const deletedDepartment = async (req, res) => {
+  const departmentId = parseInt(req.params.id);
+
   try {
-    const deletedDepartment = await prisma.department.update({
+    // Check if any users are assigned to this department
+    const usersWithDepartment = await prisma.user.findMany({
       where: {
-        id: Number(req.params.id),
-      },
-      data: {
-        status: req.body.status,
+        departmentId: departmentId,
       },
     });
-    return res.status(200).json(deletedDepartment);
+
+    if (usersWithDepartment.length > 0) {
+      return res.status(400).json({
+        message: "Department is assigned to users and cannot be deleted.",
+      });
+    }
+
+    // If no users are assigned to the department, you can proceed with deletion
+    const deletedDepartment = await prisma.department.delete({
+      where: {
+        id: departmentId,
+      },
+    });
+
+    if (!deletedDepartment) {
+      return res.status(404).json({ message: "Department delete failed" });
+    }
+
+    return res.status(200).json({ message: "Department deleted successfully" });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   createSingleDepartment,

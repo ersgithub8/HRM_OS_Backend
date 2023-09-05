@@ -131,22 +131,57 @@ const updateSingleRole = async (req, res) => {
   }
 };
 
+// const deleteSingleRole = async (req, res) => {
+//   try {
+//     const deletedRole = await prisma.role.update({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       data: {
+//         status: req.body.status,
+//       },
+//     });
+//     res.status(200).json(deletedRole);
+//   } catch (error) {
+//     res.status(400).json(error.message);
+//     console.log(error.message);
+//   }
+// };
+
 const deleteSingleRole = async (req, res) => {
+  const roleId = parseInt(req.params.id);
+
   try {
-    const deletedRole = await prisma.role.update({
+    // Check if any users are still using this role
+    const usersWithRole = await prisma.user.findMany({
       where: {
-        id: Number(req.params.id),
-      },
-      data: {
-        status: req.body.status,
+        roleId: roleId,
       },
     });
-    res.status(200).json(deletedRole);
+
+    if (usersWithRole.length > 0) {
+      return res.status(400).json({
+        message: "Cannot delete role. It is still assigned to some users.",
+      });
+    }
+
+    // If no users are using the role, you can proceed with deletion
+    const deletedRole = await prisma.role.delete({
+      where: {
+        id: roleId,
+      },
+    });
+
+    if (!deletedRole) {
+      return res.status(404).json({ message: "Role delete failed" });
+    }
+
+    return res.status(200).json(deletedRole);
   } catch (error) {
-    res.status(400).json(error.message);
-    console.log(error.message);
+    return res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   createSingleRole,
