@@ -179,18 +179,28 @@ const createadminAttendance = async (req, res) => {
       },
     });
 
+    const existingCheckOut = await prisma.attendance.findFirst({
+      where: {
+        userId: user.id,
+        date: {
+          gte: today.toDate(),
+          lt: tomorrow.toDate(),
+        },
+      },
+    });
+
     if (req.query.query === "manualPunch") {
-      const inTime = req.body.inTime ? new Date(req.body.inTime) : null;
-      const outTime = req.body.outTime ? new Date(req.body.outTime) : null;
-      const totalHours = req.body.totalHours ? req.body.totalHours : null;
+      const inTime = new Date();
+      const outTime = new Date();
+      const totalHours = new Date();
 
       const newAttendance = await prisma.attendance.create({
         data: {
-          user: { connect: { id: user.id } }, // Use `user` instead of `userId`
-          inTime: inTime, // Add inTime field here
+          userId: user.id, // Change to user.id instead of userId
+          inTime: inTime,
           outTime: outTime,
           punchBy: req.auth.sub,
-          inTimeStatus: req.body.inTimeStatus ? req.body.inTimeStatus : null,
+          inTimeStatus: req.body.inTimeStatus ? req.body.inTimeStatus : new Date(),
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
           date: date,
@@ -245,14 +255,14 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json(result);
     } else if (!attendance) {
-      const inTime = req.body.inTime ? new Date(req.body.inTime) : null;
-      const outTime = req.body.outTime ? new Date(req.body.outTime) : null;
-      const totalHours = req.body.totalHours ? req.body.totalHours : null;
+      const inTime = new Date();
+      const outTime = new Date();
+      const totalHours = 0;
 
       const newAttendance = await prisma.attendance.create({
         data: {
-          user: { connect: { id: user.id } }, // Use `user` instead of `userId`
-          inTime: inTime, // Add inTime field here
+          userId: user.id, // Change to user.id instead of userId
+          inTime: inTime,
           outTime: outTime,
           punchBy: req.auth.sub,
           comment: req.body.comment ? req.body.comment : null,
@@ -310,9 +320,9 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json(result);
     } else {
-      const inTime = req.body.inTime ? new Date(req.body.inTime) : null;
-      const outTime = req.body.outTime ? new Date(req.body.outTime) : null;
-      const totalHours = req.body.totalHours ? req.body.totalHours : null;
+      const inTime = new Date();
+      const outTime = new Date();
+      const totalHours = 0;
 
       const newAttendance = await prisma.attendance.update({
         where: {
@@ -320,11 +330,10 @@ const createadminAttendance = async (req, res) => {
         },
         data: {
           outTime: outTime,
-          inTime: inTime, // Add inTime field here
-          totalHour: totalHours,
+          inTime:inTime,
+          totalHour: null,
           outTimeStatus: null,
           attendenceStatus: req.body.attendenceStatus, // Update the attendanceStatus here
-          user: { connect: { id: user.id } }, // Use `user` instead of `userId`
         },
       });
 
@@ -377,9 +386,6 @@ const createadminAttendance = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
-
 
 const getAllAttendance = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
