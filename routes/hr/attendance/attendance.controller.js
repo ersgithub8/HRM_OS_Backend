@@ -105,7 +105,7 @@ const createAttendance = async (req, res) => {
           ip: req.body.ip ? req.body.ip : null,
           date: req.body.date ? req.body.date :new Date(),
           attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"present",
-          inTimeStatus:isEarly ? "OnTime" : isLate ? "Late" : "On Time",
+          inTimeStatus:isEarly ? "OnTime" : isLate ? "Late" : "OnTime",
           outTimeStatus: null,
         },
       });
@@ -124,7 +124,7 @@ const createAttendance = async (req, res) => {
         data: {
           outTime: outTime,
           totalHour: parseFloat(totalHours.toFixed(3)),
-          outTimeStatus: isOutLate ? "OnTime" : isOutEarly ? "Early" : "On Time",
+          outTimeStatus: isOutLate ? "OnTime" : isOutEarly ? "Early" : "OnTime",
         },
       });
       return res.status(200).json({
