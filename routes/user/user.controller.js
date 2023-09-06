@@ -67,7 +67,6 @@ const login = async (req, res) => {
       });
     }
   } catch (error) {
-    
     if (error.code === 'ECONNRESET') {
       return res.status(502).json({ message: "Server is not responding. Please try again later." });
     }
