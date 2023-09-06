@@ -33,8 +33,8 @@ const createSingleLocation = async (req, res) => {
       const createdLocation = await prisma.location.create({
         data: {
           locationName: req.body.locationName,
-          latitude:req.body.latitude,
-          longitude:req.body.longitude
+          latitude: req.body.latitude,
+          longitude: req.body.longitude
         },
       });
 
@@ -55,6 +55,7 @@ const getAllLocation = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
+            employeeId: true,
             role: {
               select: {
                 name: true,
@@ -96,7 +97,7 @@ const getAllLocation = async (req, res) => {
           {
             id: "desc",
           },
-          
+
         ],
         skip: Number(skip),
         take: Number(limit),
@@ -107,6 +108,7 @@ const getAllLocation = async (req, res) => {
               firstName: true,
               lastName: true,
               userName: true,
+              employeeId: true,
               role: {
                 select: {
                   name: true,
@@ -142,51 +144,51 @@ const getAllLocation = async (req, res) => {
 };
 
 const getSingleLocation = async (req, res) => {
-    try {
-      const singleLocation = await prisma.location.findUnique({
-        where: {
-          id: Number(req.params.id),
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              userName: true,
-              role: {
-                select: {
-                  name: true,
-                  id: true,
-                },
+  try {
+    const singleLocation = await prisma.location.findUnique({
+      where: {
+        id: Number(req.params.id),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+            role: {
+              select: {
+                name: true,
+                id: true,
               },
-              designationHistory: {
-                orderBy: [
-                  {
-                    id: "desc",
-                  },
-                ],
-                take: 1,
-                select: {
-                  designation: {
-                    select: {
-                      name: true,
-                      id: true,
-                    },
+            },
+            designationHistory: {
+              orderBy: [
+                {
+                  id: "desc",
+                },
+              ],
+              take: 1,
+              select: {
+                designation: {
+                  select: {
+                    name: true,
+                    id: true,
                   },
                 },
               },
             },
           },
         },
-      });
-  
-  
-      return res.status(200).json(singleLocation);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  };
+      },
+    });
+
+
+    return res.status(200).json(singleLocation);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
 
 const updateSingleLocation = async (req, res) => {
   try {
@@ -196,8 +198,8 @@ const updateSingleLocation = async (req, res) => {
       },
       data: {
         locationName: req.body.locationName,
-          latitude:req.body.latitude,
-          longitude:req.body.longitude
+        latitude: req.body.latitude,
+        longitude: req.body.longitude
       },
     });
     return res.status(200).json(updatedLocation);
@@ -207,20 +209,20 @@ const updateSingleLocation = async (req, res) => {
 };
 
 const deletedLocation = async (req, res) => {
-    try {
-        const deletedLocation= await prisma.location.delete({
-          where: {
-            id: Number(req.params.id),
-          },
-        });
-        return res.status(200).json({deletedLocation});
-      } catch (error) {
-        return res.status(400).json(error.message);
-      }
+  try {
+    const deletedLocation = await prisma.location.delete({
+      where: {
+        id: Number(req.params.id),
+      },
+    });
+    return res.status(200).json({ deletedLocation });
+  } catch (error) {
+    return res.status(400).json(error.message);
+  }
 };
 
 module.exports = {
-    createSingleLocation,
+  createSingleLocation,
   getAllLocation,
   getSingleLocation,
   updateSingleLocation,
