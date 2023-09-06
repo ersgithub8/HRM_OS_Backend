@@ -105,7 +105,7 @@ const createAttendance = async (req, res) => {
           ip: req.body.ip ? req.body.ip : null,
           date: req.body.date ? req.body.date :new Date(),
           attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"present",
-          inTimeStatus: isEarly ? "OnTime" : isLate ? "Late" : "OnTime",
+          inTimeStatus: isEarly ? "OnTime" : "Late",
           outTimeStatus: null,
         },
       });
@@ -124,7 +124,7 @@ const createAttendance = async (req, res) => {
         data: {
           outTime: outTime,
           totalHour: parseFloat(totalHours.toFixed(3)),
-          outTimeStatus: isOutEarly ? "Early" : isOutLate ? "OnTime" : "OnTime",
+          outTimeStatus: isEarly ? "OnTime" : "Early",
         },
       });
       return res.status(200).json({
@@ -200,7 +200,7 @@ const createadminAttendance = async (req, res) => {
           inTime: inTime,
           outTime: outTime,
           punchBy: req.auth.sub,
-          inTimeStatus: req.body.inTimeStatus ? req.body.inTimeStatus : new Date(),
+          inTimeStatus: req.body.inTimeStatus ? req.body.inTimeStatus : null,
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
           date: date,
@@ -531,7 +531,6 @@ const getSingleAttendance = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 
 // const getAttendanceByUserId = async (req, res) => {
 //   try {
