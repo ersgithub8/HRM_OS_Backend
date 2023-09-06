@@ -68,10 +68,9 @@ const login = async (req, res) => {
     }
 
   } catch (error) {
-    if (error.code === 'ECONNRESET') {
-      return res.status(502).json({ message: "Server is not responding. Please try again later." });
-    }
-    return res.status(500).json({ message: error.message });
+   
+     return res.status(502).json({ message: "Server is not responding. Please try again later." });
+    
   }
 };
 
@@ -285,89 +284,93 @@ const getAllUser = async (req, res) => {
   }
 };
 const getSingleUser = async (req, res) => {
-  const singleUser = await prisma.user.findUnique({
-    where: {
-      id: Number(req.params.id),
-    },
-    include: {
-      designationHistory: {
-        include: {
-          designation: true,
+  try {
+    const singleUser = await prisma.user.findUnique({
+      where: {
+        id: Number(req.params.id),
+      },
+      include: {
+        designationHistory: {
+          include: {
+            designation: true,
+          },
+        },
+        salaryHistory: true,
+        educations: true,
+        location: true,
+        employmentStatus: true,
+        department: true,
+        role: true,
+        shift: true,
+        leavePolicy: true,
+        weeklyHoliday: true,
+        awardHistory: {
+          include: {
+            award: true,
+          },
+        },
+        leaveApplication: {
+          orderBy: {
+            id: "desc",
+          },
+          take: 5,
+        },
+        attendance: {
+          orderBy: {
+            id: "desc",
+          },
+          take: 1,
         },
       },
-      salaryHistory: true,
-      educations: true,
-      location: true,
-      employmentStatus: true,
-      department: true,
-      role: true,
-      shift: true,
-      leavePolicy: true,
-      weeklyHoliday: true,
-      awardHistory: {
-        include: {
-          award: true,
+    });
+  
+    // calculate paid and unpaid leave days for the user for the current year
+    const leaveDays = await prisma.leaveApplication.findMany({
+      where: {
+        userId: Number(req.params.id),
+        status: "ACCEPTED",
+        acceptLeaveFrom: {
+          gte: new Date(new Date().getFullYear(), 0, 1),
+        },
+        acceptLeaveTo: {
+          lte: new Date(new Date().getFullYear(), 11, 31),
         },
       },
-      leaveApplication: {
-        orderBy: {
-          id: "desc",
-        },
-        take: 5,
-      },
-      attendance: {
-        orderBy: {
-          id: "desc",
-        },
-        take: 1,
-      },
-    },
-  });
-
-  // calculate paid and unpaid leave days for the user for the current year
-  const leaveDays = await prisma.leaveApplication.findMany({
-    where: {
-      userId: Number(req.params.id),
-      status: "ACCEPTED",
-      acceptLeaveFrom: {
-        gte: new Date(new Date().getFullYear(), 0, 1),
-      },
-      acceptLeaveTo: {
-        lte: new Date(new Date().getFullYear(), 11, 31),
-      },
-    },
-  });
-  const paidLeaveDays = leaveDays
-    .filter((l) => l.leaveType === "PAID")
-    .reduce((acc, item) => {
-      return acc + item.leaveDuration;
-    }, 0);
-  const unpaidLeaveDays = leaveDays
-    .filter((l) => l.leaveType === "UNPAID")
-    .reduce((acc, item) => {
-      return acc + item.leaveDuration;
-    }, 0);
-
-  singleUser.paidLeaveDays = paidLeaveDays;
-  singleUser.unpaidLeaveDays = unpaidLeaveDays;
-  singleUser.leftPaidLeaveDays =
-    singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
-  singleUser.leftUnpaidLeaveDays =
-    singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
-  const id = parseInt(req.params.id);
-  // only allow admins and owner to access other user records. use truth table to understand the logic
-  if (
-    id !== req.auth.sub &&
-    !req.auth.permissions.includes("readSingle-user")
-  ) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized. You are not an admin" });
-  }
-
-  if (!singleUser) return;
-  const { password, ...userWithoutPassword } = singleUser;
-  return res.status(200).json(userWithoutPassword);
+    });
+    const paidLeaveDays = leaveDays
+      .filter((l) => l.leaveType === "PAID")
+      .reduce((acc, item) => {
+        return acc + item.leaveDuration;
+      }, 0);
+    const unpaidLeaveDays = leaveDays
+      .filter((l) => l.leaveType === "UNPAID")
+      .reduce((acc, item) => {
+        return acc + item.leaveDuration;
+      }, 0);
+  
+    singleUser.paidLeaveDays = paidLeaveDays;
+    singleUser.unpaidLeaveDays = unpaidLeaveDays;
+    singleUser.leftPaidLeaveDays =
+      singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
+    singleUser.leftUnpaidLeaveDays =
+      singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
+    const id = parseInt(req.params.id);
+    // only allow admins and owner to access other user records. use truth table to understand the logic
+    if (
+      id !== req.auth.sub &&
+      !req.auth.permissions.includes("readSingle-user")
+    ) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. You are not an admin" });
+    }
+  
+    if (!singleUser) return;
+    const { password, ...userWithoutPassword } = singleUser;
+    return res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    return res.status(502).json({ message: "Server is not responding. Please try again later." });
+}
 };
 
 // const updateSingleUser = async (req, res) => {
