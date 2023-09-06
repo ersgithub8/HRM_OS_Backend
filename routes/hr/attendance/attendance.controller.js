@@ -532,6 +532,7 @@ const getSingleAttendance = async (req, res) => {
   }
 };
 
+
 // const getAttendanceByUserId = async (req, res) => {
 //   try {
 //     const allAttendance = await prisma.attendance.findMany({
