@@ -40,7 +40,7 @@ const createSingleLeave = async (req, res) => {
         },
       });
 
-      return res.status(201).json(createdLeave);
+      return res.status(200).json(createdLeave);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
@@ -293,10 +293,28 @@ const getLeaveByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+const deleteSingleLeave=async(req, res)=>{
+  try {
+    const deletedLeaveApplication = await prisma.leaveApplication.delete({
+      where: {
+        id: parseInt(req.params.id),
+      },
+    });
+
+    return res.status(200).json({
+      deletedLeaveApplication,
+      message:"Leave application deleted successfully"
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+}
 module.exports = {
   createSingleLeave,
   getAllLeave,
   getSingleLeave,
   grantedLeave,
   getLeaveByUserId,
+  deleteSingleLeave,
 };
