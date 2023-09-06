@@ -156,6 +156,7 @@ const getSingleLocation = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
+            employeeId:true,
             role: {
               select: {
                 name: true,
