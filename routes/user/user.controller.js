@@ -66,7 +66,7 @@ const login = async (req, res) => {
         token,
       });
     }
-    
+
   } catch (error) {
     if (error.code === 'ECONNRESET') {
       return res.status(502).json({ message: "Server is not responding. Please try again later." });
@@ -284,7 +284,6 @@ const getAllUser = async (req, res) => {
     }
   }
 };
-
 const getSingleUser = async (req, res) => {
   const singleUser = await prisma.user.findUnique({
     where: {
