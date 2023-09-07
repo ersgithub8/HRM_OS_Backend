@@ -31,7 +31,13 @@ const createSinglePriority = async (req, res) => {
 const getAllPriority = async (req, res) => {
   if (req.query.query === "all") {
     try {
-      const allPriority = await prisma.priority.findMany();
+      const allPriority = await prisma.priority.findMany({
+        orderBy: [
+          {
+            id: "desc",
+          },
+        ],
+      });
       return res.status(200).json(allPriority);
     } catch (error) {
       return res.status(400).json({ message: error.message });
