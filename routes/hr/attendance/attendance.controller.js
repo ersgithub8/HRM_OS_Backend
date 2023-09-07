@@ -124,7 +124,7 @@ const createAttendance = async (req, res) => {
         data: {
           outTime: outTime,
           totalHour: parseFloat(totalHours.toFixed(3)),
-          outTimeStatus: isOutLate ? "Early" : isOutEarly ? "OnTime" : "OnTime",
+          outTimeStatus: isOutEarly ? "OnTime" : isOutLate ? "Early" : "OnTime",
         },
       });
       return res.status(200).json({
