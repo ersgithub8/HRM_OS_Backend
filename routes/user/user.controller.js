@@ -702,11 +702,6 @@ const deleteSingleUser = async (req, res) => {
         userId: userId,
       },
     });
-    await prisma.attendance.deleteMany({
-      where: {
-        userId: userId,
-      },
-    });
     await prisma.designationHistory.deleteMany({
       where: {
         userId: userId,
@@ -730,7 +725,7 @@ const deleteSingleUser = async (req, res) => {
       where: { userId: userId },
     });
     await prisma.project.deleteMany({
-      where: { userId: userId },
+      where: { userId: projectManagerId },
     });
     await prisma.projectTeamMember.deleteMany({
       where: { userId: userId },
