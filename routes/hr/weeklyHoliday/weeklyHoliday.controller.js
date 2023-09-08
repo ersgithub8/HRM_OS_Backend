@@ -150,6 +150,33 @@ const getSingleWeeklyHoliday = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+const getSingleWeeklyHolidayByuserId = async (req, res) => {
+  try {
+    const singleWeeklyHoliday = await prisma.weeklyHoliday.findUnique({
+      where: {
+        userId: parseInt(req.params.id),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+          },
+        },
+      },
+    });
+
+    if (!singleWeeklyHoliday) {
+      return res.status(404).json({ message: "Weekly Holiday not found" });
+    }
+
+    return res.status(200).json(singleWeeklyHoliday);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
 
 const updateSingleWeeklyHoliday = async (req, res) => {
   try {
@@ -190,4 +217,5 @@ module.exports = {
   getSingleWeeklyHoliday,
   updateSingleWeeklyHoliday,
   deleteSingleWeeklyHoliday,
+  getSingleWeeklyHolidayByuserId,
 };

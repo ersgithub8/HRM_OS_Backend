@@ -6,6 +6,7 @@ const {
   getSingleWeeklyHoliday,
   updateSingleWeeklyHoliday,
   deleteSingleWeeklyHoliday,
+  getSingleWeeklyHolidayByuserId,
 } = require("./weeklyHoliday.controller");
 const authorize = require("../../../utils/authorize"); // authentication middleware
 
@@ -25,6 +26,11 @@ weeklyHolidayRoutes.get(
   "/:id",
   authorize("readSingle-weeklyHoliday"),
   getSingleWeeklyHoliday
+);
+weeklyHolidayRoutes.get(
+  "/:id",
+  authorize("readSingle-weeklyHoliday"),
+  getSingleWeeklyHolidayByuserId
 );
 weeklyHolidayRoutes.put(
   "/:id",
