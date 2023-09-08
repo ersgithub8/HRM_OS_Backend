@@ -720,6 +720,21 @@ const deleteSingleUser = async (req, res) => {
     await prisma.education.deleteMany({
       where: { userId: userId },
     });
+    await prisma.awardHistory.deleteMany({
+      where: { userId: userId },
+    });
+    await prisma.leavePolicy.deleteMany({
+      where: { userId: userId },
+    });
+    await prisma.weeklyHoliday.deleteMany({
+      where: { userId: userId },
+    });
+    await prisma.project.deleteMany({
+      where: { userId: userId },
+    });
+    await prisma.projectTeamMember.deleteMany({
+      where: { userId: userId },
+    });
 
     // Add similar deleteMany calls for other related tables
 
