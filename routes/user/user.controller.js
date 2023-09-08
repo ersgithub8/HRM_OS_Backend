@@ -735,9 +735,6 @@ const deleteSingleUser = async (req, res) => {
     await prisma.projectTeamMember.deleteMany({
       where: { userId: userId },
     });
-
-    // Add similar deleteMany calls for other related tables
-
     // Delete the user
     await prisma.user.delete({
       where: { id: userId },
