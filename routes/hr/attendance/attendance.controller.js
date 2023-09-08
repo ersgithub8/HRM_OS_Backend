@@ -779,14 +779,103 @@ const getLastAttendanceByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+// const getTodayAttendanceByUserId = async (req, res) => {
+//   try {
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+
+//     const todayAttendance = await prisma.attendance.findFirst({
+//       where: {
+//         userId: parseInt(req.params.id),
+//         inTime: {
+//           gte: today,
+//         },
+//       },
+//       orderBy: [
+//         {
+//           id: 'desc',
+//         },
+//       ],
+//     });
+
+//     const response = {
+//       inTime: null,
+//       outTime: null,
+//       totalHours: null,
+//       totalMinutes: null,
+//       totalSeconds: null,
+//       attendenceStatus: null, 
+//     };
+
+//     if (!todayAttendance) {
+//       // If there's no attendance record for today, return the empty response
+//       response.attendenceStatus = null;
+//       return res.status(200).json(response);
+//     }
+
+//     if (todayAttendance.inTime) {
+//       response.inTime = todayAttendance.inTime;
+
+//       if (todayAttendance.outTime) {
+//         const checkInTime = new Date(todayAttendance.inTime);
+//         const checkOutTime = new Date(todayAttendance.outTime);
+
+//         const timeDiff = checkOutTime - checkInTime;
+//         const totalHours = Math.floor(timeDiff / (1000 * 60 * 60));
+//         const totalMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+//         const totalSeconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+//         response.outTime = todayAttendance.outTime;
+//         response.totalHours = totalHours.toString().padStart(2, '0');
+//         response.totalMinutes = totalMinutes.toString().padStart(2, '0');
+//         response.totalSeconds = totalSeconds.toString().padStart(2, '0');
+//         response.attendenceStatus = todayAttendance.attendenceStatus;
+
+//       }
+//        else {
+//         response.attendenceStatus = todayAttendance.attendenceStatus; // Set attendanceStatus to 'Checked In'
+//       }
+
+//       return res.status(200).json(response);
+//     }
+
+//     // If no check-in time available, return the empty response with status 'Absent'
+//     response.attendenceStatus = 'Absent';
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const userId = parseInt(req.params.id);
+
+    // Fetch the user's leave policy
+    const userLeavePolicy = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        leavePolicy: true, // Assuming you have a 'leavePolicy' field in the User model
+      },
+    });
+    const userweeklyHolidays = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        weeklyHoliday: true, // Assuming you have a 'leavePolicy' field in the User model
+      },
+    });
+
     const todayAttendance = await prisma.attendance.findFirst({
       where: {
-        userId: parseInt(req.params.id),
+        userId: userId,
         inTime: {
           gte: today,
         },
@@ -804,7 +893,9 @@ const getTodayAttendanceByUserId = async (req, res) => {
       totalHours: null,
       totalMinutes: null,
       totalSeconds: null,
-      attendenceStatus: null, 
+      attendenceStatus: null,
+      leavePolicy: userLeavePolicy ? userLeavePolicy.leavePolicy : null,
+      weeklyHolidays: userweeklyHolidays ? userweeklyHolidays.weeklyHoliday : [], // Include weekly holidays in the response
     };
 
     if (!todayAttendance) {
@@ -812,6 +903,9 @@ const getTodayAttendanceByUserId = async (req, res) => {
       response.attendenceStatus = null;
       return res.status(200).json(response);
     }
+
+    // Get today's day of the week (0 = Sunday, 1 = Monday, ...)
+    const todayDayOfWeek = today.getDay();
 
     if (todayAttendance.inTime) {
       response.inTime = todayAttendance.inTime;
@@ -830,9 +924,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
         response.totalMinutes = totalMinutes.toString().padStart(2, '0');
         response.totalSeconds = totalSeconds.toString().padStart(2, '0');
         response.attendenceStatus = todayAttendance.attendenceStatus;
-
-      }
-       else {
+      } else {
         response.attendenceStatus = todayAttendance.attendenceStatus; // Set attendanceStatus to 'Checked In'
       }
 
