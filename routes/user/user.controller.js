@@ -143,7 +143,7 @@ const register = async (req, res) => {
         designationHistory: req.body.designationId ? {
           create: {
             designationId: req.body.designationId,
-            startDate: new Date(req.body.designationStartDate),
+            startDate: new Date(),
             endDate: req.body.designationEndDate ? new Date(req.body.designationEndDate) : null,
             comment: req.body.designationComment,
           },
