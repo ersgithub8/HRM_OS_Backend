@@ -132,7 +132,7 @@ const register = async (req, res) => {
         leaveDate: leave_date,
         employeeId: req.body.employeeId,
         bloodGroup: req.body.bloodGroup ? req.body.bloodGroup : null,
-        image: req.body.image,
+        image: req.body.image ? req.body.image : null,
         employmentStatusId: req.body.employmentStatusId ? req.body.employmentStatusId : null,
         departmentId: req.body.departmentId ? req.body.departmentId : null,
         roleId: req.body.roleId,
