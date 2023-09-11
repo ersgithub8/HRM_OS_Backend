@@ -68,9 +68,9 @@ const login = async (req, res) => {
     }
 
   } catch (error) {
-   
-     return res.status(502).json({ message: "Server is not responding. Please try again later." });
-    
+
+    return res.status(502).json({ message: "Server is not responding. Please try again later." });
+
   }
 };
 
@@ -111,7 +111,7 @@ const register = async (req, res) => {
     if (existingUserByEmployeeId) {
       return res.status(400).json({ message: "EmployeeId already exists." });
     }
-    const join_date = new Date(req.body.joinDate);
+    const join_date = new Date();
     const leave_date = req.body.leaveDate ? new Date(req.body.leaveDate) : null;
 
     const hash = await bcrypt.hash(req.body.password, saltRounds);
@@ -124,39 +124,39 @@ const register = async (req, res) => {
         email: req.body.email,
         phone: req.body.phone,
         street: req.body.street,
-        city: req.body.city,
-        state: req.body.state,
-        zipCode: req.body.zipCode,
-        country: req.body.country,
+        city: req.body.city ? req.body.city : null,
+        state: req.body.state ? req.body.state : null,
+        zipCode: req.body.zipCode ? req.body.zipCode : null,
+        country: req.body.country ? req.body.country : null,
         joinDate: join_date,
         leaveDate: leave_date,
         employeeId: req.body.employeeId,
-        bloodGroup: req.body.bloodGroup,
+        bloodGroup: req.body.bloodGroup ? req.body.bloodGroup : null,
         image: req.body.image,
-        employmentStatusId: req.body.employmentStatusId,
-        departmentId: req.body.departmentId,
+        employmentStatusId: req.body.employmentStatusId ? req.body.employmentStatusId : null,
+        departmentId: req.body.departmentId ? req.body.departmentId : null,
         roleId: req.body.roleId,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
-        leavePolicyId: req.body.leavePolicyId,
-        weeklyHolidayId: req.body.weeklyHolidayId,
-        designationHistory: {
+        leavePolicyId: req.body.leavePolicyId ? req.body.leavePolicyId : null,
+        weeklyHolidayId: req.body.weeklyHolidayId ? req.body.weeklyHolidayId : null,
+        designationHistory: req.body.designationId ? {
           create: {
             designationId: req.body.designationId,
             startDate: new Date(req.body.designationStartDate),
             endDate: req.body.designationEndDate ? new Date(req.body.designationEndDate) : null,
             comment: req.body.designationComment,
           },
-        },
-        salaryHistory: {
+        } : {},
+        salaryHistory: req.body.salary ? {
           create: {
             salary: req.body.salary,
             startDate: new Date(req.body.salaryStartDate),
             endDate: req.body.salaryEndDate ? new Date(req.body.salaryEndDate) : null,
             comment: req.body.salaryComment,
           },
-        },
-        educations: {
+        } : {},
+        educations: req.body.educations ? {
           create: req.body.educations.map((e) => {
             return {
               degree: e.degree,
@@ -167,7 +167,7 @@ const register = async (req, res) => {
               endDate: new Date(e.studyEndDate),
             };
           }),
-        },
+        } : {},
       },
     });
     const { password, ...userWithoutPassword } = createUser;
@@ -323,7 +323,7 @@ const getSingleUser = async (req, res) => {
         },
       },
     });
-  
+
     // calculate paid and unpaid leave days for the user for the current year
     const leaveDays = await prisma.leaveApplication.findMany({
       where: {
@@ -347,7 +347,7 @@ const getSingleUser = async (req, res) => {
       .reduce((acc, item) => {
         return acc + item.leaveDuration;
       }, 0);
-  
+
     singleUser.paidLeaveDays = paidLeaveDays;
     singleUser.unpaidLeaveDays = unpaidLeaveDays;
     singleUser.leftPaidLeaveDays =
@@ -364,13 +364,13 @@ const getSingleUser = async (req, res) => {
         .status(401)
         .json({ message: "Unauthorized. You are not an admin" });
     }
-  
+
     if (!singleUser) return;
     const { password, ...userWithoutPassword } = singleUser;
     return res.status(200).json(userWithoutPassword);
   } catch (error) {
     return res.status(502).json({ message: "Server is not responding. Please try again later." });
-}
+  }
 };
 
 // const updateSingleUser = async (req, res) => {
@@ -550,15 +550,15 @@ const updateSingleUserprofile = async (req, res) => {
     if (req.auth.permissions.includes("update-user")) {
       updateData = {
         ...updateData,
-        image: req.body.image|| existingUser.image,
-        userName: req.body.userName|| existingUser.userName,
-        phone: req.body.phone|| existingUser.phone,
-        zipCode: req.body.zipCode|| existingUser.zipCode,
-        joinDate: req.body.joinDate|| existingUser.joinDate,
-        leaveDate: req.body.leaveDate|| existingUser.leaveDate,
+        image: req.body.image || existingUser.image,
+        userName: req.body.userName || existingUser.userName,
+        phone: req.body.phone || existingUser.phone,
+        zipCode: req.body.zipCode || existingUser.zipCode,
+        joinDate: req.body.joinDate || existingUser.joinDate,
+        leaveDate: req.body.leaveDate || existingUser.leaveDate,
       };
     }
-     else {
+    else {
       // owner can change only password
       updateData.password = req.body.password;
     }
@@ -573,7 +573,7 @@ const updateSingleUserprofile = async (req, res) => {
     const { password, ...userWithoutPassword } = updateUser;
     return res.status(200).json({
       userWithoutPassword,
-      message:"User profile updated successfully"
+      message: "User profile updated successfully"
     });
   } catch (error) {
     console.log(error.message);
@@ -609,19 +609,19 @@ const updateSingleUserphone = async (req, res) => {
     if (req.auth.permissions.includes("update-user")) {
       updateData = {
         ...updateData,
-        firstName: req.body.firstName|| existingUser.firstName,
-        lastName: req.body.lastName|| existingUser.lastName,
-        email: req.body.email|| existingUser.email,
-        city: req.body.city|| existingUser.city,
-        state: req.body.state|| existingUser.state,
-        country: req.body.country|| existingUser.country,
-        image: req.body.image|| existingUser.image,
-        userName: req.body.userName|| existingUser.userName,
-        street: req.body.street|| existingUser.street,
-        zipCode: req.body.zipCode|| existingUser.zipCode,
+        firstName: req.body.firstName || existingUser.firstName,
+        lastName: req.body.lastName || existingUser.lastName,
+        email: req.body.email || existingUser.email,
+        city: req.body.city || existingUser.city,
+        state: req.body.state || existingUser.state,
+        country: req.body.country || existingUser.country,
+        image: req.body.image || existingUser.image,
+        userName: req.body.userName || existingUser.userName,
+        street: req.body.street || existingUser.street,
+        zipCode: req.body.zipCode || existingUser.zipCode,
         // Validating and parsing joinDate and leaveDate
-        joinDate: req.body.joinDate|| existingUser.joinDate,
-        leaveDate: req.body.leaveDate|| existingUser.leaveDate,
+        joinDate: req.body.joinDate || existingUser.joinDate,
+        leaveDate: req.body.leaveDate || existingUser.leaveDate,
         // Rest of the fields...
       };
     } else {
@@ -639,7 +639,7 @@ const updateSingleUserphone = async (req, res) => {
     const { password, ...userWithoutPassword } = updateUser;
     return res.status(200).json({
       userWithoutPassword,
-      message:"Phonenumber updated successfully"
+      message: "Phonenumber updated successfully"
     });
   } catch (error) {
     console.log(error.message);
