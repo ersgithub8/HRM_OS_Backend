@@ -15,7 +15,7 @@ model user {
   password   String
   email      String?   @unique
   phone      String?   @unique
-  reference_id  int?
+  reference_id  Int?
   resetPasswordToken   String?
   resetPasswordExpires  DateTime @default(now())
   // address
@@ -52,7 +52,7 @@ model user {
   salaryHistory      salaryHistory[]
   designationHistory designationHistory[]
   awardHistory       awardHistory[]
-  status             String?              @default(true)
+  status             String?        
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   project            project[]
