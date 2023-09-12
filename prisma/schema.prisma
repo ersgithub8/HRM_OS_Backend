@@ -52,7 +52,7 @@ model user {
   salaryHistory      salaryHistory[]
   designationHistory designationHistory[]
   awardHistory       awardHistory[]
-  status             Boolean              @default(true)
+  status             String?              @default(true)
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   project            project[]

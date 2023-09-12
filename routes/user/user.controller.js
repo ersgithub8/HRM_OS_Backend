@@ -136,6 +136,7 @@ const register = async (req, res) => {
         image: req.body.image ? req.body.image : null,
         employmentStatusId: req.body.employmentStatusId ? req.body.employmentStatusId : null,
         departmentId: req.body.departmentId ? req.body.departmentId : null,
+        status:req.body.status?req.body.status:"Pending",
         roleId: req.body.roleId,
         reference_id: req.user.id,
         shiftId: req.body.shiftId,
