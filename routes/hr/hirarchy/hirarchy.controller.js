@@ -31,21 +31,13 @@ const prisma = require("../../../utils/prisma");
 
 
     if(reqq!=null){
-        singleRole = await prisma.role.findUnique({
+        singleRole = await prisma.user.findMany({
             where: {
-              id: Number(reqq),
-            },
-            include: {
-              rolePermission: {
-                include: {
-                  permission: true,
-                },
-              },
-            },
+              roleId: reqq,
+            }
+            
           });
     }
-
-
      res.status(200).json({
       singleRole
      })
