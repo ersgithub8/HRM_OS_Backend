@@ -52,7 +52,8 @@ model user {
   salaryHistory      salaryHistory[]
   designationHistory designationHistory[]
   awardHistory       awardHistory[]
-  status             String?        
+  status             Boolean              @default(true)
+  applicationStatus  String               @default("PENDING")
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   project            project[]

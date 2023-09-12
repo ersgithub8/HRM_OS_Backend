@@ -27,7 +27,8 @@ CREATE TABLE "user" (
     "locationId" INTEGER,
     "leavePolicyId" INTEGER,
     "weeklyHolidayId" INTEGER,
-    "status" TEXT,
+    "status" BOOLEAN NOT NULL DEFAULT true,
+    "applicationStatus" TEXT NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

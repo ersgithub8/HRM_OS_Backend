@@ -75,7 +75,6 @@ const login = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  console.log(req.user.id);
   try {
     const existingUserByEmail = await prisma.user.findFirst({
       where: {
@@ -136,9 +135,8 @@ const register = async (req, res) => {
         image: req.body.image ? req.body.image : null,
         employmentStatusId: req.body.employmentStatusId ? req.body.employmentStatusId : null,
         departmentId: req.body.departmentId ? req.body.departmentId : null,
-        status:req.body.status?req.body.status:"Pending",
         roleId: req.body.roleId,
-        reference_id: req.user.id,
+        // reference_id: req.user.id,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
         leavePolicyId: req.body.leavePolicyId ? req.body.leavePolicyId : null,
