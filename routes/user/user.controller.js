@@ -75,6 +75,7 @@ const login = async (req, res) => {
 };
 
 const register = async (req, res) => {
+  console.log(req.user.id);
   try {
     const existingUserByEmail = await prisma.user.findFirst({
       where: {
