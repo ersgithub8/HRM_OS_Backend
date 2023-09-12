@@ -39,6 +39,8 @@ let clientimage = multer({
 });
 
 router.post("/", controllerimg.uploadimages);
+router.post("/file", controllerimg.file);
+
 router.post("/delete",  controllerimg.delimage);
 
 module.exports = router;

@@ -36,7 +36,28 @@ const uploadFile = function (fileData, name) {
   });
 };
 
+// const upload = multer({
+//   storage: multer.memoryStorage(),
+//   limits: {
+//     fileSize: 5 * 1024 * 1024, // limit file size to 5MB
+//   },
+// });
 
+const fileFilterclient = (req, file, cb) => {
+  const allowedFileTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/GIF",
+    "image/svg+xml",
+  ];
+  if (allowedFileTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
 exports.uploadimages = async (req, res) => {
   if (req.files) {
     try {
@@ -93,4 +114,33 @@ exports.delimage = async (req, res) => {
     console.log(err);
   }
 };
+
+exports.file= async (req, res) => {
+  if (req.files) {
+    try {
+      const allowedExtensions = ['.pdf', '.xlsx', '.png'];
+      
+
+      let name = "file_" + Date.now()+".pdf";
+      let fileKey = await uploadFile(req.files.file, name);
+
+      let path = fileKey;
+      return res.status(200).json({
+        path: path,
+        message: "File Successfully Uploaded",
+        error: false,
+      });
+    } catch (err) {
+      return res.status(404).json({
+        message: "Image Upload Failed " + err,
+        error: true,
+      });
+    }
+  } else {
+    return res.status(404).json({
+      message: 'File Upload Failed',
+      error: true,
+    });
+  }
+}
 

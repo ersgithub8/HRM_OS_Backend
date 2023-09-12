@@ -29,7 +29,7 @@ model user {
   employeeId String?   @unique
   bloodGroup String?
   image      String?
-
+  documents           String?
   employmentStatus   employmentStatus? @relation(fields: [employmentStatusId], references: [id])
   employmentStatusId Int?
   department         department?       @relation(fields: [departmentId], references: [id])
@@ -44,7 +44,7 @@ model user {
   leavePolicyId      Int?
   weeklyHoliday      weeklyHoliday?    @relation(fields: [weeklyHolidayId], references: [id])
   weeklyHolidayId    Int?
-
+ 
   attendance         attendance[]
   leaveApplication   leaveApplication[]
   payslip            payslip[]

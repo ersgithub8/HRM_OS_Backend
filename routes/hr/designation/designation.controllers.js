@@ -228,12 +228,12 @@ const allDesignationWiseEmployee = async (req, res) => {
 //               },
 //             },
 //           },
-//           orderBy: {
-//             id: "desc",
-//           },
-//           take: 1,
-//         },
-//       },
+      //     orderBy: {
+      //       id: "desc",
+      //     },
+      //     take: 1,
+      //   },
+      // },
 //     });
 
 //     const data = designationWiseEmployee.map((item) => {

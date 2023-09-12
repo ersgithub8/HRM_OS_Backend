@@ -141,4 +141,8 @@ app.use(
   "/task-priority",
   require("./routes/projectManagement/priority/priority.routes")
 );
+app.use(
+  "/hirarchy",
+  require("./routes/hr/hirarchy/hirarchy.route")
+);
 module.exports = app;
