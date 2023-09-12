@@ -212,6 +212,104 @@ const allDesignationWiseEmployee = async (req, res) => {
   }
 };
 
+// const singleDesignationWiseEmployee = async (req, res) => {
+//   try {
+//     const designationWiseEmployee = await prisma.user.findMany({
+//       select: {
+//         id: true,
+//         firstName: true,
+//         lastName: true,
+//         designationHistory: {
+//           select: {
+//             designation: {
+//               select: {
+//                 id: true,
+//                 name: true,
+//               },
+//             },
+//           },
+//           orderBy: {
+//             id: "desc",
+//           },
+//           take: 1,
+//         },
+//       },
+//     });
+
+//     const data = designationWiseEmployee.map((item) => {
+//       return {
+//         designationId: item.designationHistory[0].designation.id,
+//         designationName: item.designationHistory[0].designation.name,
+//         employee: [
+//           {
+//             id: item.id,
+//             firstName: item.firstName,
+//             lastName: item.lastName,
+//           },
+//         ],
+//       };
+//     });
+
+//     const result = data.reduce((acc, current) => {
+//       const x = acc.find(
+//         (item) => item.designationId === current.designationId
+//       );
+//       if (!x) {
+//         return acc.concat([current]);
+//       } else {
+//         x.employee = x.employee.concat(current.employee);
+//         return acc;
+//       }
+//     }, []);
+
+//     // get all designation and map it with the result
+//     const allDesignation = await prisma.designation.findMany({
+//       orderBy: {
+//         id: "asc",
+//       },
+//     });
+
+//     const finalResult = allDesignation.map((item) => {
+//       const x = result.find((i) => i.designationId === item.id);
+//       if (!x) {
+//         return {
+//           designationId: item.id,
+//           designationName: item.name,
+//           employee: [],
+//         };
+//       } else {
+//         return x;
+//       }
+//     });
+
+//     const singleDesignation = finalResult.find(
+//       (item) => item.designationId === parseInt(req.params.id)
+//     );
+
+//     return res.status(200).json(singleDesignation);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+// const deleteSingleDesignation = async (req, res) => {
+//   try {
+//     const deletedDesignation = await prisma.designation.delete({
+//       where: {
+//         id: parseInt(req.params.id),
+//       },
+//     });
+
+//     if (!deletedDesignation) {
+//       return res.status(404).json({ message: "Designation delete to failed" });
+//     }
+//     return res.status(200).json(deletedDesignation);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
 const singleDesignationWiseEmployee = async (req, res) => {
   try {
     const designationWiseEmployee = await prisma.user.findMany({
@@ -237,17 +335,33 @@ const singleDesignationWiseEmployee = async (req, res) => {
     });
 
     const data = designationWiseEmployee.map((item) => {
-      return {
-        designationId: item.designationHistory[0].designation.id,
-        designationName: item.designationHistory[0].designation.name,
-        employee: [
-          {
-            id: item.id,
-            firstName: item.firstName,
-            lastName: item.lastName,
-          },
-        ],
-      };
+      // Check if designationHistory exists and is not empty
+      if (item.designationHistory && item.designationHistory.length > 0) {
+        return {
+          designationId: item.designationHistory[0].designation.id,
+          designationName: item.designationHistory[0].designation.name,
+          employee: [
+            {
+              id: item.id,
+              firstName: item.firstName,
+              lastName: item.lastName,
+            },
+          ],
+        };
+      } else {
+        // Handle the case where designationHistory is empty
+        return {
+          designationId: null, // or any appropriate default value
+          designationName: null, // or any appropriate default value
+          employee: [
+            {
+              id: item.id,
+              firstName: item.firstName,
+              lastName: item.lastName,
+            },
+          ],
+        };
+      }
     });
 
     const result = data.reduce((acc, current) => {
@@ -292,22 +406,6 @@ const singleDesignationWiseEmployee = async (req, res) => {
   }
 };
 
-// const deleteSingleDesignation = async (req, res) => {
-//   try {
-//     const deletedDesignation = await prisma.designation.delete({
-//       where: {
-//         id: parseInt(req.params.id),
-//       },
-//     });
-
-//     if (!deletedDesignation) {
-//       return res.status(404).json({ message: "Designation delete to failed" });
-//     }
-//     return res.status(200).json(deletedDesignation);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
 
 const deleteSingleDesignation = async (req, res) => {
   const designationId = parseInt(req.params.id);

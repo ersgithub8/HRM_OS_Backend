@@ -470,6 +470,8 @@ const updateSingleUser = async (req, res) => {
       street: req.body.street,
       city: req.body.city,
       state: req.body.state,
+      reference_id: req.body.reference_id,
+      applicationStatus: req.body.applicationStatus,
       zipCode: req.body.zipCode,
       country: req.body.country,
       departmentId: req.body.departmentId,
