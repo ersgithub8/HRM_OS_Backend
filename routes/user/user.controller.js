@@ -460,7 +460,15 @@ const getSingleUser = async (req, res) => {
     singleUser.unpaidLeaveDays = unpaidLeaveDays;
     singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
     singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
+    const roleId = singleUser.reference_id; // Assuming reference_id is the field where the roll id is saved
+    const superviser = await prisma.role.findUnique({
+      where: {
+        id: roleId,
+      },
+    });
 
+    // Add the roleType to the user data
+    singleUser.superviser = superviser;
     // Omit the password from the user data before sending the response
     const { password, ...userWithoutPassword } = singleUser;
 
