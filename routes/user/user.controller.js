@@ -170,6 +170,7 @@ const register = async (req, res) => {
         email: req.body.email,
         phone: req.body.phone,
         dob: req.body.dob ? req.body.dob:null,
+      
         emergencycontact:req.body.emergencycontact ? req.body.emergencycontact:null,
         nicno:req.body.nicno ? req.body.nicno:null,
         identityStatus:req.body.identityStatus ? req.body.identityStatus:null,
