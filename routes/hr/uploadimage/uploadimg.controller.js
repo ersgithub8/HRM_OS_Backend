@@ -115,32 +115,83 @@ exports.delimage = async (req, res) => {
   }
 };
 
-exports.file= async (req, res) => {
-  if (req.files) {
-    try {
-      const allowedExtensions = ['.pdf', '.xlsx', '.png'];
+// exports.file= async (req, res) => {
+//   if (req.files) {
+//     try {
+//       const allowedExtensions = ['.pdf', '.xlsx', '.png'];
       
 
-      let name = "file_" + Date.now()+".pdf";
-      let fileKey = await uploadFile(req.files.file, name);
+//       let name = "file_" + Date.now()+".pdf";
+//       let fileKey = await uploadFile(req.files.file, name);
 
-      let path = fileKey;
+//       let path = fileKey;
+//       return res.status(200).json({
+//         path: path,
+//         message: "File Successfully Uploaded",
+//         error: false,
+//       });
+//     } catch (err) {
+//       return res.status(404).json({
+//         message: "Image Upload Failed " + err,
+//         error: true,
+//       });
+//     }
+//   } else {
+//     return res.status(404).json({
+//       message: 'File Upload Failed',
+//       error: true,
+//     });
+//   }
+// }
+
+
+
+exports.file = async (req, res) => {
+  if (req.files) {
+    try {
+     
+      const allowedExtensions = ['.pdf', '.xlsx', '.csv', '.png', '.jpg', '.jpeg', '.gif'];
+
+  
+      const uploadedFile = req.files.file;
+
+    
+      const fileExtension = path.extname(uploadedFile.name).toLowerCase();
+
+    
+      if (!allowedExtensions.includes(fileExtension)) {
+        return res.status(400).json({
+          message: 'File type not allowed',
+          error: true,
+        });
+      }
+
+      // Generate a unique file name
+      const uniqueFileName = `file_${Date.now()}${fileExtension}`;
+
+      // Upload the file using your uploadFile function
+      const fileKey = await uploadFile(uploadedFile, uniqueFileName);
+
+      const filePath = fileKey; // Changed the variable name to filePath
       return res.status(200).json({
-        path: path,
-        message: "File Successfully Uploaded",
+        path: filePath, // Updated variable name here as well
+        message: 'File Successfully Uploaded',
         error: false,
       });
     } catch (err) {
-      return res.status(404).json({
-        message: "Image Upload Failed " + err,
+      return res.status(500).json({
+        message: 'File Upload Failed ' + err,
         error: true,
       });
     }
   } else {
-    return res.status(404).json({
+    return res.status(400).json({
       message: 'File Upload Failed',
       error: true,
     });
   }
-}
+};
+
+
+
 
