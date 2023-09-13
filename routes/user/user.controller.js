@@ -173,7 +173,7 @@ const register = async (req, res) => {
       
         emergencycontact:req.body.emergencycontact ? req.body.emergencycontact:null,
         nicno:req.body.nicno ? req.body.nicno:null,
-        identityStatus:req.body.identityStatus ? req.body.identityStatus:null,
+        identitystatus:req.body.identitystatus ? req.body.identitystatus:null,
         firstaid:req.body.firstaid ? req.body.firstaid:null,
         dbscheck:req.body.dbscheck ? req.body.dbscheck:null,
         safeguarding:req.body.safeguarding ? req.body.safeguarding:null,
@@ -663,7 +663,7 @@ const updateSingleUser = async (req, res) => {
           req.body.employmentStatusId || existingUser.employmentStatusId,
         emergencycontact: req.body.emergencycontact || existingUser.emergencycontact,
         nicno: req.body.nicno || existingUser.nicno,
-        identityStatus: req.body.identityStatus || existingUser.identityStatus,
+        identitystatus: req.body.identitystatus || existingUser.identitystatus,
         firstaid: req.body.firstaid || existingUser.firstaid,
         dbscheck: req.body.dbscheck || existingUser.dbscheck,
         safeguarding: req.body.safeguarding || existingUser.safeguarding,
