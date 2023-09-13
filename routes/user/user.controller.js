@@ -673,6 +673,7 @@ const updateSingleUser = async (req, res) => {
         address: req.body.address || existingUser.address,
         reference_id: req.body.reference_id || existingUser.reference_id,
         DOB: req.body.DOB || existingUser.DOB,
+        
       };
     } else {
       // owner can change only password
