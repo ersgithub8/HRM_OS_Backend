@@ -169,7 +169,7 @@ const register = async (req, res) => {
         password: hash,
         email: req.body.email,
         phone: req.body.phone,
-        DOB: req.body.DOB,
+        dob: req.body.dob ? req.body.dob:null,
         emergencycontact:req.body.emergencycontact ? req.body.emergencycontact:null,
         nicno:req.body.nicno ? req.body.nicno:null,
         identityStatus:req.body.identityStatus ? req.body.identityStatus:null,
@@ -672,7 +672,7 @@ const updateSingleUser = async (req, res) => {
         end_date: req.body.end_date || existingUser.end_date,
         address: req.body.address || existingUser.address,
         reference_id: req.body.reference_id || existingUser.reference_id,
-        DOB: req.body.DOB || existingUser.DOB,
+        dob: req.body.dob || existingUser.dob,
       };
     } else {
       // owner can change only password

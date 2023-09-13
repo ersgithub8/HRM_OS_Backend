@@ -16,7 +16,20 @@ model user {
   email      String?   @unique
   phone      String?   @unique
   reference_id  Int?
+  dob           DateTime?
+  emergencycontact      String?
+  nicno                 String?
+  identityStatus        String?
+  firstaid              String?
+  dbscheck              String?
+  safeguarding          String?
 
+  companyname           String?
+  designation           String?
+  joining_date          DateTime?
+  end_date              DateTime?
+  address               String?
+  reference_contact     String?
   resetPasswordToken   String?
   resetPasswordExpires  DateTime @default(now())
   // address
