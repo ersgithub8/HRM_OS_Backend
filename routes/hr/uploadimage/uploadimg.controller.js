@@ -58,31 +58,31 @@ const fileFilterclient = (req, file, cb) => {
     cb(null, false);
   }
 };
-exports.uploadimages = async (req, res) => {
-  if (req.files) {
-    try {
-      let name = "image_" + Date.now() + ".png";
-      let fileKey = await uploadFile(req.files.image, name);
+// exports.uploadimages = async (req, res) => {
+//   if (req.files) {
+//     try {
+//       let name = "image_" + Date.now() + ".png";
+//       let fileKey = await uploadFile(req.files.image, name);
 
-      let path = fileKey;
-      return res.status(200).json({
-        path: path,
-        message: "Image Successfully Uploaded",
-        error: false,
-      });
-    } catch (err) {
-      return res.status(404).json({
-        message: "Image Upload Failed " + err,
-        error: true,
-      });
-    }
-  } else {
-    return res.status(404).json({
-      message: "Image Upload Failed",
-      error: true,
-    });
-  }
-};
+//       let path = fileKey;
+//       return res.status(200).json({
+//         path: path,
+//         message: "Image Successfully Uploaded",
+//         error: false,
+//       });
+//     } catch (err) {
+//       return res.status(404).json({
+//         message: "Image Upload Failed " + err,
+//         error: true,
+//       });
+//     }
+//   } else {
+//     return res.status(404).json({
+//       message: "Image Upload Failed",
+//       error: true,
+//     });
+//   }
+// };
 
 exports.delimage = async (req, res) => {
   try {
@@ -144,16 +144,14 @@ exports.delimage = async (req, res) => {
 //   }
 // }
 
-
-
-exports.file = async (req, res) => {
+exports.uploadimages = async (req, res) => {
   if (req.files) {
     try {
      
       const allowedExtensions = ['.pdf', '.xlsx', '.csv', '.png', '.jpg', '.jpeg', '.gif'];
 
   
-      const uploadedFile = req.files.file;
+      const uploadedFile = req.files.image;
 
     
       const fileExtension = path.extname(uploadedFile.name).toLowerCase();
@@ -167,7 +165,7 @@ exports.file = async (req, res) => {
       }
 
       // Generate a unique file name
-      const uniqueFileName = `file_${Date.now()}${fileExtension}`;
+      const uniqueFileName = `image_${Date.now()}${fileExtension}`;
 
       // Upload the file using your uploadFile function
       const fileKey = await uploadFile(uploadedFile, uniqueFileName);
