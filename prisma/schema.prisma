@@ -59,6 +59,7 @@ model user {
   weeklyHoliday      weeklyHoliday?    @relation(fields: [weeklyHolidayId], references: [id])
   weeklyHolidayId    Int?
  
+ 
   attendance         attendance[]
   leaveApplication   leaveApplication[]
   payslip            payslip[]
