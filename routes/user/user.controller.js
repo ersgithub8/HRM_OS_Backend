@@ -158,7 +158,7 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "EmployeeId already exists." });
     }
     const join_date = new Date();
-    const leave_date = req.body.leaveDate ? new Date(req.body.leaveDate) : null;
+    const leave_date = new Date();
 
     const hash = await bcrypt.hash(req.body.password, saltRounds);
     const createUser = await prisma.user.create({
@@ -184,7 +184,7 @@ const register = async (req, res) => {
         joining_date:req.body.joining_date,
         end_date:req.body.end_date,
         address:req.body.address,
-
+        reference_contact:req.body.reference_contact,
         street: req.body.street ? req.body.street:null,
         city: req.body.city ? req.body.city : null,
         state: req.body.state ? req.body.state : null,
@@ -199,7 +199,7 @@ const register = async (req, res) => {
         employmentStatusId: req.body.employmentStatusId ? req.body.employmentStatusId : null,
         departmentId: req.body.departmentId ? req.body.departmentId : null,
         roleId: req.body.roleId,
-        reference_id: req.body.reference_id ? req.body.reference_id : null,
+        // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
         leavePolicyId: req.body.leavePolicyId ? req.body.leavePolicyId : null,
@@ -674,6 +674,7 @@ const updateSingleUser = async (req, res) => {
         address: req.body.address || existingUser.address,
         reference_id: req.body.reference_id || existingUser.reference_id,
         dob: req.body.dob || existingUser.dob,
+        reference_contact:req.body.reference_contact || existingUser.reference_contact
       };
     } else {
       // owner can change only password

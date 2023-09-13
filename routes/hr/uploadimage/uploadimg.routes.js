@@ -2,45 +2,51 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
+const AWS = require("aws-sdk");
+const imageRoutes = express.Router();
+const {
+  uploadimages,delimage,
+} = require("./uploadimg.controller");
 
-// Require the controllers WHICH WE DID NOT CREATE YET!!
-const controllerimg = require("../../../routes/hr/uploadimage/uploadimg.controller");
+const bucketName = process.env.s3bucketname;
 
-
-//for client image upload
-const storageclient = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './uploads');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const fileFilterclient = (req, file, cb) => {
-  const allowedFileTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/gif",
-    "image/GIF",
-    "image/svg+xml",
-  ];
-  if (allowedFileTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
+const awsConfig = {
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+  endpoint: process.env.s3endpoint,
+  region: process.env.aws_region,
 };
 
-let clientimage = multer({
-  storage: storageclient,
-  fileFilter: fileFilterclient,
+
+
+
+//Specify the multer config
+let upload = multer({
+    // storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 1024 * 1024 * 5,
+    },
+    fileFilter: function (req, file, done) {
+        if (
+            file.mimetype === "image/jpeg" ||
+            file.mimetype === "image/png" ||
+            file.mimetype === "image/jpg"
+        ) {
+            done(null, true);
+        } else {
+            //prevent the upload
+            var newError = new Error("File type is incorrect");
+            newError.name = "MulterError";
+            done(newError, false);
+        }
+    },
 });
 
-router.post("/", controllerimg.uploadimages);
-// router.post("/file", controllerimg.file);
+//upload to s3
 
-router.post("/delete",  controllerimg.delimage);
 
-module.exports = router;
+imageRoutes.post("/", uploadimages);
+
+imageRoutes.post("/delete",  delimage);
+
+module.exports = imageRoutes;

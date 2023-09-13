@@ -36,13 +36,6 @@ const uploadFile = function (fileData, name) {
   });
 };
 
-// const upload = multer({
-//   storage: multer.memoryStorage(),
-//   limits: {
-//     fileSize: 5 * 1024 * 1024, // limit file size to 5MB
-//   },
-// });
-
 const fileFilterclient = (req, file, cb) => {
   const allowedFileTypes = [
     "image/jpeg",
@@ -58,7 +51,7 @@ const fileFilterclient = (req, file, cb) => {
     cb(null, false);
   }
 };
-// exports.uploadimages = async (req, res) => {
+// const uploadimages = async (req, res) => {
 //   if (req.files) {
 //     try {
 //       let name = "image_" + Date.now() + ".png";
@@ -83,8 +76,112 @@ const fileFilterclient = (req, file, cb) => {
 //     });
 //   }
 // };
+// const uploadimages = async (req, res) => {
+//   if (req.files) {
+//     try {
+//       const uploadedPaths = [];
+      
+//       for (const image of req.files.image) {
+//         const name = "image_" + Date.now() + ".png";
+//         const fileKey = await uploadFile(image, name);
+//         uploadedPaths.push(fileKey);
+//       }
 
-exports.delimage = async (req, res) => {
+//       return res.status(200).json({
+//         paths: uploadedPaths,
+//         message: "Images Successfully Uploaded",
+//         error: false,
+//       });
+//     } catch (err) {
+//       return res.status(404).json({
+//         message: "Image Upload Failed " + err,
+//         error: true,
+//       });
+//     }
+//   } else {
+//     return res.status(404).json({
+//       message: "Image Upload Failed",
+//       error: true,
+//     });
+//   }
+// };
+// const uploadimages = async (req, res) => {
+//   if (req.files) {
+//     try {
+//       const uploadedPaths = [];
+      
+//       for (const file of req.files.image) {
+//         const ext = file.name.split('.').pop(); // Get the file extension
+//         const name = "file_" + Date.now() + "." + ext; // Generate a unique name with the same extension
+//         const fileKey = await uploadFile(file, name);
+//         uploadedPaths.push(fileKey);
+//       }
+
+//       return res.status(200).json({
+//         paths: uploadedPaths,
+//         message: "Files Successfully Uploaded",
+//         error: false,
+//       });
+//     } catch (err) {
+//       return res.status(404).json({
+//         message: "File Upload Failed " + err,
+//         error: true,
+//       });
+//     }
+//   } else {
+//     return res.status(404).json({
+//       message: "File Upload Failed",
+//       error: true,
+//     });
+//   }
+// };
+
+const uploadimages = async (req, res) => {
+  if (req.files) {
+    try {
+      const uploadedPaths = [];
+      
+      for (const file of req.files.image) {
+        const ext = file.name.split('.').pop(); 
+        let fileType;
+
+       
+        if (ext.match(/(jpg|jpeg|png|gif)$/i)) {
+          fileType = 'profile';
+        } else if (ext.match(/(pdf|doc|docx|txt)$/i)) {
+          fileType = 'document';
+        } else {
+          fileType = 'file'; // Default to "file" for other types
+        }
+
+        const name = fileType + "_" + Date.now() + "." + ext; // Generate a unique name based on file type
+        const fileKey = await uploadFile(file, name);
+        uploadedPaths.push(fileKey);
+      }
+
+      return res.status(200).json({
+        paths: uploadedPaths,
+        message: "Files Successfully Uploaded",
+        error: false,
+      });
+    } catch (err) {
+      return res.status(404).json({
+        message: "File Upload Failed " + err,
+        error: true,
+      });
+    }
+  } else {
+    return res.status(404).json({
+      message: "File Upload Failed",
+      error: true,
+    });
+  }
+};
+
+
+
+
+const delimage = async (req, res) => {
   try {
     if (req.body.image) {
       let img = req.body.image.split("/");
@@ -115,81 +212,5 @@ exports.delimage = async (req, res) => {
   }
 };
 
-// exports.file= async (req, res) => {
-//   if (req.files) {
-//     try {
-//       const allowedExtensions = ['.pdf', '.xlsx', '.png'];
-      
-
-//       let name = "file_" + Date.now()+".pdf";
-//       let fileKey = await uploadFile(req.files.file, name);
-
-//       let path = fileKey;
-//       return res.status(200).json({
-//         path: path,
-//         message: "File Successfully Uploaded",
-//         error: false,
-//       });
-//     } catch (err) {
-//       return res.status(404).json({
-//         message: "Image Upload Failed " + err,
-//         error: true,
-//       });
-//     }
-//   } else {
-//     return res.status(404).json({
-//       message: 'File Upload Failed',
-//       error: true,
-//     });
-//   }
-// }
-
-exports.uploadimages = async (req, res) => {
-  if (req.files) {
-    try {
-     
-      const allowedExtensions = ['.pdf', '.xlsx', '.csv', '.png', '.jpg', '.jpeg', '.gif'];
-
-  
-      const uploadedFile = req.files.image;
-
-    
-      const fileExtension = path.extname(uploadedFile.name).toLowerCase();
-
-    
-      if (!allowedExtensions.includes(fileExtension)) {
-        return res.status(400).json({
-          message: 'File type not allowed',
-          error: true,
-        });
-      }
-
-      // Generate a unique file name
-      const uniqueFileName = `image_${Date.now()}${fileExtension}`;
-
-      // Upload the file using your uploadFile function
-      const fileKey = await uploadFile(uploadedFile, uniqueFileName);
-
-      const filePath = fileKey; // Changed the variable name to filePath
-      return res.status(200).json({
-        path: filePath, // Updated variable name here as well
-        message: 'File Successfully Uploaded',
-        error: false,
-      });
-    } catch (err) {
-      return res.status(500).json({
-        message: 'File Upload Failed ' + err,
-        error: true,
-      });
-    }
-  } else {
-    return res.status(400).json({
-      message: 'File Upload Failed',
-      error: true,
-    });
-  }
-};
-
-
-
+module.exports = { uploadimages, delimage};
 
