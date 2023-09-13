@@ -75,6 +75,51 @@ const login = async (req, res) => {
   }
 };
 
+const validate = async (req, res) => {
+  try {
+    const existingUserByEmail = await prisma.user.findFirst({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    const existingUserByPhone = await prisma.user.findFirst({
+      where: {
+        phone: req.body.phone,
+      },
+    });
+    const existingUserByuserName = await prisma.user.findFirst({
+      where: {
+        userName: req.body.userName,
+      },
+    });
+    const existingUserByEmployeeId = await prisma.user.findFirst({
+      where: {
+        employeeId: req.body.employeeId,
+      },
+    });
+
+    if (existingUserByEmail) {
+      return res.status(400).json({ message: "Email already exists." });
+    }
+
+    if (existingUserByPhone) {
+      return res.status(400).json({ message: "Phone number already exists." });
+    }
+    if (existingUserByuserName) {
+      return res.status(400).json({ message: "UserName already exists." });
+    }
+    if (existingUserByEmployeeId) {
+      return res.status(400).json({ message: "EmployeeId already exists." });
+    }
+    return res.status(200).json({
+      message:"Validate successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const register = async (req, res) => {
   try {
     const existingUserByEmail = await prisma.user.findFirst({
@@ -460,8 +505,8 @@ const getSingleUser = async (req, res) => {
     singleUser.unpaidLeaveDays = unpaidLeaveDays;
     singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
     singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
-    const roleId = singleUser.reference_id; // Assuming reference_id is the field where the roll id is saved
-    const superviser = await prisma.role.findUnique({
+    const roleId = singleUser.reference_id; 
+    const superviser = await prisma.user.findMany({
       where: {
         id: roleId,
       },
@@ -1053,5 +1098,6 @@ module.exports = {
   changepassword,
   users_resetpassword,
   updateSingleUserprofile,
-  updateSingleUserphone
+  updateSingleUserphone,
+  validate,
 };

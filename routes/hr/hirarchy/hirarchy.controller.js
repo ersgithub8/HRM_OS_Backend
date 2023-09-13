@@ -38,6 +38,15 @@ const prisma = require("../../../utils/prisma");
             
           });
     }
+    // const roleId = singleRole.reference_id; // Assuming reference_id is the field where the roll id is saved
+    // const superviser = await prisma.role.findMany({
+    //   where: {
+    //     id: roleId,
+    //   },
+    // });
+
+    // // Add the roleType to the user data
+    // singleRole.superviser = superviser;
      res.status(200).json({
       singleRole
      })
