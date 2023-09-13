@@ -506,7 +506,7 @@ const getSingleUser = async (req, res) => {
     singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
     singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
     const roleId = singleUser.reference_id; 
-    const superviser = await prisma.user.findMany({
+    const superviser = await prisma.user.findUnique({
       where: {
         id: roleId,
       },
