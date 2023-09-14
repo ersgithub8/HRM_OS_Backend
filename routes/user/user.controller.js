@@ -684,8 +684,6 @@ const updateSingleUser = async (req, res) => {
         remainingannualallowedleave:req.body.remainingannualallowedleave || existingUser.remainingannualallowedleave,
 
 
-
-
       };
     } else {
       // owner can change only password
