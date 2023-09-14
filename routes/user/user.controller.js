@@ -642,7 +642,7 @@ const updateSingleUser = async (req, res) => {
       country: req.body.country,
       departmentId: req.body.departmentId,
       roleId: req.body.roleId,
-      reference_id:id,
+      reference_id:req.body.userId,
       shiftId: req.body.shiftId,
       locationId: req.body.locationId,
       leavePolicyId: req.body.leavePolicyId,
