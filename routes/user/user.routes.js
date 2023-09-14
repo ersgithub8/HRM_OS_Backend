@@ -19,7 +19,7 @@ const userRoutes = express.Router();
 
 userRoutes.post("/login", login); // public route
 userRoutes.post("/register",
- authorize("create-user"),
+//  authorize("create-user"),
  register); // public route
  userRoutes.post("/validate",
  validate);
