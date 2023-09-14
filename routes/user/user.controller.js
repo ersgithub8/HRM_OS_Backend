@@ -521,7 +521,7 @@ const getSingleUser = async (req, res) => {
     // singleUser.paidLeaveDays = paidLeaveDays;
     // singleUser.unpaidLeaveDays = unpaidLeaveDays;
     // singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
-    singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
+    // singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
     const roleId = singleUser.reference_id; 
     const superviser = await prisma.user.findUnique({
       where: {
