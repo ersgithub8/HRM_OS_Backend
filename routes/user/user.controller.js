@@ -93,11 +93,11 @@ const validate = async (req, res) => {
         userName: req.body.userName,
       },
     });
-    const existingUserByEmployeeId = await prisma.user.findFirst({
-      where: {
-        employeeId: req.body.employeeId,
-      },
-    });
+    // const existingUserByEmployeeId = await prisma.user.findFirst({
+    //   where: {
+    //     employeeId: req.body.employeeId,
+    //   },
+    // });
 
     if (existingUserByEmail) {
       return res.status(400).json({ message: "Email already exists." });
@@ -109,9 +109,9 @@ const validate = async (req, res) => {
     if (existingUserByuserName) {
       return res.status(400).json({ message: "UserName already exists." });
     }
-    if (existingUserByEmployeeId) {
-      return res.status(400).json({ message: "EmployeeId already exists." });
-    }
+    // if (existingUserByEmployeeId) {
+    //   return res.status(400).json({ message: "EmployeeId already exists." });
+    // }
     return res.status(200).json({
       message:"Validate successfully"
     });
@@ -138,11 +138,11 @@ const register = async (req, res) => {
         userName: req.body.userName,
       },
     });
-    const existingUserByEmployeeId = await prisma.user.findFirst({
-      where: {
-        employeeId: req.body.employeeId,
-      },
-    });
+    // const existingUserByEmployeeId = await prisma.user.findFirst({
+    //   where: {
+    //     employeeId: req.body.employeeId,
+    //   },
+    // });
 
     if (existingUserByEmail) {
       return res.status(400).json({ message: "Email already exists." });
@@ -154,9 +154,9 @@ const register = async (req, res) => {
     if (existingUserByuserName) {
       return res.status(400).json({ message: "UserName already exists." });
     }
-    if (existingUserByEmployeeId) {
-      return res.status(400).json({ message: "EmployeeId already exists." });
-    }
+    // if (existingUserByEmployeeId) {
+    //   return res.status(400).json({ message: "EmployeeId already exists." });
+    // }
     const join_date = new Date();
     const leave_date = new Date();
 
