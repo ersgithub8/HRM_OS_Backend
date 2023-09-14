@@ -223,7 +223,7 @@ model attendance {
 model leaveApplication {
   id              Int       @id @default(autoincrement())
   user            user      @relation(fields: [userId], references: [id])
-  employeeId      String?  
+  employeeid      String?  
   userId          Int
   leaveType       String
   leavecategory   String?
