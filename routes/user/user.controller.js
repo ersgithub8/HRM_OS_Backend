@@ -702,7 +702,6 @@ const updateSingleUser = async (req, res) => {
   }
 };
 
-
 const updateSingleUserprofile = async (req, res) => {
   const id = parseInt(req.params.id);
 
