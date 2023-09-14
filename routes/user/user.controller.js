@@ -175,8 +175,12 @@ const register = async (req, res) => {
         nicno:req.body.nicno,
         identitystatus:req.body.identitystatus,
         firstaid:req.body.firstaid,
+        firstaidtext:req.body.firstaidtext,
         dbscheck:req.body.dbscheck,
+        dbschecktext:req.body.dbschecktext,
         safeguarding:req.body.safeguarding,
+        safeguardingtext:req.body.safeguardingtext,
+
 
 
         companyname:req.body.companyname,
@@ -665,8 +669,11 @@ const updateSingleUser = async (req, res) => {
         nicno: req.body.nicno || existingUser.nicno,
         identitystatus: req.body.identitystatus || existingUser.identitystatus,
         firstaid: req.body.firstaid || existingUser.firstaid,
+        firstaidtext: req.body.firstaidtext || existingUser.firstaidtext,
         dbscheck: req.body.dbscheck || existingUser.dbscheck,
+        dbschecktext: req.body.dbschecktext || existingUser.dbschecktext,
         safeguarding: req.body.safeguarding || existingUser.safeguarding,
+        safeguardingtext: req.body.safeguardingtext || existingUser.safeguardingtext,
         companyname: req.body.companyname || existingUser.companyname,
         designation: req.body.designation || existingUser.designation,
         joining_date: req.body.joining_date || existingUser.joining_date,
