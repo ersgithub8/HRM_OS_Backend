@@ -36,63 +36,129 @@ const uploadFile = function (fileData, name) {
   });
 };
 
+// const uploadimages = async (req, res) => {
+//   if (req.files) {
+//     try {
+//       const uploadedPaths = [];
+//       const files = [];
+
+//       if (req.files?.image){
+//         let a = {
+//           image: req.files.image,
+//           name: "image"
+//         }
+//         files.push(a);
+//       }
+//       if (req.files?.firstaid){
+//         let a = {
+//           image: req.files.firstaid,
+//           name: "firstaid"
+//         }
+//         files.push(a);
+//       }
+//       if (req.files?.dbscheck){
+//         let a = {
+//           image: req.files.dbscheck,
+//           name: "dbscheck"
+//         }
+//         files.push(a);
+//       }
+//       if (req.files?.safeguard){
+//         let a = {
+//           image: req.files.safeguard,
+//           name: "safeguard"
+//         }
+//         files.push(a);
+//       }
+
+//       if (files.length == 0){
+//         return res.status(400).json({
+//           message: "File Not Found.",
+//           error: true,
+//         });
+//       }
+
+      
+//       for (const file of files) {
+//         const ext = file.image.name.split('.').pop();
+//         let fileType = file.name;
+
+//         const name = fileType + "_" + Date.now() + "." + ext; s
+//         const fileKey = await uploadFile(file.image, name);
+//         uploadedPaths.push({
+//           type: fileType,
+//           path: fileKey
+//         });
+//       }
+
+//       return res.status(200).json({
+//         files: uploadedPaths,
+//         message: "Files Successfully Uploaded",
+//         error: false,
+//       });
+//     } catch (err) {
+//       return res.status(404).json({
+//         message: "File Upload Failed",
+//         error: true,
+//       });
+//     }
+//   } else {
+//     return res.status(404).json({
+//       message: "File Upload Failed",
+//       error: true,
+//     });
+//   }
+// };
 const uploadimages = async (req, res) => {
   if (req.files) {
     try {
-      const uploadedPaths = [];
-      const files = {};
+      const uploadedFiles = {}; // Initialize an object to store uploaded files
 
-      if (req.files?.image){
-        let a = {
-          image: req.files.image,
-          name: "image"
-        }
-        files.push(a);
-      }
-      if (req.files?.firstaid){
-        let a = {
-          image: req.files.firstaid,
-          name: "firstaid"
-        }
-        files.push(a);
-      }
-      if (req.files?.dbscheck){
-        let a = {
-          image: req.files.dbscheck,
-          name: "dbscheck"
-        }
-        files.push(a);
-      }
-      if (req.files?.safeguard){
-        let a = {
-          image: req.files.safeguard,
-          name: "safeguard"
-        }
-        files.push(a);
+      if (req.files?.image) {
+        const ext = req.files.image.name.split('.').pop();
+        const name = "image_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.image, name);
+        uploadedFiles.image = {
+          path: fileKey
+        };
       }
 
-      if (files.length == 0){
+      if (req.files?.firstaid) {
+        const ext = req.files.firstaid.name.split('.').pop();
+        const name = "firstaid_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.firstaid, name);
+        uploadedFiles.firstaid = {
+          path: fileKey
+        };
+      }
+
+      if (req.files?.dbscheck) {
+        const ext = req.files.dbscheck.name.split('.').pop();
+        const name = "dbscheck_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.dbscheck, name);
+        uploadedFiles.dbscheck = {
+          path: fileKey
+        };
+      }
+
+      if (req.files?.safeguard) {
+        const ext = req.files.safeguard.name.split('.').pop();
+        const name = "safeguard_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.safeguard, name);
+        uploadedFiles.safeguard = {
+          path: fileKey
+        };
+      }
+
+      if (Object.keys(uploadedFiles).length === 0) {
         return res.status(400).json({
           message: "File Not Found.",
           error: true,
         });
       }
 
-      
-      for (const file of files) {
-        const ext = file.image.name.split('.').pop();
-        let fileType = file.name;
-
-        const name = fileType + "_" + Date.now() + "." + ext; s
-        const fileKey = await uploadFile(file.image, name);
-        uploadedPaths.push({
-          type: fileType,
-          path: fileKey
-        });
-      }
-
       return res.status(200).json({
-        files: uploadedPaths,
+        files: uploadedFiles,
         message: "Files Successfully Uploaded",
         error: false,
       });
@@ -109,6 +175,7 @@ const uploadimages = async (req, res) => {
     });
   }
 };
+
 
 const delimage = async (req, res) => {
   try {
