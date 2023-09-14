@@ -493,34 +493,34 @@ const getSingleUser = async (req, res) => {
     });
 
     // Check if the user record exists
-    if (!singleUser) {
-      return res.status(404).json({ message: "User not found." });
-    }
-    const leaveDays = await prisma.leaveApplication.findMany({
-      where: {
-        userId: userId,
-        status: "ACCEPTED",
-        acceptLeaveFrom: {
-          gte: new Date(new Date().getFullYear(), 0, 1),
-        },
-        acceptLeaveTo: {
-          lte: new Date(new Date().getFullYear(), 11, 31),
-        },
-      },
-    });
+    // if (!singleUser) {
+    //   return res.status(404).json({ message: "User not found." });
+    // }
+    // const leaveDays = await prisma.leaveApplication.findMany({
+    //   where: {
+    //     userId: userId,
+    //     status: "ACCEPTED",
+    //     acceptLeaveFrom: {
+    //       gte: new Date(new Date().getFullYear(), 0, 1),
+    //     },
+    //     acceptLeaveTo: {
+    //       lte: new Date(new Date().getFullYear(), 11, 31),
+    //     },
+    //   },
+    // });
 
-    const paidLeaveDays = leaveDays
-      .filter((l) => l.leaveType === "PAID")
-      .reduce((acc, item) => acc + item.leaveDuration, 0);
+    // const paidLeaveDays = leaveDays
+    //   .filter((l) => l.leaveType === "PAID")
+    //   .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-    const unpaidLeaveDays = leaveDays
-      .filter((l) => l.leaveType === "UNPAID")
-      .reduce((acc, item) => acc + item.leaveDuration, 0);
+    // const unpaidLeaveDays = leaveDays
+    //   .filter((l) => l.leaveType === "UNPAID")
+    //   .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-    // Calculate remaining leave days
-    singleUser.paidLeaveDays = paidLeaveDays;
-    singleUser.unpaidLeaveDays = unpaidLeaveDays;
-    singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
+    // // Calculate remaining leave days
+    // singleUser.paidLeaveDays = paidLeaveDays;
+    // singleUser.unpaidLeaveDays = unpaidLeaveDays;
+    // singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
     singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
     const roleId = singleUser.reference_id; 
     const superviser = await prisma.user.findUnique({
