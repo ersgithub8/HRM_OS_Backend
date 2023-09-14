@@ -54,7 +54,7 @@ const permissions = endpoints.reduce((acc, cur) => {
   return [...acc, ...permission];
 }, []);
 
-const roles = ["admin", "staff"];
+const roles = ["admin", "staff" ,"CEO","COO","NSC","NDC","ASC","AdminAssistant"];
 
 const account = [
   { name: "Asset", type: "Asset" },
