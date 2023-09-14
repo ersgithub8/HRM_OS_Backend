@@ -24,7 +24,7 @@ const getAllAccount = async (req, res) => {
     const allAccount = await prisma.account.findMany({
       orderBy: [
         {
-          id: "asc",
+          id: "desc",
         },
       ],
       include: {
