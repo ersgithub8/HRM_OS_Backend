@@ -26,7 +26,10 @@ model user {
   dbschecktext              String?
   safeguarding          String?
   safeguardingtext      String?
-
+  bankallowedleave            String @default("20")
+ remaing_bankallowedleave     String @default("20")
+ annualallowedleave           Sring @default("20")
+ remaining_annualallowedleave Sring @default("20")
   companyname           String?
   designation           String?
   joining_date          DateTime?
@@ -220,10 +223,10 @@ model attendance {
 model leaveApplication {
   id              Int       @id @default(autoincrement())
   user            user      @relation(fields: [userId], references: [id])
- 
+  employeeId      String?  
   userId          Int
   leaveType       String
-
+  leavecategory   String?
   leaveFrom       DateTime
   leaveTo         DateTime
   acceptLeaveFrom DateTime?
