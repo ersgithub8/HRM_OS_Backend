@@ -677,7 +677,15 @@ const updateSingleUser = async (req, res) => {
         address: req.body.address || existingUser.address,
         reference_id: req.body.reference_id || existingUser.reference_id,
         dob: req.body.dob || existingUser.dob,
-        reference_contact:req.body.reference_contact || existingUser.reference_contact
+        reference_contact:req.body.reference_contact || existingUser.reference_contact,
+        bankallowedleave:req.body.bankallowedleave || existingUser.bankallowedleave,
+        remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
+        annualallowedleave:req.body.annualallowedleave || existingUser.annualallowedleave,
+        remainingannualallowedleave:req.body.remainingannualallowedleave || existingUser.remainingannualallowedleave,
+
+
+
+
       };
     } else {
       // owner can change only password
