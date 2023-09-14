@@ -540,7 +540,6 @@ const getSingleUser = async (req, res) => {
   }
 };
 
-
 // const updateSingleUser = async (req, res) => {
 //   const id = parseInt(req.params.id);
 //   // only allow admins and owner to edit other user records. use truth table to understand the logic
