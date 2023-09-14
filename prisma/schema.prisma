@@ -27,9 +27,9 @@ model user {
   safeguarding          String?
   safeguardingtext      String?
   bankallowedleave            String @default("20")
- remaing_bankallowedleave     String @default("20")
+ remaingbankallowedleave     String @default("20")
  annualallowedleave           Sring @default("20")
- remaining_annualallowedleave Sring @default("20")
+ remainingannualallowedleave Sring @default("20")
   companyname           String?
   designation           String?
   joining_date          DateTime?
