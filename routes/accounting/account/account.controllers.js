@@ -44,6 +44,7 @@ const getAllAccount = async (req, res) => {
         },
       },
     });
+    
     // some up all debit and credit amount from each subAccount and add it to every subAccount object
     let tb = {};
     const accountInfo = allAccount.map((account) => {
