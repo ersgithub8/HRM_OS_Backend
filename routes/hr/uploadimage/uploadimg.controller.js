@@ -136,37 +136,160 @@ const fileFilterclient = (req, file, cb) => {
 //   }
 // };
 
+// const uploadimages = async (req, res) => {
+//   if (req.files) {
+//     try {
+//       const uploadedPaths = [];
+      
+//       for (const file of req.files.image) {
+//         const ext = file.name.split('.').pop(); 
+//         let fileType;
+
+       
+//         if (ext.match(/(jpg|jpeg|png|gif)$/i)) {
+//           fileType = 'profile';
+//         } else if (ext.match(/(pdf|doc|docx|txt)$/i)) {
+//           fileType = 'document';
+//         } else {
+//           fileType = 'file'; // Default to "file" for other types
+//         }
+
+//         const name = fileType + "_" + Date.now() + "." + ext; // Generate a unique name based on file type
+//         const fileKey = await uploadFile(file, name);
+//         uploadedPaths.push(fileKey);
+//       }
+
+//       return res.status(200).json({
+//         paths: uploadedPaths,
+//         message: "Files Successfully Uploaded",
+//         error: false,
+//       });
+//     } catch (err) {
+//       return res.status(404).json({
+//         message: "File Upload Failed " + err,
+//         error: true,
+//       });
+//     }
+//   } else {
+//     return res.status(404).json({
+//       message: "File Upload Failed",
+//       error: true,
+//     });
+//   }
+// };
+
+// const uploadimages = async (req, res) => {
+//   if (req.files) {
+//     try {
+//       const uploadedPaths = [];
+
+//       const files = Array.isArray(req.files.image) ? req.files.image : [req.files.image]; 
+
+//       for (const file of files) {
+//         const ext = file.name.split('.').pop();
+//         let fileType;
+//         const randomIndex = Math.floor(Math.random() * 4);
+
+//         if (randomIndex === 0) {
+//           fileType = 'profile';
+//         } else if (randomIndex === 1) {
+//           fileType = 'firstaid';
+//         } else if (randomIndex === 2) {
+//           fileType = 'dbscheck';
+//         } else {
+//           fileType = 'safeguard';
+//         }
+
+//         const name = fileType + "_" + Date.now() + "." + ext; // Generate a unique name based on file type
+//         const fileKey = await uploadFile(file, name);
+//         uploadedPaths.push({
+//           type: fileType,
+//           path: fileKey
+//         });
+//       }
+
+//       return res.status(200).json({
+//         files: uploadedPaths,
+//         message: "Files Successfully Uploaded",
+//         error: false,
+//       });
+//     } catch (err) {
+//       return res.status(404).json({
+//         message: "File Upload Failed " + err,
+//         error: true,
+//       });
+//     }
+//   } else {
+//     return res.status(404).json({
+//       message: "File Upload Failed",
+//       error: true,
+//     });
+//   }
+// };
+
 const uploadimages = async (req, res) => {
   if (req.files) {
     try {
       const uploadedPaths = [];
-      
-      for (const file of req.files.image) {
-        const ext = file.name.split('.').pop(); 
-        let fileType;
+      const files = [];
 
-       
-        if (ext.match(/(jpg|jpeg|png|gif)$/i)) {
-          fileType = 'profile';
-        } else if (ext.match(/(pdf|doc|docx|txt)$/i)) {
-          fileType = 'document';
-        } else {
-          fileType = 'file'; // Default to "file" for other types
+      if (req.files?.image){
+        let a = {
+          image: req.files.image,
+          name: "image"
         }
+        files.push(a);
+      }
+      if (req.files?.firstaid){
+        let a = {
+          image: req.files.firstaid,
+          name: "firstaid"
+        }
+        files.push(a);
+      }
+      if (req.files?.dbscheck){
+        let a = {
+          image: req.files.dbscheck,
+          name: "dbscheck"
+        }
+        files.push(a);
+      }
+      if (req.files?.safeguard){
+        let a = {
+          image: req.files.safeguard,
+          name: "safeguard"
+        }
+        files.push(a);
+      }
+
+      if (files.length == 0){
+        return res.status(400).json({
+          message: "File Not Found.",
+          error: true,
+        });
+      }
+
+      
+      for (const file of files) {
+        const ext = file.image.name.split('.').pop();
+        let fileType = file.name;
 
         const name = fileType + "_" + Date.now() + "." + ext; // Generate a unique name based on file type
-        const fileKey = await uploadFile(file, name);
-        uploadedPaths.push(fileKey);
+        const fileKey = await uploadFile(file.image, name);
+        uploadedPaths.push({
+          type: fileType,
+          path: fileKey
+        });
       }
 
       return res.status(200).json({
-        paths: uploadedPaths,
+        files: uploadedPaths,
         message: "Files Successfully Uploaded",
         error: false,
       });
     } catch (err) {
       return res.status(404).json({
-        message: "File Upload Failed " + err,
+        message: "File Upload Failed",
         error: true,
       });
     }
@@ -177,6 +300,12 @@ const uploadimages = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
 
 
 
