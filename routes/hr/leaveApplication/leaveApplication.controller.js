@@ -24,7 +24,6 @@ const createSingleLeave = async (req, res) => {
       const leaveDuration = Math.round(
         (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
       );
-
       const createdLeave = await prisma.leaveApplication.create({
         data: {
           user: {
