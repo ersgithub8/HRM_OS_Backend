@@ -8,6 +8,7 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 const jwt = require("jsonwebtoken");
+const { isNullOrUndefined } = require("util");
 const secret = process.env.JWT_SECRET;
 
 const login = async (req, res) => {
@@ -542,8 +543,18 @@ singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy?.unpaidLeaveCount - unpa
 
 // Set to null if leavePolicy or respective leave counts are null
 if (!singleUser.leavePolicy) {
+  singleUser.leavePolicy={
+    id:null,
+    name:null,
+    paidLeaveCount:null,
+    status:null,
+    unpaidLeaveCount:null
+
+  }
+  singleUser.paidLeaveDays = null;
+  singleUser.unpaidLeaveDays = null;
   singleUser.leftPaidLeaveDays = null;
-  singleUser.leftUnpaidLeaveDays = null;
+  singleUser.leftUnpaidLeaveDays =null;
 } else {
   singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
   singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
