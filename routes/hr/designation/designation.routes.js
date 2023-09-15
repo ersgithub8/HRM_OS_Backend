@@ -26,7 +26,9 @@ designationRoutes.post(
   authorize("create-designation"),
   createSingleDesignation
 );
-designationRoutes.get("/", authorize("readAll-designation"), getAllDesignation);
+designationRoutes.get("/", 
+// authorize("readAll-designation"), 
+getAllDesignation);
 designationRoutes.get(
   "/:id",
   authorize("readSingle-designation"),
