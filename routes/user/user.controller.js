@@ -527,31 +527,23 @@ const getSingleUser = async (req, res) => {
     singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
     singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
     const roleId = singleUser.reference_id;
-console.log(roleId, "roleid");
 
-if (roleId === null) {
-  singleUser.superviser = null; // Set to null if roleId is null
-} else {
-  const superviser = await prisma.user.findMany({
-    where: {
-      id: roleId,
-    },
-  });
-
-  // Omit the password from the user data
-  if (superviser.length > 0) {
-    // If superviser array is not empty
-    const supervisorWithoutPassword = superviser.map((user) => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
-    singleUser.superviser = supervisorWithoutPassword;
-  } else {
-    singleUser.superviser = null; // Set to null if no supervisor data
-  }
-}
-
-    // Omit the password from the user data before sending the response
+    if (roleId === null) {
+      singleUser.superviser = null; 
+    } else {
+      const superviser = await prisma.user.findUnique({
+        where: {
+          id: roleId,
+        },
+      });
+    
+      if (superviser) {
+        const { password, ...userWithoutPassword } = superviser;
+        singleUser.superviser = userWithoutPassword;
+      } else {
+        singleUser.superviser = null; 
+      }
+    }
     const { password, ...userWithoutPassword } = singleUser;
 
     return res.status(200).json(userWithoutPassword);

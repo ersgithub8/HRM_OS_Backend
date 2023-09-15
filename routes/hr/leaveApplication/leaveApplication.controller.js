@@ -1,10 +1,55 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
 //create a new employee
+// const createSingleLeave = async (req, res) => {
+//   if (req.query.query === "deletemany") {
+//     try {
+//       // delete many designation at once
+//       const deletedLeave = await prisma.leaveApplication.deleteMany({
+//         where: {
+//           id: {
+//             in: req.body,
+//           },
+//         },
+//       });
+//       return res.status(200).json(deletedLeave);
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   } else {
+//     try {
+//       // create single designation from an object
+//       const leaveFrom = new Date(req.body.leaveFrom);
+//       const leaveTo = new Date(req.body.leaveTo);
+//       const leaveDuration = Math.round(
+//         (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
+//       );
+//       const createdLeave = await prisma.leaveApplication.create({
+//         data: {
+//           user: {
+//             connect: {
+//               id: parseInt(req.body.userId),
+//             },
+//           },
+//           leaveType: req.body.leaveType,
+//           leaveFrom: leaveFrom,
+//           leaveTo: leaveTo,
+//           leaveDuration: leaveDuration,
+//           reason: req.body.reason ? req.body.reason : undefined,
+//         },
+//       });
+
+//       return res.status(200).json(createdLeave);
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   }
+// };
+
 const createSingleLeave = async (req, res) => {
   if (req.query.query === "deletemany") {
     try {
-      // delete many designation at once
+      // delete many designations at once
       const deletedLeave = await prisma.leaveApplication.deleteMany({
         where: {
           id: {
@@ -18,12 +63,78 @@ const createSingleLeave = async (req, res) => {
     }
   } else {
     try {
-      // create single designation from an object
       const leaveFrom = new Date(req.body.leaveFrom);
       const leaveTo = new Date(req.body.leaveTo);
+      const user = await prisma.user.findUnique({
+        where: {
+          id: parseInt(req.body.userId),
+        },
+      });
+  
+      if (!user) {
+        return res.status(400).json({ message: "User not found." });
+      }
+      const overlappingLeave = await prisma.leaveApplication.findFirst({
+        where: {
+          user: {
+            NOT: {
+              id: parseInt(req.body.userId),
+            },
+          },
+          leaveFrom: { lte: leaveTo },
+          leaveTo: { gte: leaveFrom },
+          status: "ACCEPTED",
+        },
+      });
+      if (overlappingLeave) {
+        return res.status(400).json({ message: "Already two leave applications accepted" });
+      }
+  
+
+      if ([0, 1, 3].includes(leaveFrom.getMonth())) {
+        return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
+      }
+
       const leaveDuration = Math.round(
         (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
       );
+      if (user.remainingannualallowedleave < leaveDuration) {
+        return res.status(400).json({ message: "Not enough remaining annual leave." });
+      }
+
+      let submitDate;
+
+      if (leaveDuration === 1) {
+        // If it's a 1-day leave, check if submitDate is at least 3 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 3);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 3 days before the leave date." });
+        }
+      } else if (leaveDuration === 2) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 5);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 5 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 3) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 7);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 7 days before the leave date." });
+        }
+      }
+       else {
+        return res.status(400).json({ message: "Invalid leave duration." });
+      }
+      
+      const remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       const createdLeave = await prisma.leaveApplication.create({
         data: {
           user: {
@@ -36,15 +147,29 @@ const createSingleLeave = async (req, res) => {
           leaveTo: leaveTo,
           leaveDuration: leaveDuration,
           reason: req.body.reason ? req.body.reason : undefined,
+          createdAt: submitDate, // Include submitDate inside the data object
         },
       });
-
+      
+      await prisma.user.update({
+        where: {
+          id: parseInt(req.body.userId),
+        },
+        data: {
+          remainingannualallowedleave: remainingannualallowedleave,
+        },
+      })
       return res.status(200).json(createdLeave);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
   }
 };
+
+
+
+
+
 
 const getAllLeave = async (req, res) => {
   if (req.query.query === "all") {
