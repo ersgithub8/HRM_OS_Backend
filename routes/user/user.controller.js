@@ -513,19 +513,43 @@ const getSingleUser = async (req, res) => {
       },
     });
 
+    // const paidLeaveDays = leaveDays
+    //   .filter((l) => l.leaveType === "PAID")
+    //   .reduce((acc, item) => acc + item.leaveDuration, 0);
+
+    // const unpaidLeaveDays = leaveDays
+    //   .filter((l) => l.leaveType === "UNPAID")
+    //   .reduce((acc, item) => acc + item.leaveDuration, 0);
+
+    // // Calculate remaining leave days
+    // singleUser.paidLeaveDays = paidLeaveDays;
+    // singleUser.unpaidLeaveDays = unpaidLeaveDays;
+    // singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
+    // singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
     const paidLeaveDays = leaveDays
-      .filter((l) => l.leaveType === "PAID")
-      .reduce((acc, item) => acc + item.leaveDuration, 0);
+  .filter((l) => l.leaveType === "PAID")
+  .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-    const unpaidLeaveDays = leaveDays
-      .filter((l) => l.leaveType === "UNPAID")
-      .reduce((acc, item) => acc + item.leaveDuration, 0);
+const unpaidLeaveDays = leaveDays
+  .filter((l) => l.leaveType === "UNPAID")
+  .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-    // Calculate remaining leave days
-    singleUser.paidLeaveDays = paidLeaveDays;
-    singleUser.unpaidLeaveDays = unpaidLeaveDays;
-    singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
-    singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
+// Calculate remaining leave days
+singleUser.paidLeaveDays = paidLeaveDays;
+singleUser.unpaidLeaveDays = unpaidLeaveDays;
+singleUser.leftPaidLeaveDays = singleUser.leavePolicy?.paidLeaveCount - paidLeaveDays;
+singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy?.unpaidLeaveCount - unpaidLeaveDays;
+
+// Set to null if leavePolicy or respective leave counts are null
+if (!singleUser.leavePolicy) {
+  singleUser.leftPaidLeaveDays = null;
+  singleUser.leftUnpaidLeaveDays = null;
+} else {
+  singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
+  singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
+}
+
+    
     const roleId = singleUser.reference_id;
 
     if (roleId === null) {
