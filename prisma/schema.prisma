@@ -229,9 +229,9 @@ model leaveApplication {
   leavecategory   String?
   leaveFrom       DateTime
   leaveTo         DateTime
-  daytype         String?
-  fromtime        Time?
-  totime          Time?
+  //daytype         String?
+  //fromtime        Time?
+  //totime          Time?
   acceptLeaveFrom DateTime?
   acceptLeaveTo   DateTime?
   acceptLeaveBy   Int?
