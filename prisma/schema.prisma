@@ -230,8 +230,8 @@ model leaveApplication {
   leaveFrom       DateTime
   leaveTo         DateTime
   daytype         String?
-  fromtime        DateTime?
-  totime          DateTime?
+  fromtime        String?
+  totime          String?
   acceptLeaveFrom DateTime?
   acceptLeaveTo   DateTime?
   acceptLeaveBy   Int?

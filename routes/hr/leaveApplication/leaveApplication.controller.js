@@ -297,7 +297,7 @@ const createSingleLeave = async (req, res) => {
           },
           leaveType: req.body.leaveType,
           leavecategory:req.body.leavecategory,
-          fromday:req.body.fromday,
+          daytype:req.body.daytype,
           fromtime:req.body.fromtime,
           totime:req.body.totime,
           leaveFrom: leaveFrom,
