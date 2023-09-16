@@ -61,8 +61,9 @@ const createSingleLeave = async (req, res) => {
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
-  } else {
+  } else { 
     try {
+     
       const leaveFrom = new Date(req.body.leaveFrom);
       const leaveTo = new Date(req.body.leaveTo);
       const user = await prisma.user.findUnique({
@@ -130,11 +131,163 @@ const createSingleLeave = async (req, res) => {
           return res.status(400).json({ message: "You must apply at least 7 days before the leave date." });
         }
       }
+      else if (leaveDuration === 4) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 9);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 9 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 5) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 11);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 11 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 6) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 13);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 13 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 7) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 15);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 15 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 8) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 17);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 17 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 9) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 19);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 19 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 10) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 21);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 21 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 11) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 23);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 23 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 12) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 25);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 25 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 13) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 27);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 27 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 14) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 29);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 29 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 15) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 31);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 31 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 16) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 33);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 33 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 17) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 35);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 35 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 18) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 37);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 37 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 19) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 39);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 39 days before the leave date." });
+        }
+      }
+      else if (leaveDuration === 20) {
+        // If it's a 2-day leave, check if submitDate is at least 5 days before leaveFrom
+        submitDate = new Date(leaveFrom);
+        submitDate.setDate(leaveFrom.getDate() - 41);
+      
+        if (submitDate.getTime() < new Date().getTime()) {
+          return res.status(400).json({ message: "You must apply at least 41 days before the leave date." });
+        }
+      }
        else {
         return res.status(400).json({ message: "Invalid leave duration." });
       }
       
-      const remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       const createdLeave = await prisma.leaveApplication.create({
         data: {
           user: {
@@ -143,14 +296,21 @@ const createSingleLeave = async (req, res) => {
             },
           },
           leaveType: req.body.leaveType,
+          leavecategory:req.body.leavecategory,
+          fromday:req.body.fromday,
+          fromtime:req.body.fromtime,
+          totime:req.body.totime,
           leaveFrom: leaveFrom,
           leaveTo: leaveTo,
           leaveDuration: leaveDuration,
           reason: req.body.reason ? req.body.reason : undefined,
           createdAt: submitDate, // Include submitDate inside the data object
         },
-      });
-      
+      });  
+      let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
+      let remainingannualallowedleaveun = (user.remainingannualallowedleave).toString();
+
+    if (req.body.leavecategory === 'PAID') {
       await prisma.user.update({
         where: {
           id: parseInt(req.body.userId),
@@ -158,10 +318,16 @@ const createSingleLeave = async (req, res) => {
         data: {
           remainingannualallowedleave: remainingannualallowedleave,
         },
-      })
+      }) 
+    } 
+    else{
+      remainingannualallowedleaveun=remainingannualallowedleaveun
+
+    }
+      
       return res.status(200).json(createdLeave);
     } catch (error) {
-      return res.status(400).json({ message: error.message });
+      return res.status(400).json({message: error.message});
     }
   }
 };
@@ -172,6 +338,13 @@ const createSingleLeave = async (req, res) => {
 
 
 const getAllLeave = async (req, res) => {
+  const { skip, limit, status } = req.query;
+
+  let whereClause = {}; // Initialize an empty object for the where clause
+
+  if (status && status !== "all") {
+    whereClause.status = status; 
+  }
   if (req.query.query === "all") {
     const allLeave = await prisma.leaveApplication.findMany({
       orderBy: [
@@ -184,6 +357,8 @@ const getAllLeave = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
+            userName:true,
+            employeeId:true,
           },
         },
       },
@@ -209,6 +384,8 @@ const getAllLeave = async (req, res) => {
               id: true,
               firstName: true,
               lastName: true,
+              userName:true,
+            employeeId:true,
             },
           });
           return {
@@ -244,6 +421,8 @@ const getAllLeave = async (req, res) => {
             select: {
               firstName: true,
               lastName: true,
+              userName:true,
+            employeeId:true,
             },
           },
         },
@@ -268,6 +447,8 @@ const getAllLeave = async (req, res) => {
                 id: true,
                 firstName: true,
                 lastName: true,
+                userName:true,
+            employeeId:true,
               },
             });
             return {
@@ -303,6 +484,7 @@ const getSingleLeave = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
+            employeeId:true,
           },
         },
       },
@@ -319,6 +501,8 @@ const getSingleLeave = async (req, res) => {
       select: {
         firstName: true,
         lastName: true,
+        userName:true,
+            employeeId:true,
       },
     });
 
