@@ -150,6 +150,14 @@ const uploadimages = async (req, res) => {
           path: fileKey
         };
       }
+      if (req.files?.attachment) {
+        const ext = req.files.attachment.name.split('.').pop();
+        const name = "attachment_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.attachment, name);
+        uploadedFiles.attachment = {
+          path: fileKey
+        };
+      }
 
       if (Object.keys(uploadedFiles).length === 0) {
         return res.status(400).json({

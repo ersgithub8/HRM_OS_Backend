@@ -324,7 +324,7 @@ const createSingleLeave = async (req, res) => {
       let remainingannualallowedleaveun = (user.remainingannualallowedleave).toString();
       let remaninghalf=(user.remainingannualallowedleave-0.5).toString();
 
-    if (req.body.leavecategory === 'PAID'&& daytype==='HALF') {
+    if (req.body.leavecategory === 'PAID'&& daytype==='FULL') {
       await prisma.user.update({
         where: {
           id: parseInt(req.body.userId),
