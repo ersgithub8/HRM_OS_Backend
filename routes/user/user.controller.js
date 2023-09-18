@@ -28,6 +28,16 @@ const login = async (req, res) => {
       console.log("User not found or password doesn't match");
       return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
     }
+    if (user.status === "PENDING") {
+      console.log("User account is not approved");
+      return res.status(401).json({ message: "Authentication failed. User account is not approved." });
+    }
+    if (user.status === "REJECTED") {
+      console.log("User account is not approved");
+      return res.status(400).json({ message: "Authentication failed. User account is not approved." });
+    }
+
+
     const passwordMatches = bcrypt.compareSync(req.body.password, user.password);
 
     if (!passwordMatches) {
