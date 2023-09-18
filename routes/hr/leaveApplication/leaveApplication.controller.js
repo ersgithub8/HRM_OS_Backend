@@ -343,7 +343,7 @@ const createSingleLeave = async (req, res) => {
           id: parseInt(req.body.userId),
         },
         data: {
-          remaninghalf: remaninghalf,
+          remainingannualallowedleave: remaninghalf,
         },
       }) 
     }
