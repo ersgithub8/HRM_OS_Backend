@@ -324,7 +324,7 @@ const createSingleLeave = async (req, res) => {
 
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       let remainingannualallowedleaveun = (user.remainingannualallowedleave).toString();
-      let remaninghalf=(user.remainingannualallowedleave-0.5).toString();
+      let remaninghalf=(parseFloat(user.remainingannualallowedleave) - 0.5).toString();;
 
     if (req.body.leavecategory === 'PAID'&& req.body.daytype==='FULL') {
       await prisma.user.update({
@@ -409,9 +409,15 @@ const adminSingleLeave = async (req, res) => {
           return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
         }
   
-        const leaveDuration = Math.round(
-          (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
-        );
+        // const leaveDuration = Math.round(
+        //   (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
+        // );
+        let leaveDuration;
+        if (req.body.daytype === 'FULL') {
+            leaveDuration = Math.round((leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24));
+        } else if (req.body.daytype === 'HALF') {
+            leaveDuration = 0.5; // Half-day
+        }
         
         if (user.remainingannualallowedleave < leaveDuration) {
           return res.status(400).json({ message: "Not enough remaining annual leave." });
@@ -452,7 +458,7 @@ const adminSingleLeave = async (req, res) => {
         console.log(createdLeave);
   
         let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
-        let remainingannualallowedleaveun = (user.remainingannualallowedleave).toString();
+        let remainingannualallowedleaveun = (parseFloat(user.remainingannualallowedleave) - 0.5).toString();
         let remaninghalf=(user.remainingannualallowedleave-0.5).toString();
   
       if (req.body.leavecategory === 'PAID'&& req.body.daytype==='FULL') {
@@ -472,7 +478,7 @@ const adminSingleLeave = async (req, res) => {
             employeeId:req.body.employeeId,
           },
           data: {
-            remaingbankallowedleave: remaninghalf,
+            remainingannualallowedleave: remaninghalf,
           },
         }) 
       }

@@ -235,7 +235,7 @@ model leaveApplication {
   acceptLeaveFrom DateTime?
   acceptLeaveTo   DateTime?
   acceptLeaveBy   Int?
-  leaveDuration   Int?
+  leaveDuration   Float?
   reason          String?
   reviewComment   String?
   attachment      String?

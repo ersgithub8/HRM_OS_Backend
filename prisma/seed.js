@@ -281,6 +281,8 @@ async function main() {
       userName: "admin",
       password: adminHash,
       employmentStatusId: 1,
+      applicationStatus:'APPROVED',
+      employeeId:'admin-1',
       departmentId: 1,
       roleId: 1,
       shiftId: 1,

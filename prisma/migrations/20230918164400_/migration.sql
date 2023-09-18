@@ -222,7 +222,7 @@ CREATE TABLE "leaveApplication" (
     "acceptLeaveFrom" TIMESTAMP(3),
     "acceptLeaveTo" TIMESTAMP(3),
     "acceptLeaveBy" INTEGER,
-    "leaveDuration" INTEGER,
+    "leaveDuration" DOUBLE PRECISION,
     "reason" TEXT,
     "reviewComment" TEXT,
     "attachment" TEXT,
