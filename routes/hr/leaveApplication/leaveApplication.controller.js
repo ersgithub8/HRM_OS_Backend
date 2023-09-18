@@ -384,15 +384,13 @@ const adminSingleLeave = async (req, res) => {
         },
       });
   
-      if (!user) {
-        return res.status(400).json({ message: "User not found." });
+      if (isNaN(employeeId)) {
+        return res.status(400).json({ message: 'Invalid employeeId.' });
       }
       const overlappingLeave = await prisma.leaveApplication.findFirst({
         where: {
           NOT: {
-            user: {
-              id: parseInt(req.body.employeeId),
-            },
+            userId: employeeId,
           },
           AND: [
             {
