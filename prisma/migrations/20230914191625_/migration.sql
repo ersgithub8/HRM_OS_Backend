@@ -220,6 +220,9 @@ CREATE TABLE "leaveApplication" (
     "acceptLeaveTo" TIMESTAMP(3),
     "acceptLeaveBy" INTEGER,
     "leaveDuration" INTEGER,
+     "daytype" TEXT
+     "fromtime" TEXT,
+     "totime" TEXT,
     "reason" TEXT,
     "reviewComment" TEXT,
     "attachment" TEXT,
