@@ -378,9 +378,9 @@ const adminSingleLeave = async (req, res) => {
      
       const leaveFrom = new Date(req.body.leaveFrom);
       const leaveTo = new Date(req.body.leaveTo);
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findMany({
         where: {
-          id: parseInt(req.body.userId),
+          employeeId: parseInt(req.body.employeeId),
         },
       });
   
@@ -916,7 +916,7 @@ const getLeaveByUserId = async (req, res) => {
       where: {
         AND: {
           userId: Number(req.params.id),
-          status: "ACCEPTED",
+          // status: "APPROVED",
         },
       },
       orderBy: [
