@@ -378,9 +378,9 @@ const adminSingleLeave = async (req, res) => {
      
       const leaveFrom = new Date(req.body.leaveFrom);
       const leaveTo = new Date(req.body.leaveTo);
-      const user = await prisma.user.findMany({
+      const user = await prisma.user.findUnique({
         where: {
-          employeeId: parseInt(req.body.employeeId),
+          employeeId: req.body.employeeId,
         },
       });
   
@@ -389,14 +389,22 @@ const adminSingleLeave = async (req, res) => {
       }
       const overlappingLeave = await prisma.leaveApplication.findFirst({
         where: {
-          user: {
-            NOT: {
-              id: parseInt(req.body.userId),
+          NOT: {
+            user: {
+              id: parseInt(req.body.employeeId),
             },
           },
-          leaveFrom: { lte: leaveTo },
-          leaveTo: { gte: leaveFrom },
-          status: "ACCEPTED",
+          AND: [
+            {
+              leaveFrom: { lte: leaveTo },
+            },
+            {
+              leaveTo: { gte: leaveFrom },
+            },
+            {
+              status: 'ACCEPTED',
+            },
+          ],
         },
       });
       if (overlappingLeave) {
