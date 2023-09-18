@@ -320,6 +320,8 @@ const createSingleLeave = async (req, res) => {
           createdAt: submitDate, // Include submitDate inside the data object
         },
       });  
+      console.log(createdLeave);
+
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       let remainingannualallowedleaveun = (user.remainingannualallowedleave).toString();
       let remaninghalf=(user.remainingannualallowedleave-0.5).toString();
@@ -349,7 +351,6 @@ const createSingleLeave = async (req, res) => {
       remainingannualallowedleaveun=remainingannualallowedleaveun
 
     }
-      
       return res.status(200).json(createdLeave);
     } catch (error) {
       return res.status(400).json({message: error.message});
