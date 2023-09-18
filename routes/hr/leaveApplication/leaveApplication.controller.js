@@ -382,6 +382,13 @@ const adminSingleLeave = async (req, res) => {
         where: {
           employeeId: req.body.employeeId,
         },
+        include: {
+          // Specify the fields you want to include from the user table
+          firstName: true,
+          lastName: true,
+          employeeId:true
+          // Add other fields you want to include
+        },
       });
   
       if (isNaN(employeeId)) {
