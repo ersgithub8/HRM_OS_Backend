@@ -411,6 +411,7 @@ const adminSingleLeave = async (req, res) => {
         const leaveDuration = Math.round(
           (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
         );
+        
         if (user.remainingannualallowedleave < leaveDuration) {
           return res.status(400).json({ message: "Not enough remaining annual leave." });
         }
@@ -470,7 +471,7 @@ const adminSingleLeave = async (req, res) => {
             employeeId:req.body.employeeId,
           },
           data: {
-            remainingannualallowedleave: remaninghalf,
+            remaninghalf: remaninghalf,
           },
         }) 
       }
@@ -901,6 +902,8 @@ const grantedLeave = async (req, res) => {
         },
       });
     }
+    
+
 
     return res.status(200).json(grantedLeave);
   } catch (error) {
@@ -937,7 +940,7 @@ const getLeaveByUserId = async (req, res) => {
     const currentDate = new Date();
 
     let leaveStatus = "";
-    if (leaveTo > currentDate) leaveStatus = "on leave";
+    if (leaveTo > currentDate) leaveStatus = "onleave";
     else leaveStatus = "not on leave";
 
     // get all leave history
@@ -953,7 +956,37 @@ const getLeaveByUserId = async (req, res) => {
         },
       ],
     });
-    return res.status(200).json({ singleLeave, leaveStatus });
+    const totalAcceptedLeaves = await prisma.leaveApplication.count({
+     
+      where: {
+        AND: {
+          userId: Number(req.params.id),
+          status: "APPROVED",
+        },
+      },
+    });
+
+    const totalRejectedLeaves = await prisma.leaveApplication.count({
+      where: {
+        AND: {
+          userId: Number(req.params.id),
+          status: "PENDING",
+        },
+      },
+
+    });
+
+    const totalPendingLeaves = await prisma.leaveApplication.count({
+      where: {
+        AND: {
+          userId: Number(req.params.id),
+          status: "REJECTED",
+        },
+      },
+    });
+    return res.status(200).json({ singleLeave, leaveStatus , totalAcceptedLeaves,
+      totalRejectedLeaves,
+      totalPendingLeaves,});
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
