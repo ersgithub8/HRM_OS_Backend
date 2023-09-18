@@ -226,9 +226,8 @@ model leaveApplication {
   employeeid      String?  
   userId          Int
   leaveType       String
-  leavecategory   String
+  leavecategory   String?
   leaveFrom       DateTime
-  
   leaveTo         DateTime
   daytype         String?
   fromtime        String?
