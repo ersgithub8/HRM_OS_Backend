@@ -322,8 +322,9 @@ const createSingleLeave = async (req, res) => {
       });  
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       let remainingannualallowedleaveun = (user.remainingannualallowedleave).toString();
+      let remaninghalf=(user.remainingannualallowedleave-0.5).toString();
 
-    if (req.body.leavecategory === 'PAID') {
+    if (req.body.leavecategory === 'PAID' && daytype==='FULL') {
       await prisma.user.update({
         where: {
           id: parseInt(req.body.userId),
@@ -333,6 +334,17 @@ const createSingleLeave = async (req, res) => {
         },
       }) 
     } 
+    else if(req.body.leavecategory === 'PAID' && daytype==='HALF')
+    {
+      await prisma.user.update({
+        where: {
+          id: parseInt(req.body.userId),
+        },
+        data: {
+          remaninghalf: remaninghalf,
+        },
+      }) 
+    }
     else{
       remainingannualallowedleaveun=remainingannualallowedleaveun
 
