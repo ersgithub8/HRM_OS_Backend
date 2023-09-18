@@ -845,6 +845,7 @@ const grantedLeave = async (req, res) => {
       grantedLeave = await prisma.leaveApplication.update({
         where: {
           id: Number(req.params.id),
+          
         },
         data: {
           acceptLeaveBy: req.auth.sub,
@@ -890,6 +891,9 @@ const grantedLeave = async (req, res) => {
         },
       });
 
+
+      
+
       const currentRemainingLeaves = parseInt(leaveApplication.user.remainingannualallowedleave);
       const updatedRemainingLeaves = currentRemainingLeaves + leaveDuration;
   
@@ -902,14 +906,106 @@ const grantedLeave = async (req, res) => {
         },
       });
     }
+ 
+    return res.status(200).json(
+      grantedLeave,
     
-
-
-    return res.status(200).json(grantedLeave);
+    );
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+// const getLeaveByUserId = async (req, res) => {
+//   try {
+//     const getLeaveTo = await prisma.leaveApplication.findMany({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//           // status: "APPROVED",
+//         },
+//       },
+//       orderBy: [
+//         {
+//           id: "desc",
+//         },
+//       ],
+//     });
+
+//     // check if the user has any leave
+//     const isId = getLeaveTo.map((item) => item.id);
+
+//     if (isId.length === 0)
+//       return res.status(200).json({ message: "No leave found for this user" });
+
+//     // check if the user is on leave
+//     const leaveTo = getLeaveTo[0].leaveTo;
+//     const currentDate = new Date();
+
+//     let leaveStatus = "";
+//     if (leaveTo > currentDate) leaveStatus = "onleave";
+//     else leaveStatus = "not on leave";
+//     const totalPendingLeaves = await prisma.leaveApplication.count({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//           status: "REJECTED",
+//         },
+//       },
+//     });
+//         const approvedBy = await prisma.user.findUnique({
+//       where: {
+//         id: req.auth.sub,
+//       },
+//     });
+
+//     console.log(approvedBy,"dfahkhu");
+//     // get all leave history
+//     const singleLeave = await prisma.leaveApplication.findMany({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//         },
+//       },
+//       orderBy: [
+//         {
+//           id: "desc",
+//         },
+//       ],
+//     });
+//     const totalAcceptedLeaves = await prisma.leaveApplication.count({
+     
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//           status: "APPROVED",
+//         },
+//       },
+//     });
+
+//     const totalRejectedLeaves = await prisma.leaveApplication.count({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//           status: "PENDING",
+//         },
+//       },
+
+//     });
+
+   
+   
+// console.log(approvedBy,"rweukhjk");
+//     return res.status(200).json({ singleLeave, leaveStatus , totalAcceptedLeaves,
+//       totalRejectedLeaves,
+//       totalPendingLeaves});
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 
 
 
@@ -919,7 +1015,6 @@ const getLeaveByUserId = async (req, res) => {
       where: {
         AND: {
           userId: Number(req.params.id),
-          // status: "APPROVED",
         },
       },
       orderBy: [
@@ -929,35 +1024,44 @@ const getLeaveByUserId = async (req, res) => {
       ],
     });
 
-    // check if the user has any leave
-    const isId = getLeaveTo.map((item) => item.id);
-
-    if (isId.length === 0)
+    if (getLeaveTo.length === 0)
       return res.status(200).json({ message: "No leave found for this user" });
 
-    // check if the user is on leave
-    const leaveTo = getLeaveTo[0].leaveTo;
+    const singleLeave = await Promise.all(
+      getLeaveTo.map(async (leave) => {
+        let approvedByUser = null;
+        if (leave.acceptLeaveBy) {
+          approvedByUser = await prisma.user.findUnique({
+            where: {
+              id: leave.acceptLeaveBy,
+            },
+          });
+        }
+
+        return {
+          ...leave,
+          approvedBy: approvedByUser,
+        };
+      })
+    );
+
     const currentDate = new Date();
 
-    let leaveStatus = "";
-    if (leaveTo > currentDate) leaveStatus = "onleave";
-    else leaveStatus = "not on leave";
+    const leaveStatus = singleLeave.map((leave) => {
+      if (leave.leaveTo > currentDate) return "onleave";
+      else return "not on leave";
+    });
 
-    // get all leave history
-    const singleLeave = await prisma.leaveApplication.findMany({
+    const totalPendingLeaves = await prisma.leaveApplication.count({
       where: {
         AND: {
           userId: Number(req.params.id),
+          status: "REJECTED",
         },
       },
-      orderBy: [
-        {
-          id: "desc",
-        },
-      ],
     });
+
     const totalAcceptedLeaves = await prisma.leaveApplication.count({
-     
       where: {
         AND: {
           userId: Number(req.params.id),
@@ -973,20 +1077,15 @@ const getLeaveByUserId = async (req, res) => {
           status: "PENDING",
         },
       },
-
     });
 
-    const totalPendingLeaves = await prisma.leaveApplication.count({
-      where: {
-        AND: {
-          userId: Number(req.params.id),
-          status: "REJECTED",
-        },
-      },
-    });
-    return res.status(200).json({ singleLeave, leaveStatus , totalAcceptedLeaves,
+    return res.status(200).json({
+      singleLeave,
+      leaveStatus,
+      totalAcceptedLeaves,
       totalRejectedLeaves,
-      totalPendingLeaves,});
+      totalPendingLeaves,
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
