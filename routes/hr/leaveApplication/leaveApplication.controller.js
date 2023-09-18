@@ -378,6 +378,9 @@ const adminSingleLeave = async (req, res) => {
        
         const leaveFrom = new Date(req.body.leaveFrom);
         const leaveTo = new Date(req.body.leaveTo);
+        if (leaveTo < leaveFrom) {
+          return res.status(400).json({ message: "LeaveTo  date cannot be earlier than leaveFrom date." });
+        }
         const user = await prisma.user.findUnique({
           where: {
             employeeId:req.body.employeeId,
@@ -402,8 +405,6 @@ const adminSingleLeave = async (req, res) => {
         if (overlappingLeave) {
           return res.status(400).json({ message: "Already two leave applications accepted" });
         }
-    
-  
         if ([0, 1, 3].includes(leaveFrom.getMonth())) {
           return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
         }
@@ -471,7 +472,7 @@ const adminSingleLeave = async (req, res) => {
             employeeId:req.body.employeeId,
           },
           data: {
-            remaninghalf: remaninghalf,
+            remaingbankallowedleave: remaninghalf,
           },
         }) 
       }
