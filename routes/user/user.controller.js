@@ -158,8 +158,8 @@ const register = async (req, res) => {
     // if (existingUserByEmployeeId) {
     //   return res.status(400).json({ message: "EmployeeId already exists." });
     // }
-    const join_date = new Date();
-    const leave_date = new Date();
+    const join_date = new Date(req.body.joinDate);
+    const leave_date = new Date(req.body.leave_date);
 
     const hash = await bcrypt.hash(req.body.password, saltRounds);
     const createUser = await prisma.user.create({
