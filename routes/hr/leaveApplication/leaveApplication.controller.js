@@ -66,8 +66,6 @@ const createSingleLeave = async (req, res) => {
      
       const leaveFrom = new Date(req.body.leaveFrom);
       const leaveTo = new Date(req.body.leaveTo);
-       const startTime = moment(user.shift.startTime, "h:mm A");
-    const endTime = moment(user.shift.endTime, "h:mm A");
       const user = await prisma.user.findUnique({
         where: {
           id: parseInt(req.body.userId),
@@ -89,7 +87,7 @@ const createSingleLeave = async (req, res) => {
           status: "APPROVED",
         },
       });
-      if (overlappingLeave) {
+      if (overlappingLeave>=2) {
         return res.status(400).json({ message: "Already two leave applications accepted" });
       }
   
@@ -359,7 +357,8 @@ const createSingleLeave = async (req, res) => {
       remainingannualallowedleaveun=remainingannualallowedleaveun
 
     }
-      return res.status(200).json(createdLeave);
+      return res.status(200).json({createdLeave,
+      message:"Leave application apply successfully"});
     } catch (error) {
       return res.status(400).json({message: error.message});
     }
@@ -410,7 +409,7 @@ const adminSingleLeave = async (req, res) => {
             status: "APPROVED",
           },
         });
-        if (overlappingLeave) {
+        if (overlappingLeave>=2) {
           return res.status(400).json({ message: "Already two leave applications accepted" });
         }
         if ([0, 1, 3].includes(leaveFrom.getMonth())) {
@@ -494,7 +493,8 @@ const adminSingleLeave = async (req, res) => {
         remainingannualallowedleaveun=remainingannualallowedleaveun
   
       }
-        return res.status(200).json(createdLeave);
+        return res.status(200).json({createdLeave,
+          message:"Leave application approved successfully"});
       } catch (error) {
         return res.status(400).json({message: error.message});
       }
