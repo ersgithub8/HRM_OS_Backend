@@ -179,7 +179,7 @@ const register = async (req, res) => {
         email: req.body.email,
         phone: req.body.phone,
         dob: req.body.dob,
-      
+        applicationStatus:req.body.applicationStatus,
         emergencycontact:req.body.emergencycontact,
         nicno:req.body.nicno,
         identitystatus:req.body.identitystatus,
