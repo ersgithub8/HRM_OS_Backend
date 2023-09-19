@@ -75,21 +75,21 @@ const createSingleLeave = async (req, res) => {
       if (!user) {
         return res.status(400).json({ message: "User not found." });
       }
-      const overlappingLeave = await prisma.leaveApplication.findFirst({
+      const overlappingLeaveCount = await prisma.leaveApplication.count({
         where: {
           user: {
-            NOT: {
-              id: parseInt(req.body.userId),
-            },
+            is: { id: parseInt(req.body.userId) },
           },
           leaveFrom: { lte: leaveTo },
           leaveTo: { gte: leaveFrom },
           status: "APPROVED",
         },
       });
-      if (overlappingLeave>=2) {
-        return res.status(400).json({ message: "Already two leave applications accepted" });
+      
+      if (overlappingLeaveCount >= 2) {
+        return res.status(400).json({ message: "Already two leave applications accepted for this day." });
       }
+      
   
 
       if ([0, 1, 3].includes(leaveFrom.getMonth())) {
@@ -397,20 +397,19 @@ const adminSingleLeave = async (req, res) => {
         if (!user) {
           return res.status(400).json({ message: "User not found." });
         }
-        const overlappingLeave = await prisma.leaveApplication.findFirst({
+        const overlappingLeaveCount = await prisma.leaveApplication.count({
           where: {
             user: {
-              NOT: {
-                employeeId:req.body.employeeId,
-              },
+              employeeId:req.body.employeeId,
             },
             leaveFrom: { lte: leaveTo },
             leaveTo: { gte: leaveFrom },
             status: "APPROVED",
           },
         });
-        if (overlappingLeave>=2) {
-          return res.status(400).json({ message: "Already two leave applications accepted" });
+        
+        if (overlappingLeaveCount >= 2) {
+          return res.status(400).json({ message: "Already two leave applications accepted for this day." });
         }
         if ([0, 1, 3].includes(leaveFrom.getMonth())) {
           return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
