@@ -863,9 +863,9 @@ const grantedLeave = async (req, res) => {
         },
         data: {
           acceptLeaveBy: req.auth.sub,
-          // acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
-          // acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
-          // leaveDuration: leaveDuration ? leaveDuration : 0,
+          acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
+          acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
+          leaveDuration: leaveDuration ? leaveDuration : 0,
           reviewComment: req.body.reviewComment
             ? req.body.reviewComment
             : undefined,
@@ -880,9 +880,9 @@ const grantedLeave = async (req, res) => {
         },
         data: {
           acceptLeaveBy: req.auth.sub,
-          // acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
-          // acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
-          // leaveDuration: leaveDuration ? leaveDuration : 0,
+          acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
+          acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
+          leaveDuration: leaveDuration ? leaveDuration : 0,
           reviewComment: req.body.reviewComment
             ? req.body.reviewComment
             : undefined,
