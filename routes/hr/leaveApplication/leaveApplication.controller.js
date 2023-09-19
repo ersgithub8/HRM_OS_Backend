@@ -921,12 +921,13 @@ const grantedLeave = async (req, res) => {
       });
     }
  
-    return res.status(200).json(
+    return res.status(200).json({
       grantedLeave,
+      message:"Application status is updated"
     
-    );
+  });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message: "Failed to update application status" });
   }
 };
 
