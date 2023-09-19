@@ -84,7 +84,7 @@ const createSingleLeave = async (req, res) => {
           },
           leaveFrom: { lte: leaveTo },
           leaveTo: { gte: leaveFrom },
-          status: "ACCEPTED",
+          status: "APPROVED",
         },
       });
       if (overlappingLeave) {
@@ -96,9 +96,15 @@ const createSingleLeave = async (req, res) => {
         return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
       }
 
-      const leaveDuration = Math.round(
-        (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      // const leaveDuration = Math.round(
+      //   (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
+      // );
+      let leaveDuration;
+        if (req.body.daytype === 'FULL') {
+            leaveDuration = Math.round((leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24));
+        } else if (req.body.daytype === 'HALF') {
+            leaveDuration = 0.5; // Half-day
+        }
       if (user.remainingannualallowedleave < leaveDuration) {
         return res.status(400).json({ message: "Not enough remaining annual leave." });
       }
@@ -399,7 +405,7 @@ const adminSingleLeave = async (req, res) => {
             },
             leaveFrom: { lte: leaveTo },
             leaveTo: { gte: leaveFrom },
-            status: "ACCEPTED",
+            status: "APPROVED",
           },
         });
         if (overlappingLeave) {
