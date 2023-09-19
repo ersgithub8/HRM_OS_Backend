@@ -980,6 +980,7 @@ const grantedLeave = async (req, res) => {
       await prisma.user.update({
         where: {
           id: existingLeave.user.id,
+          
         },
         data: {
           remainingannualallowedleave: updatedRemainingLeaves.toString(),
