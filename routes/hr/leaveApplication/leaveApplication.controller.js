@@ -843,6 +843,96 @@ const getSingleLeave = async (req, res) => {
 //     return res.status(400).json({ message: error.message });
 //   }
 // };
+// const grantedLeave = async (req, res) => {
+//   try {
+//     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
+//     const acceptLeaveTo = new Date(req.body.acceptLeaveTo);
+//     const leaveDuration = Math.round(
+//       (acceptLeaveTo.getTime() - acceptLeaveFrom.getTime()) /
+//       (1000 * 60 * 60 * 24)
+//     );
+
+//     let grantedLeave;
+
+//     if (req.body.status === 'APPROVED') {
+//       // Update the leave details for approved leave
+//       grantedLeave = await prisma.leaveApplication.update({
+//         where: {
+//           id: Number(req.params.id),
+          
+//         },
+//         data: {
+//           acceptLeaveBy: req.auth.sub,
+//           acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
+//           acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
+//           leaveDuration: leaveDuration ? leaveDuration : 0,
+//           reviewComment: req.body.reviewComment
+//             ? req.body.reviewComment
+//             : undefined,
+//           status: req.body.status,
+//         },
+//       });
+//     } else if (req.body.status === 'REJECTED') {
+//       // Update the leave details for rejected leave
+//       grantedLeave = await prisma.leaveApplication.update({
+//         where: {
+//           id: Number(req.params.id),
+//         },
+//         data: {
+//           acceptLeaveBy: req.auth.sub,
+//           acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
+//           acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
+//           leaveDuration: leaveDuration ? leaveDuration : 0,
+//           reviewComment: req.body.reviewComment
+//             ? req.body.reviewComment
+//             : undefined,
+//           status: req.body.status,
+//         },
+//       });
+
+//       // Increment the remaining allowed leaves for the user by the leave duration
+//       const leaveApplication = await prisma.leaveApplication.findUnique({
+//         where: {
+//           id: Number(req.params.id),
+//         },
+//         select: {
+//           user: {
+//             select: {
+//               id: true, // Ensure you select the user's ID
+//               remainingannualallowedleave: true,
+//             },
+//           },
+//         },
+//       });
+
+
+      
+
+//       const currentRemainingLeaves = parseInt(leaveApplication.user.remainingannualallowedleave);
+//       const updatedRemainingLeaves = currentRemainingLeaves + leaveDuration;
+  
+//       await prisma.user.update({
+//         where: {
+//           id: leaveApplication.user.id,
+//         },
+//         data: {
+//           remainingannualallowedleave: updatedRemainingLeaves.toString(),
+//         },
+//       });
+//     }
+ 
+//     return res.status(200).json({
+//       grantedLeave,
+//       message:"Application status is updated"
+    
+//   });
+//   } catch (error) {
+//     return res.status(400).json({ message: "Failed to update application status" });
+//   }
+// };
+
+
+
 const grantedLeave = async (req, res) => {
   try {
     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
@@ -854,82 +944,101 @@ const grantedLeave = async (req, res) => {
 
     let grantedLeave;
 
-    if (req.body.status === 'APPROVED') {
-      // Update the leave details for approved leave
-      grantedLeave = await prisma.leaveApplication.update({
-        where: {
-          id: Number(req.params.id),
-          
-        },
-        data: {
-          acceptLeaveBy: req.auth.sub,
-          acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
-          acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
-          leaveDuration: leaveDuration ? leaveDuration : 0,
-          reviewComment: req.body.reviewComment
-            ? req.body.reviewComment
-            : undefined,
-          status: req.body.status,
-        },
-      });
-    } else if (req.body.status === 'REJECTED') {
-      // Update the leave details for rejected leave
-      grantedLeave = await prisma.leaveApplication.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          acceptLeaveBy: req.auth.sub,
-          acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
-          acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
-          leaveDuration: leaveDuration ? leaveDuration : 0,
-          reviewComment: req.body.reviewComment
-            ? req.body.reviewComment
-            : undefined,
-          status: req.body.status,
-        },
-      });
+    // Fetch the existing leave application
+    const existingLeave = await prisma.leaveApplication.findUnique({
+      where: {
+        id: Number(req.params.id),
+      },
+      include: {
+        user: true,
+      },
+    });
 
-      // Increment the remaining allowed leaves for the user by the leave duration
-      const leaveApplication = await prisma.leaveApplication.findUnique({
-        where: {
-          id: Number(req.params.id),
-        },
-        select: {
-          user: {
-            select: {
-              id: true, // Ensure you select the user's ID
-              remainingannualallowedleave: true,
-            },
-          },
-        },
-      });
+    if (!existingLeave) {
+      return res.status(404).json({ message: 'Leave application not found' });
+    }
 
+    if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
+      // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+      const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - leaveDuration, 0);
 
-      
-
-      const currentRemainingLeaves = parseInt(leaveApplication.user.remainingannualallowedleave);
-      const updatedRemainingLeaves = currentRemainingLeaves + leaveDuration;
-  
       await prisma.user.update({
         where: {
-          id: leaveApplication.user.id,
+          id: existingLeave.user.id,
+        },
+        data: {
+          remainingannualallowedleave: currentRemainingLeaves.toString(),
+        },
+      });
+    }
+   else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
+      // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+      const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves + leaveDuration, 0);
+
+      await prisma.user.update({
+        where: {
+          id: existingLeave.user.id,
         },
         data: {
           remainingannualallowedleave: updatedRemainingLeaves.toString(),
         },
       });
     }
- 
+    else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
+      // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+      const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves + leaveDuration, 0);
+
+      await prisma.user.update({
+        where: {
+          id: existingLeave.user.id,
+        },
+        data: {
+          remainingannualallowedleave: updatedRemainingLeaves.toString(),
+        },
+      });
+    }
+    else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
+      // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+      const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - leaveDuration, 0);
+
+      await prisma.user.update({
+        where: {
+          id: existingLeave.user.id,
+        },
+        data: {
+          remainingannualallowedleave: updatedRemainingLeaves.toString(),
+        },
+      });
+    }
+
+    // Update the leave details
+    grantedLeave = await prisma.leaveApplication.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: {
+        acceptLeaveBy: req.auth.sub,
+        acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
+        acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
+        leaveDuration: leaveDuration ? leaveDuration : 0,
+        reviewComment: req.body.reviewComment ? req.body.reviewComment : undefined,
+        status: req.body.status,
+      },
+    });
+
     return res.status(200).json({
       grantedLeave,
-      message:"Application status is updated"
-    
-  });
+      message: 'Application status is updated',
+    });
   } catch (error) {
-    return res.status(400).json({ message: "Failed to update application status" });
+    return res.status(400).json({ message: 'Failed to update application status' });
   }
 };
+
 
 
 
