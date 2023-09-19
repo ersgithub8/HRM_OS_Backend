@@ -66,6 +66,8 @@ const createSingleLeave = async (req, res) => {
      
       const leaveFrom = new Date(req.body.leaveFrom);
       const leaveTo = new Date(req.body.leaveTo);
+       const startTime = moment(user.shift.startTime, "h:mm A");
+    const endTime = moment(user.shift.endTime, "h:mm A");
       const user = await prisma.user.findUnique({
         where: {
           id: parseInt(req.body.userId),
@@ -457,7 +459,7 @@ const adminSingleLeave = async (req, res) => {
             leaveFrom: leaveFrom,
             leaveTo: leaveTo,
             leaveDuration: leaveDuration,
-            reason: req.body.reason ? req.body.reason : undefined,
+            reviewComment: req.body.reviewComment ? req.body.reviewComment : undefined,
             createdAt: submitDate, // Include submitDate inside the data object
           },
         });  
