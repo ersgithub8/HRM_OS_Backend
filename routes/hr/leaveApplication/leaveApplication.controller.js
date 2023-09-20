@@ -632,6 +632,59 @@ const getAllLeave = async (req, res) => {
   }
 };
 
+const getapprovedAllLeave = async (req, res) => {
+  try {
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+    const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
+
+    const todayApproved = await prisma.leaveApplication.findMany({
+      where: {
+        status: 'APPROVED',
+        createdAt: { gte: todayStart, lt: todayEnd },
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+          },
+        },
+      },
+    });
+    const result = await Promise.all(
+      todayApproved.map(async (item) => {
+        const acceptLeaveBy = item.acceptLeaveBy
+          ? await prisma.user.findUnique({ where: { id: item.acceptLeaveBy } })
+          : null;
+
+        return {
+          ...item,
+          acceptLeaveBy: acceptLeaveBy,
+        };
+      })
+    );
+
+    const approvedLeaveCount = result.length;
+
+    return res.status(200).json({
+      count: approvedLeaveCount,
+      todayApproved: result,
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+
+
+
+
+
 
 
 const getSingleLeave = async (req, res) => {
@@ -1002,4 +1055,5 @@ module.exports = {
   getLeaveByUserId,
   deleteSingleLeave,
   adminSingleLeave,
+  getapprovedAllLeave,
 };
