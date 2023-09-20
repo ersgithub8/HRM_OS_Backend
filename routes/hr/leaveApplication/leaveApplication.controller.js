@@ -77,12 +77,17 @@ const createSingleLeave = async (req, res) => {
       }
       const overlappingLeaveCount = await prisma.leaveApplication.count({
         where: {
-          user: {
-            is: { id: parseInt(req.body.userId) },
-          },
-          leaveFrom: { lte: leaveTo },
-          leaveTo: { gte: leaveFrom },
-          status: "APPROVED",
+          AND: [
+            {
+              leaveFrom: { lte: leaveTo },
+            },
+            {
+              leaveTo: { gte: leaveFrom },
+            },
+            {
+              status: "APPROVED",
+            },
+          ],
         },
       });
       
@@ -216,18 +221,24 @@ const adminSingleLeave = async (req, res) => {
         }
         const overlappingLeaveCount = await prisma.leaveApplication.count({
           where: {
-            user: {
-              is:{employeeId:req.body.employeeId},
-            },
-            leaveFrom: { lte: leaveTo },
-            leaveTo: { gte: leaveFrom },
-            status: "APPROVED",
+            AND: [
+              {
+                leaveFrom: { lte: leaveTo },
+              },
+              {
+                leaveTo: { gte: leaveFrom },
+              },
+              {
+                status: "APPROVED",
+              },
+            ],
           },
         });
         
         if (overlappingLeaveCount >= 2) {
           return res.status(400).json({ message: "Already two leave applications accepted for this day." });
         }
+        
         if ([0, 1, 3].includes(leaveFrom.getMonth())) {
           return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
         }
@@ -661,7 +672,7 @@ const grantedLeave = async (req, res) => {
     if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - leaveDuration, 0);
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - 0.5, 0);
 
       await prisma.user.update({
         where: {
