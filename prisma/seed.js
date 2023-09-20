@@ -140,20 +140,10 @@ const shifts = [
 
 const leavePolicy = [
   {
-    name: "Policy 8-12",
-    paidLeaveCount: 8,
-    unpaidLeaveCount: 12,
-  },
-  {
-    name: "Policy 12-15",
-    paidLeaveCount: 12,
-    unpaidLeaveCount: 15,
-  },
-  {
-    name: "Policy 15-15",
-    paidLeaveCount: 15,
-    unpaidLeaveCount: 15,
-  },
+    name: "Policy 20-8",
+    paidLeaveCount: 20,
+    unpaidLeaveCount: 8,
+  }
 ];
 
 const weeklyHoliday = [
