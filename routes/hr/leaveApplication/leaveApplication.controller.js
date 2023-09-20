@@ -461,6 +461,7 @@ const createSingleLeave = async (req, res) => {
             fromtime: req.body.fromtime,
             totime: req.body.totime,
             leaveFrom: leaveFrom,
+            status:"APPROVED",
             leaveTo: leaveTo,
             leaveDuration: leaveDuration,
             reason: req.body.reason ? req.body.reason : undefined,
