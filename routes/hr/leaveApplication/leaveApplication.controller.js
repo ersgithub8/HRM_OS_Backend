@@ -75,7 +75,7 @@ const createSingleLeave = async (req, res) => {
       if (!user) {
         return res.status(400).json({ message: "User not found." });
       }
-      const overlappingLeaveCount = await prisma.leaveApplication.count({
+      const overlappingLeaveCount = await prisma.leaveApplication.findMany({
         where: {
           user: {
             is: { id: parseInt(req.body.userId) },
@@ -86,7 +86,7 @@ const createSingleLeave = async (req, res) => {
         },
       });
       
-      if (overlappingLeaveCount >= 2) {
+      if (overlappingLeaveCount) {
         return res.status(400).json({ message: "Already two leave applications accepted for this day." });
       }
       
@@ -214,10 +214,10 @@ const adminSingleLeave = async (req, res) => {
         if (!user) {
           return res.status(400).json({ message: "User not found." });
         }
-        const overlappingLeaveCount = await prisma.leaveApplication.count({
+        const overlappingLeaveCount = await prisma.leaveApplication.findMany({
           where: {
             user: {
-              employeeId:req.body.employeeId,
+              is:{employeeId:req.body.employeeId},
             },
             leaveFrom: { lte: leaveTo },
             leaveTo: { gte: leaveFrom },
