@@ -102,11 +102,13 @@ const createSingleLeave = async (req, res) => {
       if ([0, 1, 3].includes(leaveFrom.getMonth())) {
         return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
       }
-      var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime();      
+      var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
+           
       // To calculate the no. of days between two dates
       var leaveDuration = Difference_In_Time / (1000 * 3600 * 24);
-      console.log("LEAVE", leaveDuration);
-
+      if (req.body.daytype==='HALF'){
+        leaveDuration = leaveDuration/2;
+      }
       if (user.remainingannualallowedleave < leaveDuration) {
         return res.status(400).json({ message: "Not enough remaining annual leave." });
       }
@@ -121,11 +123,32 @@ const createSingleLeave = async (req, res) => {
 
       console.log("Difference_In_Days",Difference_In_Days);
       
-      const submitDays = 
-      leaveDuration == 1 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9:leaveDuration === 5 ? 11 :leaveDuration === 6 ? 13:leaveDuration === 7 ? 15
-      :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
-      leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
-      
+      // const submitDays = 
+      // leaveDuration == 1||0.5 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9:leaveDuration === 5 ? 11 :leaveDuration === 6 ? 13:leaveDuration === 7 ? 15
+      // :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
+      // leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
+      const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 : 
+                  leaveDuration === 2 || leaveDuration === 1 ? 5 : 
+                  leaveDuration === 3 || leaveDuration === 1.5 ? 7 : 
+                  leaveDuration === 4 ? 9 : 
+                  leaveDuration === 5 ? 11 : 
+                  leaveDuration === 6 ? 13 : 
+                  leaveDuration === 7 || leaveDuration === 3.5 ? 15 : 
+                  leaveDuration === 8 ? 17 : 
+                  leaveDuration === 9 ? 19 : 
+                  leaveDuration === 10 ? 21 : 
+                  leaveDuration === 11 ? 23 : 
+                  leaveDuration === 12 ? 25 : 
+                  leaveDuration === 13 || leaveDuration === 6.5 ? 27 : 
+                  leaveDuration === 14 ? 29 : 
+                  leaveDuration === 15 || leaveDuration === 7.5 ? 31 : 
+                  leaveDuration === 16 ? 33 : 
+                  leaveDuration === 17 ? 35 : 
+                  leaveDuration === 18 ? 37 : 
+                  leaveDuration === 19 || leaveDuration === 9.5 ? 39 : 
+                  leaveDuration === 20 ? 41 : 0;
+
+      console.log(submitDays,"fsgdf");
       if (Difference_In_Days < submitDays){
         return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
       }
@@ -153,12 +176,12 @@ const createSingleLeave = async (req, res) => {
       console.log(createdLeave);
 
       if (req.body.daytype==='HALF'){
-        leaveDuration = leaveDuration/2;
+        leaveDuration = leaveDuration;
       }
       console.log(leaveDuration);
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       
-      if (req.body.leavecategory === 'PAID'){
+      if (req.body.leaveType === 'CompassionateLeave(deductible)'||req.body.leaveType === 'BereavementLeave(deductible)'||req.body.leaveType === 'ParentalLeave(deductible)'||req.body.leaveType === 'PaternityLeave(deductible-if-paid)'){
         await prisma.user.update({
           where: {
             id: parseInt(req.body.userId),
@@ -169,33 +192,6 @@ const createSingleLeave = async (req, res) => {
         });
       }
       
-      // let remainingannualallowedleaveun = (user.remainingannualallowedleave).toString();
-      // let remaninghalf=(parseFloat(user.remainingannualallowedleave) - 0.5).toString();
-    // if (req.body.leavecategory === 'PAID' && req.body.daytype==='FULL') {
-    //   await prisma.user.update({
-    //     where: {
-    //       id: parseInt(req.body.userId),
-    //     },
-    //     data: {
-    //       remainingannualallowedleave: remainingannualallowedleave,
-    //     },
-    //   }) 
-    // } 
-    // else if(req.body.leavecategory === 'PAID' && req.body.daytype==='HALF')
-    // {
-    //   await prisma.user.update({
-    //     where: {
-    //       id: parseInt(req.body.userId),
-    //     },
-    //     data: {
-    //       remainingannualallowedleave: remaninghalf,
-    //     },
-    //   }) 
-    // }
-    // else{
-    //   remainingannualallowedleaveun=remainingannualallowedleaveun
-    // }
-    
       return res.status(200).json({createdLeave,
       message:"Leave application apply successfully"});
     } catch (error) {
@@ -401,11 +397,13 @@ const createSingleLeave = async (req, res) => {
         if ([0, 1, 3].includes(leaveFrom.getMonth())) {
           return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
         }
-        var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime();      
+        var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
+             
         // To calculate the no. of days between two dates
         var leaveDuration = Difference_In_Time / (1000 * 3600 * 24);
-        console.log("LEAVE", leaveDuration);
-  
+        if (req.body.daytype==='HALF'){
+          leaveDuration = leaveDuration/2;
+        }
         if (user.remainingannualallowedleave < leaveDuration) {
           return res.status(400).json({ message: "Not enough remaining annual leave." });
         }
@@ -420,11 +418,32 @@ const createSingleLeave = async (req, res) => {
   
         console.log("Difference_In_Days",Difference_In_Days);
         
-        const submitDays = 
-        leaveDuration == 1 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9:leaveDuration === 5 ? 11 :leaveDuration === 6 ? 13:leaveDuration === 7 ? 15
-        :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
-        leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
-        
+        // const submitDays = 
+        // leaveDuration == 1||0.5 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9:leaveDuration === 5 ? 11 :leaveDuration === 6 ? 13:leaveDuration === 7 ? 15
+        // :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
+        // leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
+        const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 : 
+                    leaveDuration === 2 || leaveDuration === 1 ? 5 : 
+                    leaveDuration === 3 || leaveDuration === 1.5 ? 7 : 
+                    leaveDuration === 4 ? 9 : 
+                    leaveDuration === 5 ? 11 : 
+                    leaveDuration === 6 ? 13 : 
+                    leaveDuration === 7 || leaveDuration === 3.5 ? 15 : 
+                    leaveDuration === 8 ? 17 : 
+                    leaveDuration === 9 ? 19 : 
+                    leaveDuration === 10 ? 21 : 
+                    leaveDuration === 11 ? 23 : 
+                    leaveDuration === 12 ? 25 : 
+                    leaveDuration === 13 || leaveDuration === 6.5 ? 27 : 
+                    leaveDuration === 14 ? 29 : 
+                    leaveDuration === 15 || leaveDuration === 7.5 ? 31 : 
+                    leaveDuration === 16 ? 33 : 
+                    leaveDuration === 17 ? 35 : 
+                    leaveDuration === 18 ? 37 : 
+                    leaveDuration === 19 || leaveDuration === 9.5 ? 39 : 
+                    leaveDuration === 20 ? 41 : 0;
+  
+        console.log(submitDays,"fsgdf");
         if (Difference_In_Days < submitDays){
           return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
         }
@@ -452,21 +471,22 @@ const createSingleLeave = async (req, res) => {
         console.log(createdLeave);
   
         if (req.body.daytype==='HALF'){
-          leaveDuration = leaveDuration/2;
+          leaveDuration = leaveDuration;
         }
         console.log(leaveDuration);
         let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
         
-        if (req.body.leavecategory === 'PAID'){
+        if (req.body.leaveType === 'CompassionateLeave(deductible)'||req.body.leaveType === 'BereavementLeave(deductible)'||req.body.leaveType === 'ParentalLeave(deductible)'||req.body.leaveType === 'PaternityLeave(deductible-if-paid)'){
           await prisma.user.update({
             where: {
-              id: parseInt(req.body.userId),
+              employeeId:req.body.employeeId,
             },
             data: {
               remainingannualallowedleave: remainingannualallowedleave,
             },
           });
-        }      
+        }
+        
         return res.status(200).json({createdLeave,
         message:"Leave application apply successfully"});
       } catch (error) {
@@ -476,132 +496,6 @@ const createSingleLeave = async (req, res) => {
   };
   
   
-
-
-
-// const createSingleLeave = async (req, res) => {
-//   if (req.query.query === "deletemany") {
-//     try {
-//       // delete many designations at once
-//       const deletedLeave = await prisma.leaveApplication.deleteMany({
-//         where: {
-//           id: {
-//             in: req.body,
-//           },
-//         },
-//       });
-//       return res.status(200).json(deletedLeave);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   } else {
-//     try {
-//       const leaveFrom = new Date(req.body.leaveFrom);
-//       const leaveTo = new Date(req.body.leaveTo);
-//       const user = await prisma.user.findUnique({
-//         where: {
-//           id: parseInt(req.body.userId),
-//         },
-//       });
-
-//       if (!user) {
-//         return res.status(400).json({ message: "User not found." });
-//       }
-
-//       const overlappingLeave = await prisma.leaveApplication.findFirst({
-//         where: {
-//           user: {
-//             NOT: {
-//               id: parseInt(req.body.userId),
-//             },
-//           },
-//           leaveFrom: { lte: leaveTo },
-//           leaveTo: { gte: leaveFrom },
-//           status: "ACCEPTED",
-//         },
-//       });
-
-//       if (overlappingLeave) {
-//         return res.status(400).json({ message: "Already two leave applications accepted" });
-//       }
-
-//       if ([0, 1, 3].includes(leaveFrom.getMonth())) {
-//         return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
-//       }
-
-//       let leaveDuration;
-
-//       if (req.body.daytype === "full") {
-//         leaveDuration = Math.round((leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24));
-//       } else if (req.body.daytype === "half") {
-//         leaveDuration = 0.5; // Half-day leave
-//       } else {
-//         return res.status(400).json({ message: "Invalid leave type." });
-//       }
-
-//       if (user.remainingannualallowedleave < leaveDuration) {
-//         return res.status(400).json({ message: "Not enough remaining annual leave." });
-//       }
-
-//       // Calculate submitDate based on leaveDuration
-//       let submitDate = new Date(leaveFrom);
-//       const submitDays = leaveDuration === 1 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9  : 0;
-
-//       if (submitDays > 0) {
-//         submitDate.setDate(leaveFrom.getDate() - submitDays);
-//         if (submitDate.getTime() < new Date().getTime()) {
-//           return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
-//         }
-//       }
-
-//       const createdLeave = await prisma.leaveApplication.create({
-//         data: {
-//           user: {
-//             connect: {
-//               id: parseInt(req.body.userId),
-//             },
-//           },
-//           leaveType: req.body.leaveType,
-//           leavecategory: req.body.leavecategory,
-//           daytype: req.body.daytype,
-//           fromtime: req.body.fromtime,
-//           totime: req.body.totime,
-//           leaveFrom: leaveFrom,
-//           leaveTo: leaveTo,
-//           leaveDuration: leaveDuration,
-//           reason: req.body.reason ? req.body.reason : undefined,
-//           createdAt: submitDate, // Include submitDate inside the data object
-//         },
-//       });
-
-//       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
-//       let remainingannualallowedleaveun = user.remainingannualallowedleave.toString();
-
-//       if (req.body.leavecategory === 'PAID') {
-//         await prisma.user.update({
-//           where: {
-//             id: parseInt(req.body.userId),
-//           },
-//           data: {
-//             remainingannualallowedleave: remainingannualallowedleave,
-//           },
-//         });
-//       } else {
-//         remainingannualallowedleaveun = remainingannualallowedleaveun;
-//       }
-
-//       return res.status(200).json(createdLeave);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   }
-// };
-
-
-
-
-
-
 
 const getAllLeave = async (req, res) => {
   const { skip, limit, status } = req.query;
@@ -793,14 +687,118 @@ const getSingleLeave = async (req, res) => {
   }
 };
 
+// const grantedLeave = async (req, res) => {
+//   try {
+//     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
+//     const acceptLeaveTo = new Date(req.body.acceptLeaveTo);
+//     const leaveDuration = Math.round(
+//       (acceptLeaveTo.getTime() - acceptLeaveFrom.getTime()) /
+//       (1000 * 60 * 60 * 24)
+//     );
+
+//     let grantedLeave;
+
+//     // Fetch the existing leave application
+//     const existingLeave = await prisma.leaveApplication.findUnique({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       include: {
+//         user: true,
+//       },
+//     });
+
+//     if (!existingLeave) {
+//       return res.status(404).json({ message: 'Leave application not found' });
+//     }
+
+//     if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
+//       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+//       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+//       await prisma.user.update({
+//         where: {
+//           id: existingLeave.user.id,
+//         },
+//         data: {
+//           remainingannualallowedleave: currentRemainingLeaves.toString(),
+//         },
+//       });
+//     }
+//    else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
+//     if(existingLeave.leaveDuration){
+//       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+//       const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.user.leaveDuration, 0);
+//       await prisma.user.update({
+//         where: {
+//           id: existingLeave.user.id,
+//         },
+//         data: {
+//           remainingannualallowedleave: updatedRemainingLeaves.toString(),
+//         },
+//       });
+//     }
+//       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+      
+      
+//     }
+//     else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
+//       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+//       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+//       const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.user.leaveDuration, 0);
+
+//       await prisma.user.update({
+//         where: {
+//           id: existingLeave.user.id,
+//         },
+//         data: {
+//           remainingannualallowedleave: updatedRemainingLeaves.toString(),
+//         },
+//       });
+//     }
+//     else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
+//       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+//       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+//       const updatedRemainingLeaves = Math.max(currentRemainingLeaves - leaveDuration, 0);
+
+//       await prisma.user.update({
+//         where: {
+//           id: existingLeave.user.id,
+//         },
+//         data: {
+//           remainingannualallowedleave: updatedRemainingLeaves.toString(),
+//         },
+//       });
+//     }
+
+//     // Update the leave details
+//     grantedLeave = await prisma.leaveApplication.update({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       data: {
+//         acceptLeaveBy: req.auth.sub,
+//         acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
+//         acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
+//         leaveDuration: leaveDuration ? leaveDuration : 0,
+//         reviewComment: req.body.reviewComment ? req.body.reviewComment : undefined,
+//         status: req.body.status,
+//       },
+//     });
+
+//     return res.status(200).json({
+//       grantedLeave,
+//       message: 'Application status is updated',
+//     });
+//   } catch (error) {
+//     return res.status(400).json({ message: 'Failed to update application status' });
+//   }
+// };
+
+
 const grantedLeave = async (req, res) => {
   try {
     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
     const acceptLeaveTo = new Date(req.body.acceptLeaveTo);
-    const leaveDuration = Math.round(
-      (acceptLeaveTo.getTime() - acceptLeaveFrom.getTime()) /
-      (1000 * 60 * 60 * 24)
-    );
 
     let grantedLeave;
 
@@ -813,6 +811,7 @@ const grantedLeave = async (req, res) => {
         user: true,
       },
     });
+    const leaveDuration =existingLeave.leaveDuration
 
     if (!existingLeave) {
       return res.status(404).json({ message: 'Leave application not found' });
@@ -821,8 +820,6 @@ const grantedLeave = async (req, res) => {
     if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - 0.5, 0);
-
       await prisma.user.update({
         where: {
           id: existingLeave.user.id,
@@ -831,11 +828,24 @@ const grantedLeave = async (req, res) => {
           remainingannualallowedleave: currentRemainingLeaves.toString(),
         },
       });
-    }
-   else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
-      // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+    } else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
+      // If status was changed from 'PENDING' to 'REJECTED', add the leave duration back to remaining leaves
+      if (existingLeave.leaveDuration) {
+        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+        const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.leaveDuration, 0);
+        await prisma.user.update({
+          where: {
+            id: existingLeave.user.id,
+          },
+          data: {
+            remainingannualallowedleave: updatedRemainingLeaves.toString(),
+          },
+        });
+      }
+    } else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
+      // If status was changed from 'APPROVED' to 'REJECTED', add the leave duration back to remaining leaves
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-      const updatedRemainingLeaves = Math.max(currentRemainingLeaves + leaveDuration, 0);
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.leaveDuration, 0);
 
       await prisma.user.update({
         where: {
@@ -845,25 +855,11 @@ const grantedLeave = async (req, res) => {
           remainingannualallowedleave: updatedRemainingLeaves.toString(),
         },
       });
-    }
-    else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
+    } else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-      const updatedRemainingLeaves = Math.max(currentRemainingLeaves + leaveDuration, 0);
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - existingLeave.leaveDuration, 0);
 
-      await prisma.user.update({
-        where: {
-          id: existingLeave.user.id,
-        },
-        data: {
-          remainingannualallowedleave: updatedRemainingLeaves.toString(),
-        },
-      });
-    }
-    else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
-      // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
-      const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - leaveDuration, 0);
 
       await prisma.user.update({
         where: {
@@ -884,7 +880,7 @@ const grantedLeave = async (req, res) => {
         acceptLeaveBy: req.auth.sub,
         acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
         acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
-        leaveDuration: leaveDuration ? leaveDuration : 0,
+        leaveDuration: leaveDuration !== undefined ? leaveDuration : 0,
         reviewComment: req.body.reviewComment ? req.body.reviewComment : undefined,
         status: req.body.status,
       },
@@ -898,100 +894,6 @@ const grantedLeave = async (req, res) => {
     return res.status(400).json({ message: 'Failed to update application status' });
   }
 };
-
-
-
-
-// const getLeaveByUserId = async (req, res) => {
-//   try {
-//     const getLeaveTo = await prisma.leaveApplication.findMany({
-//       where: {
-//         AND: {
-//           userId: Number(req.params.id),
-//           // status: "APPROVED",
-//         },
-//       },
-//       orderBy: [
-//         {
-//           id: "desc",
-//         },
-//       ],
-//     });
-
-//     // check if the user has any leave
-//     const isId = getLeaveTo.map((item) => item.id);
-
-//     if (isId.length === 0)
-//       return res.status(200).json({ message: "No leave found for this user" });
-
-//     // check if the user is on leave
-//     const leaveTo = getLeaveTo[0].leaveTo;
-//     const currentDate = new Date();
-
-//     let leaveStatus = "";
-//     if (leaveTo > currentDate) leaveStatus = "onleave";
-//     else leaveStatus = "not on leave";
-//     const totalPendingLeaves = await prisma.leaveApplication.count({
-//       where: {
-//         AND: {
-//           userId: Number(req.params.id),
-//           status: "REJECTED",
-//         },
-//       },
-//     });
-//         const approvedBy = await prisma.user.findUnique({
-//       where: {
-//         id: req.auth.sub,
-//       },
-//     });
-
-//     console.log(approvedBy,"dfahkhu");
-//     // get all leave history
-//     const singleLeave = await prisma.leaveApplication.findMany({
-//       where: {
-//         AND: {
-//           userId: Number(req.params.id),
-//         },
-//       },
-//       orderBy: [
-//         {
-//           id: "desc",
-//         },
-//       ],
-//     });
-//     const totalAcceptedLeaves = await prisma.leaveApplication.count({
-     
-//       where: {
-//         AND: {
-//           userId: Number(req.params.id),
-//           status: "APPROVED",
-//         },
-//       },
-//     });
-
-//     const totalRejectedLeaves = await prisma.leaveApplication.count({
-//       where: {
-//         AND: {
-//           userId: Number(req.params.id),
-//           status: "PENDING",
-//         },
-//       },
-
-//     });
-
-   
-   
-// console.log(approvedBy,"rweukhjk");
-//     return res.status(200).json({ singleLeave, leaveStatus , totalAcceptedLeaves,
-//       totalRejectedLeaves,
-//       totalPendingLeaves});
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
-
-
 
 const getLeaveByUserId = async (req, res) => {
   try {
