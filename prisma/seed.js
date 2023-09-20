@@ -158,14 +158,9 @@ const leavePolicy = [
 
 const weeklyHoliday = [
   {
-    name: "Saturday-Thursday",
+    name: "Saturday-Sunday",
     startDay: "Saturday",
-    endDay: "Thursday",
-  },
-  {
-    name: "Sunday-Friday",
-    startDay: "Sunday",
-    endDay: "Friday",
+    endDay: "Sunday",
   },
 ];
 
