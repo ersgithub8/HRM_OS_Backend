@@ -840,23 +840,35 @@ const todayLeaveState = async (req, res) => {
 
     // Initialize counts for each day
     const dayCounts = {
-      Monday: { total: 0, approved: 0, pending: 0, rejected: 0 },
-      Tuesday: { total: 0, approved: 0, pending: 0, rejected: 0 },
-      Wednesday: { total: 0, approved: 0, pending: 0, rejected: 0 },
-      Thursday: { total: 0, approved: 0, pending: 0, rejected: 0 },
-      Friday: { total: 0, approved: 0, pending: 0, rejected: 0 },
-      Saturday: { total: 0, approved: 0, pending: 0, rejected: 0 },
-      Sunday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Mon: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Tue: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Wed: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Thu: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Fri: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Sat: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Sun: { total: 0, approved: 0, pending: 0, rejected: 0 },
     };
-
+    
+    const dayNameMapping = {
+      'Monday': 'Mon',
+      'Tuesday': 'Tue',
+      'Wednesday': 'Wed',
+      'Thursday': 'Thu',
+      'Friday': 'Fri',
+      'Saturday': 'Sat',
+      'Sunday': 'Sun',
+    };
+    
     // Update counts based on leave status and day of the week
     weeklyLeaves.forEach(leave => {
       const dayOfWeek = new Date(leave.createdAt).toLocaleString('en-us', { weekday: 'long' });
-      dayCounts[dayOfWeek].total++;
-      if (leave.status === 'APPROVED') dayCounts[dayOfWeek].approved++;
-      else if (leave.status === 'PENDING') dayCounts[dayOfWeek].pending++;
-      else if (leave.status === 'REJECTED') dayCounts[dayOfWeek].rejected++;
+      const shortDayOfWeek = dayNameMapping[dayOfWeek];
+      dayCounts[shortDayOfWeek].total++;
+      if (leave.status === 'APPROVED') dayCounts[shortDayOfWeek].approved++;
+      else if (leave.status === 'PENDING') dayCounts[shortDayOfWeek].pending++;
+      else if (leave.status === 'REJECTED') dayCounts[shortDayOfWeek].rejected++;
     });
+    
     const todayApproved = todayLeaves.filter((leave) => leave.status === 'APPROVED');
     const todayPending = todayLeaves.filter((leave) => leave.status === 'PENDING');
     const todayRejected = todayLeaves.filter((leave) => leave.status === 'REJECTED');
