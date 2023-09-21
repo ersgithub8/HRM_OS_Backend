@@ -127,26 +127,27 @@ const createSingleLeave = async (req, res) => {
       // leaveDuration == 1||0.5 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9:leaveDuration === 5 ? 11 :leaveDuration === 6 ? 13:leaveDuration === 7 ? 15
       // :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
       // leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
+
       const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 : 
                   leaveDuration === 2 || leaveDuration === 1 ? 5 : 
                   leaveDuration === 3 || leaveDuration === 1.5 ? 7 : 
-                  leaveDuration === 4 ? 9 : 
-                  leaveDuration === 5 ? 11 : 
-                  leaveDuration === 6 ? 13 : 
+                  leaveDuration === 4 || leaveDuration === 2 ? 9 : 
+                  leaveDuration === 5|| leaveDuration === 2.5 ? 11 : 
+                  leaveDuration === 6 || leaveDuration ===3 ? 13 : 
                   leaveDuration === 7 || leaveDuration === 3.5 ? 15 : 
-                  leaveDuration === 8 ? 17 : 
-                  leaveDuration === 9 ? 19 : 
-                  leaveDuration === 10 ? 21 : 
-                  leaveDuration === 11 ? 23 : 
-                  leaveDuration === 12 ? 25 : 
+                  leaveDuration === 8 || leaveDuration ===4 ? 17 : 
+                  leaveDuration === 9 || leaveDuration ===4.5 ? 19 : 
+                  leaveDuration === 10 || leaveDuration === 5 ? 21 : 
+                  leaveDuration === 11 || leaveDuration ===5.5 ? 23 : 
+                  leaveDuration === 12 || leaveDuration ===6 ? 25 : 
                   leaveDuration === 13 || leaveDuration === 6.5 ? 27 : 
-                  leaveDuration === 14 ? 29 : 
+                  leaveDuration === 14|| leaveDuration ===7 ? 29 : 
                   leaveDuration === 15 || leaveDuration === 7.5 ? 31 : 
-                  leaveDuration === 16 ? 33 : 
-                  leaveDuration === 17 ? 35 : 
-                  leaveDuration === 18 ? 37 : 
+                  leaveDuration === 16 || leaveDuration ===8 ? 33 : 
+                  leaveDuration === 17 || leaveDuration ===8.5 ? 35 : 
+                  leaveDuration === 18 || leaveDuration ===9 ? 37 : 
                   leaveDuration === 19 || leaveDuration === 9.5 ? 39 : 
-                  leaveDuration === 20 ? 41 : 0;
+                  leaveDuration === 20|| leaveDuration ===10 ? 41 : 0;
 
       console.log(submitDays,"fsgdf");
       if (Difference_In_Days < submitDays){
@@ -178,6 +179,11 @@ const createSingleLeave = async (req, res) => {
       if (req.body.daytype==='HALF'){
         leaveDuration = leaveDuration;
       }
+
+      if (req.body.daytype==='HALF'){
+        leaveDuration = leaveDuration/2;
+      }
+
       console.log(leaveDuration);
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       
@@ -423,25 +429,25 @@ const createSingleLeave = async (req, res) => {
         // :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
         // leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
         const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 : 
-                    leaveDuration === 2 || leaveDuration === 1 ? 5 : 
-                    leaveDuration === 3 || leaveDuration === 1.5 ? 7 : 
-                    leaveDuration === 4 ? 9 : 
-                    leaveDuration === 5 ? 11 : 
-                    leaveDuration === 6 ? 13 : 
-                    leaveDuration === 7 || leaveDuration === 3.5 ? 15 : 
-                    leaveDuration === 8 ? 17 : 
-                    leaveDuration === 9 ? 19 : 
-                    leaveDuration === 10 ? 21 : 
-                    leaveDuration === 11 ? 23 : 
-                    leaveDuration === 12 ? 25 : 
-                    leaveDuration === 13 || leaveDuration === 6.5 ? 27 : 
-                    leaveDuration === 14 ? 29 : 
-                    leaveDuration === 15 || leaveDuration === 7.5 ? 31 : 
-                    leaveDuration === 16 ? 33 : 
-                    leaveDuration === 17 ? 35 : 
-                    leaveDuration === 18 ? 37 : 
-                    leaveDuration === 19 || leaveDuration === 9.5 ? 39 : 
-                    leaveDuration === 20 ? 41 : 0;
+        leaveDuration === 2 || leaveDuration === 1 ? 5 : 
+        leaveDuration === 3 || leaveDuration === 1.5 ? 7 : 
+        leaveDuration === 4 || leaveDuration === 2 ? 9 : 
+        leaveDuration === 5|| leaveDuration === 2.5 ? 11 : 
+        leaveDuration === 6 || leaveDuration ===3 ? 13 : 
+        leaveDuration === 7 || leaveDuration === 3.5 ? 15 : 
+        leaveDuration === 8 || leaveDuration ===4 ? 17 : 
+        leaveDuration === 9 || leaveDuration ===4.5 ? 19 : 
+        leaveDuration === 10 || leaveDuration === 5 ? 21 : 
+        leaveDuration === 11 || leaveDuration ===5.5 ? 23 : 
+        leaveDuration === 12 || leaveDuration ===6 ? 25 : 
+        leaveDuration === 13 || leaveDuration === 6.5 ? 27 : 
+        leaveDuration === 14|| leaveDuration ===7 ? 29 : 
+        leaveDuration === 15 || leaveDuration === 7.5 ? 31 : 
+        leaveDuration === 16 || leaveDuration ===8 ? 33 : 
+        leaveDuration === 17 || leaveDuration ===8.5 ? 35 : 
+        leaveDuration === 18 || leaveDuration ===9 ? 37 : 
+        leaveDuration === 19 || leaveDuration === 9.5 ? 39 : 
+        leaveDuration === 20|| leaveDuration ===10 ? 41 : 0;
   
         console.log(submitDays,"fsgdf");
         if (Difference_In_Days < submitDays){
@@ -712,16 +718,15 @@ const getSingleLeave = async (req, res) => {
 
     const acceptLeaveBy = await prisma.user.findUnique({
       where: {
-        id: singleLeave.id,
+        id: singleLeave.acceptLeaveBy,
       },
       select: {
         firstName: true,
         lastName: true,
         userName:true,
-            employeeId:true,
+        employeeId:true,
       },
     });
-
     if (
       (req.auth.sub !== singleLeave.userId &&
         !req.auth.permissions.includes("readAll-leaveApplication")) ||
