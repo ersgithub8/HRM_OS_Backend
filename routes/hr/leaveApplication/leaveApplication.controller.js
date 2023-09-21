@@ -1081,6 +1081,15 @@ const todayLeaveState = async (req, res) => {
         createdAt: { gte: startOfWeek, lt: endOfWeek },
       },
     });
+    const todays = new Date();
+    const startOfToday = new Date(todays.getFullYear(), todays.getMonth(), todays.getDate(), 0, 0, 0);
+    const endOfToday = new Date(todays.getFullYear(), todays.getMonth(), todays.getDate(), 23, 59, 59);
+    
+    const todayLeaves = await prisma.leaveApplication.findMany({
+      where: {
+        createdAt: { gte: startOfToday, lt: endOfToday },
+      },
+    });
 
     // Initialize counts for each day
     const dayCounts = {
@@ -1101,14 +1110,14 @@ const todayLeaveState = async (req, res) => {
       else if (leave.status === 'PENDING') dayCounts[dayOfWeek].pending++;
       else if (leave.status === 'REJECTED') dayCounts[dayOfWeek].rejected++;
     });
-    const todayApproved = weeklyLeaves.filter((leave) => leave.status === 'APPROVED');
-    const todayPending = weeklyLeaves.filter((leave) => leave.status === 'PENDING');
-    const todayRejected = weeklyLeaves.filter((leave) => leave.status === 'REJECTED');
+    const todayApproved = todayLeaves.filter((leave) => leave.status === 'APPROVED');
+    const todayPending = todayLeaves.filter((leave) => leave.status === 'PENDING');
+    const todayRejected = todayLeaves.filter((leave) => leave.status === 'REJECTED');
 
     const approvedLeaveCount = todayApproved.length;
     const pendingLeaveCount = todayPending.length;
     const rejectedLeaveCount = todayRejected.length;
-    const totalLeaveCount = weeklyLeaves.length;
+    const totalLeaveCount = todayLeaves.length;
 
     return res.status(200).json({
       weekCounts: dayCounts,
