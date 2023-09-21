@@ -1043,49 +1043,141 @@ const deleteSingleLeave=async(req, res)=>{
     return res.status(400).json({ message: error.message });
   }
 }
+// const todayLeaveState = async (req, res) => {
+//   try {
+//     const today = new Date();
+//     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+//     const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
+
+//     // Get all leaves for today
+//     const todayLeaves = await prisma.leaveApplication.findMany({
+//       where: {
+//         createdAt: { gte: todayStart, lt: todayEnd },
+//       },
+//       // include: {
+//       //   user: {
+//       //     select: {
+//       //       firstName: true,
+//       //       lastName: true,
+//       //       userName: true,
+//       //       employeeId: true,
+//       //     },
+//       //   },
+//       // },
+//     });
+
+    // const todayApproved = todayLeaves.filter((leave) => leave.status === 'APPROVED');
+    // const todayPending = todayLeaves.filter((leave) => leave.status === 'PENDING');
+    // const todayRejected = todayLeaves.filter((leave) => leave.status === 'REJECTED');
+
+    // const approvedLeaveCount = todayApproved.length;
+    // const pendingLeaveCount = todayPending.length;
+    // const rejectedLeaveCount = todayRejected.length;
+    // const totalLeaveCount = todayLeaves.length;
+
+//     return res.status(200).json({
+      // totalLeaves: totalLeaveCount,
+      // totalApproved: approvedLeaveCount,
+      // totalPending: pendingLeaveCount,
+      // totalRejected: rejectedLeaveCount,
+//       // todayApproved: todayApproved,
+//     });
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
+
 const todayLeaveState = async (req, res) => {
   try {
     const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-    const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Get the start of the current week (Sunday)
 
-    // Get all leaves for today
-    const todayLeaves = await prisma.leaveApplication.findMany({
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(startOfWeek.getDate() + 7); // Get the end of the current week (Sunday of the next week)
+
+    // Get all leaves for the current week
+    const weeklyLeaves = await prisma.leaveApplication.findMany({
       where: {
-        createdAt: { gte: todayStart, lt: todayEnd },
+        createdAt: { gte: startOfWeek, lt: endOfWeek },
       },
-      // include: {
-      //   user: {
-      //     select: {
-      //       firstName: true,
-      //       lastName: true,
-      //       userName: true,
-      //       employeeId: true,
-      //     },
-      //   },
-      // },
     });
 
-    const todayApproved = todayLeaves.filter((leave) => leave.status === 'APPROVED');
-    const todayPending = todayLeaves.filter((leave) => leave.status === 'PENDING');
-    const todayRejected = todayLeaves.filter((leave) => leave.status === 'REJECTED');
+    // Initialize counts for each day
+    const dayCounts = {
+      Monday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Tuesday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Wednesday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Thursday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Friday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Saturday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+      Sunday: { total: 0, approved: 0, pending: 0, rejected: 0 },
+    };
+
+    // Update counts based on leave status and day of the week
+    weeklyLeaves.forEach(leave => {
+      const dayOfWeek = new Date(leave.createdAt).toLocaleString('en-us', { weekday: 'long' });
+      dayCounts[dayOfWeek].total++;
+      if (leave.status === 'APPROVED') dayCounts[dayOfWeek].approved++;
+      else if (leave.status === 'PENDING') dayCounts[dayOfWeek].pending++;
+      else if (leave.status === 'REJECTED') dayCounts[dayOfWeek].rejected++;
+    });
+    const todayApproved = weeklyLeaves.filter((leave) => leave.status === 'APPROVED');
+    const todayPending = weeklyLeaves.filter((leave) => leave.status === 'PENDING');
+    const todayRejected = weeklyLeaves.filter((leave) => leave.status === 'REJECTED');
 
     const approvedLeaveCount = todayApproved.length;
     const pendingLeaveCount = todayPending.length;
     const rejectedLeaveCount = todayRejected.length;
-    const totalLeaveCount = todayLeaves.length;
+    const totalLeaveCount = weeklyLeaves.length;
 
     return res.status(200).json({
+      weekCounts: dayCounts,
       totalLeaves: totalLeaveCount,
       totalApproved: approvedLeaveCount,
       totalPending: pendingLeaveCount,
       totalRejected: rejectedLeaveCount,
-      // todayApproved: todayApproved,
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
+const monthlyLeaveSate = async (req, res) => {
+  try {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+
+    // Get all leaves for the current month
+    const monthlyLeaves = await prisma.leaveApplication.findMany({
+      where: {
+        createdAt: { gte: startOfMonth, lt: endOfMonth },
+        status: 'APPROVED', // Consider only approved leaves for the graph
+      },
+    });
+
+    // Organize the data for the graph
+    const graphData = [];
+    for (let i = 1; i <= today.getDate(); i++) {
+      const date = new Date(today.getFullYear(), today.getMonth(), i, 0, 0, 0);
+      const leavesOnDate = monthlyLeaves.filter(leave => {
+        const leaveDate = new Date(leave.createdAt);
+        return leaveDate.getDate() === i;
+      });
+      graphData.push({ date: date.toISOString(), count: leavesOnDate.length });
+    }
+
+    return res.status(200).json({
+      graphData,
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 
 module.exports = {
   createSingleLeave,
@@ -1097,4 +1189,5 @@ module.exports = {
   adminSingleLeave,
   getapprovedAllLeave,
   todayLeaveState,
+  monthlyLeaveSate,
 };
