@@ -1043,52 +1043,6 @@ const deleteSingleLeave=async(req, res)=>{
     return res.status(400).json({ message: error.message });
   }
 }
-// const todayLeaveState = async (req, res) => {
-//   try {
-//     const today = new Date();
-//     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-//     const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
-
-//     // Get all leaves for today
-//     const todayLeaves = await prisma.leaveApplication.findMany({
-//       where: {
-//         createdAt: { gte: todayStart, lt: todayEnd },
-//       },
-//       // include: {
-//       //   user: {
-//       //     select: {
-//       //       firstName: true,
-//       //       lastName: true,
-//       //       userName: true,
-//       //       employeeId: true,
-//       //     },
-//       //   },
-//       // },
-//     });
-
-    // const todayApproved = todayLeaves.filter((leave) => leave.status === 'APPROVED');
-    // const todayPending = todayLeaves.filter((leave) => leave.status === 'PENDING');
-    // const todayRejected = todayLeaves.filter((leave) => leave.status === 'REJECTED');
-
-    // const approvedLeaveCount = todayApproved.length;
-    // const pendingLeaveCount = todayPending.length;
-    // const rejectedLeaveCount = todayRejected.length;
-    // const totalLeaveCount = todayLeaves.length;
-
-//     return res.status(200).json({
-      // totalLeaves: totalLeaveCount,
-      // totalApproved: approvedLeaveCount,
-      // totalPending: pendingLeaveCount,
-      // totalRejected: rejectedLeaveCount,
-//       // todayApproved: todayApproved,
-//     });
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
-
-
 const todayLeaveState = async (req, res) => {
   try {
     const today = new Date();
@@ -1145,38 +1099,58 @@ const todayLeaveState = async (req, res) => {
   }
 };
 
-const monthlyLeaveSate = async (req, res) => {
+const yearlyLeaveState = async (req, res) => {
   try {
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+    const date = new Date();
+    const currentMonth = date.getUTCMonth() + 1; // months from 1-12
 
-    // Get all leaves for the current month
-    const monthlyLeaves = await prisma.leaveApplication.findMany({
-      where: {
-        createdAt: { gte: startOfMonth, lt: endOfMonth },
-        status: 'APPROVED', // Consider only approved leaves for the graph
-      },
-    });
+    // Initialize an array to store counts for each month
+    const monthCounts = [];
 
-    // Organize the data for the graph
-    const graphData = [];
-    for (let i = 1; i <= today.getDate(); i++) {
-      const date = new Date(today.getFullYear(), today.getMonth(), i, 0, 0, 0);
-      const leavesOnDate = monthlyLeaves.filter(leave => {
-        const leaveDate = new Date(leave.createdAt);
-        return leaveDate.getDate() === i;
+    // Loop through each month of the year, starting from January to the current month
+    for (let month = 1; month <= currentMonth; month++) {
+      // Calculate the start date for the current month
+      const currentMonthStart = new Date(date.getFullYear(), month - 1, 1, 0, 0, 0);
+
+      // Calculate the end date for the current month
+      const nextMonth = month === 12 ? 1 : month + 1; // Handle year change
+      const currentMonthEnd = new Date(date.getFullYear(), nextMonth - 1, 1, 0, 0, 0);
+
+      // Get all leaves for the current month
+      const monthlyLeaves = await prisma.leaveApplication.findMany({
+        where: {
+          createdAt: { gte: currentMonthStart, lt: currentMonthEnd },
+          status: { in: ['APPROVED', 'REJECTED'] },
+        },
       });
-      graphData.push({ date: date.toISOString(), count: leavesOnDate.length });
+
+      // Initialize counts for the current month
+      const monthCount = {
+        month: new Date(currentMonthStart).toLocaleString('en-us', { month: 'long' }),
+        approved: 0,
+        rejected: 0,
+      };
+
+      // Update counts based on leave status
+      monthlyLeaves.forEach(leave => {
+        if (leave.status === 'APPROVED') monthCount.approved++;
+        else if (leave.status === 'REJECTED') monthCount.rejected++;
+      });
+
+      // Add the counts for the current month to the array
+      monthCounts.push(monthCount);
     }
 
     return res.status(200).json({
-      graphData,
+      yearCounts: monthCounts,
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
 
 
 module.exports = {
@@ -1189,5 +1163,5 @@ module.exports = {
   adminSingleLeave,
   getapprovedAllLeave,
   todayLeaveState,
-  monthlyLeaveSate,
+  yearlyLeaveState,
 };

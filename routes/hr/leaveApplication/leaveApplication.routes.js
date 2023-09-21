@@ -10,7 +10,7 @@ const {
   adminSingleLeave,
   getapprovedAllLeave,
   todayLeaveState,
-  monthlyLeaveSate,
+  yearlyLeaveState,
 } = require("./leaveApplication.controller");
 const authorize = require("../../../utils/authorize"); // authentication middleware
 
@@ -21,7 +21,7 @@ leaveApplicationRoutes.post("/create", authorize(""), adminSingleLeave);
 leaveApplicationRoutes.get("/", authorize(""), getAllLeave);
 leaveApplicationRoutes.get("/approve", authorize(""), getapprovedAllLeave);
 leaveApplicationRoutes.get("/todayLeaveState", authorize(""), todayLeaveState);
-leaveApplicationRoutes.get("/monthlyLeaveSate", authorize(""), monthlyLeaveSate);
+leaveApplicationRoutes.get("/yearlyLeaveState", authorize(""), yearlyLeaveState);
 leaveApplicationRoutes.get("/:id", authorize(""), getSingleLeave);
 leaveApplicationRoutes.put(
   "/:id",
