@@ -684,16 +684,6 @@ const getapprovedAllLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
-
-
-
-
-
-
-
-
 const getSingleLeave = async (req, res) => {
   try {
     const singleLeave = await prisma.leaveApplication.findUnique({
@@ -1053,6 +1043,50 @@ const deleteSingleLeave=async(req, res)=>{
     return res.status(400).json({ message: error.message });
   }
 }
+const todayLeaveState = async (req, res) => {
+  try {
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+    const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
+
+    // Get all leaves for today
+    const todayLeaves = await prisma.leaveApplication.findMany({
+      where: {
+        createdAt: { gte: todayStart, lt: todayEnd },
+      },
+      // include: {
+      //   user: {
+      //     select: {
+      //       firstName: true,
+      //       lastName: true,
+      //       userName: true,
+      //       employeeId: true,
+      //     },
+      //   },
+      // },
+    });
+
+    const todayApproved = todayLeaves.filter((leave) => leave.status === 'APPROVED');
+    const todayPending = todayLeaves.filter((leave) => leave.status === 'PENDING');
+    const todayRejected = todayLeaves.filter((leave) => leave.status === 'REJECTED');
+
+    const approvedLeaveCount = todayApproved.length;
+    const pendingLeaveCount = todayPending.length;
+    const rejectedLeaveCount = todayRejected.length;
+    const totalLeaveCount = todayLeaves.length;
+
+    return res.status(200).json({
+      totalLeaves: totalLeaveCount,
+      totalApproved: approvedLeaveCount,
+      totalPending: pendingLeaveCount,
+      totalRejected: rejectedLeaveCount,
+      // todayApproved: todayApproved,
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createSingleLeave,
   getAllLeave,
@@ -1062,4 +1096,5 @@ module.exports = {
   deleteSingleLeave,
   adminSingleLeave,
   getapprovedAllLeave,
+  todayLeaveState,
 };
