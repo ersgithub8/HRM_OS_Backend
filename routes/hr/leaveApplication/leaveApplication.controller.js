@@ -461,6 +461,7 @@ const createSingleLeave = async (req, res) => {
                 employeeId:req.body.employeeId,
               },
             },
+            acceptLeaveBy: req.auth.sub,
             leaveType: req.body.leaveType,
             leavecategory: req.body.leavecategory,
             daytype: req.body.daytype,
@@ -718,7 +719,7 @@ const getSingleLeave = async (req, res) => {
 
     const acceptLeaveBy = await prisma.user.findUnique({
       where: {
-        id: singleLeave.id,
+        id: singleLeave.acceptLeaveBy,
       },
       select: {
         firstName: true,
