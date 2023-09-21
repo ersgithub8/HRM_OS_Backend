@@ -212,6 +212,11 @@ const register = async (req, res) => {
         employmentStatusId: req.body.employmentStatusId ? req.body.employmentStatusId : null,
         departmentId: req.body.departmentId ? req.body.departmentId : null,
         roleId: req.body.roleId,
+        //leaves section
+        bankallowedleave=process.env.totalbankleaves,
+        remaingbankallowedleave=process.env.totalremainbank,
+        annualallowedleave=process.env.totalanualleaves,
+        remainingannualallowedleave=process.env.totalremainganualleaves,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
