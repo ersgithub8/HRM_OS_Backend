@@ -105,10 +105,28 @@ const createSingleLeave = async (req, res) => {
       var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
            
       // To calculate the no. of days between two dates
-      var leaveDuration = Difference_In_Time / (1000 * 3600 * 24);
-      if (req.body.daytype==='HALF'){
-        leaveDuration = leaveDuration/2;
-      }
+      // var leaveDuration = Difference_In_Time / (1000 * 3600 * 24);
+      // if (req.body.daytype==='HALF'){
+      //   leaveDuration = leaveDuration/2;
+      // }
+      let leaveDuration = 0; // Initialize leave duration
+
+  // Check if leave is for a single day
+  if (leaveFrom.toDateString() === leaveTo.toDateString()) {
+    // Single-day leave
+    if (req.body.daytype === 'FULL') {
+      leaveDuration = 1; // One-day full leave
+    } else if (req.body.daytype === 'HALF') {
+      leaveDuration = 0.5; // One-day half leave
+    }
+  } else {
+    // Calculate leave duration for multiple days
+    const differenceInTime = leaveTo.getTime() - leaveFrom.getTime();
+    leaveDuration = differenceInTime / (1000 * 3600 * 24); // Convert milliseconds to days
+    if (req.body.daytype === 'HALF') {
+      leaveDuration = leaveDuration / 2; // Adjust for half-day leave
+    }
+  }
       if (user.remainingannualallowedleave < leaveDuration) {
         return res.status(400).json({ message: "Not enough remaining annual leave." });
       }
@@ -122,12 +140,6 @@ const createSingleLeave = async (req, res) => {
       var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
 
       console.log("Difference_In_Days",Difference_In_Days);
-      
-      // const submitDays = 
-      // leaveDuration == 1||0.5 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9:leaveDuration === 5 ? 11 :leaveDuration === 6 ? 13:leaveDuration === 7 ? 15
-      // :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
-      // leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
-
       const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 : 
                   leaveDuration === 2 || leaveDuration === 1 ? 5 : 
                   leaveDuration === 3 || leaveDuration === 1.5 ? 7 : 
@@ -406,9 +418,27 @@ const createSingleLeave = async (req, res) => {
         var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
              
         // To calculate the no. of days between two dates
-        var leaveDuration = Difference_In_Time / (1000 * 3600 * 24);
-        if (req.body.daytype==='HALF'){
-          leaveDuration = leaveDuration/2;
+        // var leaveDuration = Difference_In_Time / (1000 * 3600 * 24);
+        // if (req.body.daytype==='HALF'){
+        //   leaveDuration = leaveDuration/2;
+        // }
+        let leaveDuration = 0; // Initialize leave duration
+
+        // Check if leave is for a single day
+        if (leaveFrom.toDateString() === leaveTo.toDateString()) {
+          // Single-day leave
+          if (req.body.daytype === 'FULL') {
+            leaveDuration = 1; // One-day full leave
+          } else if (req.body.daytype === 'HALF') {
+            leaveDuration = 0.5; // One-day half leave
+          }
+        } else {
+          // Calculate leave duration for multiple days
+          const differenceInTime = leaveTo.getTime() - leaveFrom.getTime();
+          leaveDuration = differenceInTime / (1000 * 3600 * 24); // Convert milliseconds to days
+          if (req.body.daytype === 'HALF') {
+            leaveDuration = leaveDuration / 2; // Adjust for half-day leave
+          }
         }
         if (user.remainingannualallowedleave < leaveDuration) {
           return res.status(400).json({ message: "Not enough remaining annual leave." });
@@ -421,13 +451,6 @@ const createSingleLeave = async (req, res) => {
         console.log(todayDate.getTime(), leaveFrom.getTime());
         var Difference_In_Time2 = leaveFrom.getTime() - todayDate.getTime();    
         var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
-  
-        console.log("Difference_In_Days",Difference_In_Days);
-        
-        // const submitDays = 
-        // leaveDuration == 1||0.5 ? 3 : leaveDuration === 2 ? 5 : leaveDuration === 3 ? 7 :leaveDuration === 4 ? 9:leaveDuration === 5 ? 11 :leaveDuration === 6 ? 13:leaveDuration === 7 ? 15
-        // :leaveDuration === 8 ? 17 :leaveDuration === 9 ? 19 :leaveDuration === 10 ? 21 : leaveDuration === 11 ? 23 :leaveDuration === 12 ? 25 :leaveDuration === 13 ? 27 :leaveDuration === 14 ? 29 :leaveDuration === 15 ? 31 :leaveDuration === 16 ? 33 :leaveDuration === 17 ? 35 :leaveDuration === 18 ? 37 :
-        // leaveDuration === 19 ? 39 :leaveDuration === 20 ? 41  : 0;
         const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 : 
         leaveDuration === 2 || leaveDuration === 1 ? 5 : 
         leaveDuration === 3 || leaveDuration === 1.5 ? 7 : 
@@ -992,7 +1015,7 @@ const getLeaveByUserId = async (req, res) => {
       where: {
         AND: {
           userId: Number(req.params.id),
-          status: "REJECTED",
+          status: "PENDING",
         },
       },
     });
@@ -1010,7 +1033,7 @@ const getLeaveByUserId = async (req, res) => {
       where: {
         AND: {
           userId: Number(req.params.id),
-          status: "PENDING",
+          status: "REJECTED",
         },
       },
     });
