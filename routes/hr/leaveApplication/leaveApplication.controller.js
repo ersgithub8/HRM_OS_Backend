@@ -718,7 +718,7 @@ const getSingleLeave = async (req, res) => {
 
     const acceptLeaveBy = await prisma.user.findUnique({
       where: {
-        id: singleLeave.acceptLeaveBy,
+        id: singleLeave.id,
       },
       select: {
         firstName: true,
