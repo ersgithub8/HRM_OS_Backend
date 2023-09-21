@@ -851,7 +851,7 @@ const todayLeaveState = async (req, res) => {
 
     // Update counts based on leave status and day of the week
     weeklyLeaves.forEach(leave => {
-      const dayOfWeek = new Date(leave.createdAt).toLocaleString('en-us', { weekday: 'long' });
+      const dayOfWeek = new Date(leave.createdAt).toLocaleString('en-us', { weekday: 'short' });
       dayCounts[dayOfWeek].total++;
       if (leave.status === 'APPROVED') dayCounts[dayOfWeek].approved++;
       else if (leave.status === 'PENDING') dayCounts[dayOfWeek].pending++;
