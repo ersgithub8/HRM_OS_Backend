@@ -1094,6 +1094,8 @@ const MonthlyApprovedLeaves = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
+            employeeId:true,
+            department:true,
           },
         },
       },
