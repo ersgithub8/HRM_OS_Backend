@@ -639,6 +639,61 @@ const getapprovedAllLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+// const getSingleLeave = async (req, res) => {
+//   try {
+//     const singleLeave = await prisma.leaveApplication.findUnique({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             userName: true,
+//             employeeId:true,
+//             department:true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (!singleLeave) {
+//       return res.status(404).json({ message: "Leave not found" });
+//     }
+
+//     const acceptLeaveBy = await prisma.user.findUnique({
+//       where: {
+//         id: singleLeave.acceptLeaveBy,
+//       },
+//       select: {
+//         firstName: true,
+//         lastName: true,
+//       },
+//     });
+
+//     if (
+//       (req.auth.sub !== singleLeave.userId &&
+//         !req.auth.permissions.includes("readAll-leaveApplication")) ||
+//       !req.auth.permissions.includes("readSingle-leaveApplication")
+//     ) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const result = {
+//       ...singleLeave,
+//       acceptLeaveBy: acceptLeaveBy,
+//     };
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
+
 const getSingleLeave = async (req, res) => {
   try {
     const singleLeave = await prisma.leaveApplication.findUnique({
@@ -652,8 +707,8 @@ const getSingleLeave = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
-            employeeId:true,
-            department:true,
+            employeeId: true,
+            department: true,
           },
         },
       },
@@ -663,15 +718,18 @@ const getSingleLeave = async (req, res) => {
       return res.status(404).json({ message: "Leave not found" });
     }
 
-    const acceptLeaveBy = await prisma.user.findUnique({
-      where: {
-        id: singleLeave.id,
-      },
-      select: {
-        firstName: true,
-        lastName: true,
-      },
-    });
+    let acceptLeaveBy = null;
+    if (singleLeave.acceptLeaveBy) {
+      acceptLeaveBy = await prisma.user.findUnique({
+        where: {
+          id: singleLeave.acceptLeaveBy,
+        },
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      });
+    }
 
     if (
       (req.auth.sub !== singleLeave.userId &&
