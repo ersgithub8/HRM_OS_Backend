@@ -649,6 +649,7 @@ const getapprovedAllLeave = async (req, res) => {
             lastName: true,
             userName: true,
             employeeId: true,
+            department:true,
           },
         },
       },
