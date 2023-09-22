@@ -20,14 +20,14 @@ const createSingleLeave = async (req, res) => {
     try {
      
       const leaveFrom = new Date(req.body.leaveFrom);
+      leaveFrom.setHours(0,0,0,0)
       const leaveTo = new Date(req.body.leaveTo);
-
+      leaveTo.setHours(23,59,59,59)
       const user = await prisma.user.findUnique({
         where: {
           id: parseInt(req.body.userId),
         },
       });
-  
       if (!user) {
         return res.status(400).json({ message: "User not found." });
       }
@@ -77,7 +77,7 @@ const createSingleLeave = async (req, res) => {
   } else {
     // Calculate leave duration for multiple days
     const differenceInTime = leaveTo.getTime() - leaveFrom.getTime();
-    leaveDuration = differenceInTime / (1000 * 3600 * 24); // Convert milliseconds to days
+    leaveDuration = Math.round(differenceInTime / (1000 * 3600 * 24)); // Convert milliseconds to days
     if (req.body.daytype === 'HALF') {
       leaveDuration = leaveDuration / 2; // Adjust for half-day leave
     }
@@ -185,7 +185,9 @@ const createSingleLeave = async (req, res) => {
       try {
        
         const leaveFrom = new Date(req.body.leaveFrom);
-        const leaveTo = new Date(req.body.leaveTo);
+      leaveFrom.setHours(0,0,0,0)
+      const leaveTo = new Date(req.body.leaveTo);
+      leaveTo.setHours(23,59,59,59)
   
         const user = await prisma.user.findUnique({
           where: {
@@ -242,7 +244,7 @@ const createSingleLeave = async (req, res) => {
         } else {
           // Calculate leave duration for multiple days
           const differenceInTime = leaveTo.getTime() - leaveFrom.getTime();
-          leaveDuration = differenceInTime / (1000 * 3600 * 24); // Convert milliseconds to days
+          leaveDuration = Math.round(differenceInTime / (1000 * 3600 * 24)); // Convert milliseconds to days
           if (req.body.daytype === 'HALF') {
             leaveDuration = leaveDuration / 2; // Adjust for half-day leave
           }
@@ -691,8 +693,6 @@ const getapprovedAllLeave = async (req, res) => {
 //     return res.status(400).json({ message: error.message });
 //   }
 // };
-
-
 
 const getSingleLeave = async (req, res) => {
   try {
