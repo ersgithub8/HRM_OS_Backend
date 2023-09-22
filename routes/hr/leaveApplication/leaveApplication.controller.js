@@ -95,12 +95,12 @@ const createSingleLeave = async (req, res) => {
       
 
       if (overlappingLeaveCount >= 2) {
-        return res.status(400).json({ message: "Already two leave applications accepted for this day." });
+        return res.status(400).json({ message: "Already 2 leaves approved for this day." });
       }
   
 
       if ([0, 1, 8].includes(leaveFrom.getMonth())) {
-        return res.status(400).json({ message: "Leave not allowed in January, February, or Semtember." });
+        return res.status(400).json({ message: "Leave not allowed in Jan,Feb, or Sep." });
       }
       var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
            
@@ -260,12 +260,12 @@ const createSingleLeave = async (req, res) => {
         
   
         if (overlappingLeaveCount >= 2) {
-          return res.status(400).json({ message: "Already two leave applications accepted for this day." });
+          return res.status(400).json({ message: "Already 2 leaves approved for this day." });
         }
     
   
         if ([0, 1, 8].includes(leaveFrom.getMonth())) {
-          return res.status(400).json({ message: "Leave not allowed in January, February, or Semtember." });
+          return res.status(400).json({ message: "Leave not allowed in Jan,Feb, or Sep." });
         }
         var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
              
@@ -326,7 +326,7 @@ const createSingleLeave = async (req, res) => {
   
         console.log(submitDays,"fsgdf");
         if (Difference_In_Days < submitDays){
-          return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
+          return res.status(400).json({ message: `You apply ${submitDays} days before the leave date.` });
         }
        
         const createdLeave = await prisma.leaveApplication.create({
@@ -581,7 +581,7 @@ const getSingleLeave = async (req, res) => {
 
     const acceptLeaveBy = await prisma.user.findUnique({
       where: {
-        id: singleLeave.acceptLeaveBy,
+        id: singleLeave.id,
       },
       select: {
         firstName: true,
