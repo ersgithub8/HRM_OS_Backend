@@ -191,12 +191,6 @@ const createSingleLeave = async (req, res) => {
       if (req.body.daytype==='HALF'){
         leaveDuration = leaveDuration;
       }
-
-      if (req.body.daytype==='HALF'){
-        leaveDuration = leaveDuration/2;
-      }
-
-      console.log(leaveDuration);
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       
       if (req.body.leaveType === 'CompassionateLeave(deductible)'||req.body.leaveType === 'BereavementLeave(deductible)'||req.body.leaveType === 'ParentalLeave(deductible)'||req.body.leaveType === 'PaternityLeave(deductible-if-paid)'){
