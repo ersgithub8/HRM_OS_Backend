@@ -99,8 +99,8 @@ const createSingleLeave = async (req, res) => {
       }
   
 
-      if ([0, 1, 3].includes(leaveFrom.getMonth())) {
-        return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
+      if ([0, 1, 8].includes(leaveFrom.getMonth())) {
+        return res.status(400).json({ message: "Leave not allowed in January, February, or Semtember." });
       }
       var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
            
@@ -264,8 +264,8 @@ const createSingleLeave = async (req, res) => {
         }
     
   
-        if ([0, 1, 3].includes(leaveFrom.getMonth())) {
-          return res.status(400).json({ message: "Leave not allowed in January, February, or April." });
+        if ([0, 1, 8].includes(leaveFrom.getMonth())) {
+          return res.status(400).json({ message: "Leave not allowed in January, February, or Semtember." });
         }
         var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime(); 
              
