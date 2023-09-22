@@ -20,7 +20,7 @@ const createSingleLeave = async (req, res) => {
     try {
      
       const leaveFrom = new Date(req.body.leaveFrom);
-      leaveFrom.setHours(0,0,0,0)
+      // leaveFrom.setHours(0,0,0,0)
       const leaveTo = new Date(req.body.leaveTo);
       leaveTo.setHours(23,59,59,59)
       const user = await prisma.user.findUnique({
@@ -98,8 +98,6 @@ const createSingleLeave = async (req, res) => {
                   leaveDuration === 18 || leaveDuration ===9 ? 37 : 
                   leaveDuration === 19 || leaveDuration === 9.5 ? 39 : 
                   leaveDuration === 20|| leaveDuration ===10 ? 41 : 0;
-
-      console.log(submitDays,"fsgdf");
       if (Difference_In_Days < submitDays){
         return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
       }
@@ -168,7 +166,7 @@ const createSingleLeave = async (req, res) => {
       try {
        
         const leaveFrom = new Date(req.body.leaveFrom);
-      leaveFrom.setHours(0,0,0,0)
+      // leaveFrom.setHours(0,0,0,0)
       const leaveTo = new Date(req.body.leaveTo);
       leaveTo.setHours(23,59,59,59)
   
