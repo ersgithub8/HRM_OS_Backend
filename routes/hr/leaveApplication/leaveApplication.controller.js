@@ -1,50 +1,5 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
-//create a new employee
-// const createSingleLeave = async (req, res) => {
-//   if (req.query.query === "deletemany") {
-//     try {
-//       // delete many designation at once
-//       const deletedLeave = await prisma.leaveApplication.deleteMany({
-//         where: {
-//           id: {
-//             in: req.body,
-//           },
-//         },
-//       });
-//       return res.status(200).json(deletedLeave);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   } else {
-//     try {
-//       // create single designation from an object
-//       const leaveFrom = new Date(req.body.leaveFrom);
-//       const leaveTo = new Date(req.body.leaveTo);
-//       const leaveDuration = Math.round(
-//         (leaveTo.getTime() - leaveFrom.getTime()) / (1000 * 60 * 60 * 24)
-//       );
-//       const createdLeave = await prisma.leaveApplication.create({
-//         data: {
-//           user: {
-//             connect: {
-//               id: parseInt(req.body.userId),
-//             },
-//           },
-//           leaveType: req.body.leaveType,
-//           leaveFrom: leaveFrom,
-//           leaveTo: leaveTo,
-//           leaveDuration: leaveDuration,
-//           reason: req.body.reason ? req.body.reason : undefined,
-//         },
-//       });
-
-//       return res.status(200).json(createdLeave);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   }
-// };
 
 const createSingleLeave = async (req, res) => {
   if (req.query.query === "deletemany") {
@@ -697,6 +652,7 @@ const getSingleLeave = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
+            employeeId:true,
             department:true,
           },
         },
