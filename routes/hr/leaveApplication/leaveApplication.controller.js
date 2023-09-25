@@ -101,7 +101,19 @@ const createSingleLeave = async (req, res) => {
       if (Difference_In_Days < submitDays){
         return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
       }
-     
+      const leaveType = req.body.leaveType; // Get the leaveType from the request
+
+let leavecategory;
+      if (
+        leaveType === 'CompassionateLeave(deductible)' ||
+        leaveType === 'BereavementLeave(deductible)' ||
+        leaveType === 'ParentalLeave(deductible)' ||
+        leaveType === 'PaternityLeave(deductible-if-paid)'
+      ) {
+        leavecategory = 'paid'; // Set leavecategory to 'paid'
+      } else {
+        leavecategory = 'unpaid'; // Set leavecategory to 'unpaid'
+      }
       const createdLeave = await prisma.leaveApplication.create({
         data: {
           user: {
@@ -109,8 +121,8 @@ const createSingleLeave = async (req, res) => {
               id: parseInt(req.body.userId),
             },
           },
-          leaveType: req.body.leaveType,
-          leavecategory: req.body.leavecategory,
+          leaveType: leaveType,
+          leavecategory: leavecategory,
           daytype: req.body.daytype,
           fromtime: req.body.fromtime,
           totime: req.body.totime,
@@ -119,7 +131,6 @@ const createSingleLeave = async (req, res) => {
           leaveDuration: leaveDuration,
           reason: req.body.reason ? req.body.reason : undefined,
           attachment:req.body.attachment ? req.body.attachment:null,
-          // createdAt: submitDate, // Include submitDate inside the data object
         },
       });  
       console.log(createdLeave);
@@ -129,7 +140,9 @@ const createSingleLeave = async (req, res) => {
       }
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
       
+      
       if (req.body.leaveType === 'CompassionateLeave(deductible)'||req.body.leaveType === 'BereavementLeave(deductible)'||req.body.leaveType === 'ParentalLeave(deductible)'||req.body.leaveType === 'PaternityLeave(deductible-if-paid)'){
+        leavecategory= 'paid'
         await prisma.user.update({
           where: {
             id: parseInt(req.body.userId),
@@ -138,6 +151,9 @@ const createSingleLeave = async (req, res) => {
             remainingannualallowedleave: remainingannualallowedleave,
           },
         });
+      }
+      else{
+        leavecategory= 'unpaid'
       }
       
       return res.status(200).json({createdLeave,
