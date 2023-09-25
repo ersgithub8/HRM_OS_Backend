@@ -873,7 +873,14 @@ const todayLeaveState = async (req, res) => {
     // Get all leaves for the current week
     const weeklyLeaves = await prisma.leaveApplication.findMany({
       where: {
-        createdAt: { gte: startOfWeek, lt: endOfWeek },
+        OR: [
+          {
+            createdAt: { gte: startOfWeek, lt: endOfWeek },
+          },
+          {
+            updatedAt: { gte: startOfWeek, lt: endOfWeek },
+          }
+        ]
       },
     });
     const todays = new Date();
