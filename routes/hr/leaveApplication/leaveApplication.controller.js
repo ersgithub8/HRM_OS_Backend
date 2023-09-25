@@ -688,7 +688,7 @@ const getSingleLeave = async (req, res) => {
   }
 };
 
-const grantedLeave = async (req, res) => {
+const grantedLeave = async (req, res, next) => {
   try {
     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
     const acceptLeaveTo = new Date(req.body.acceptLeaveTo);
@@ -721,6 +721,7 @@ const grantedLeave = async (req, res) => {
           remainingannualallowedleave: currentRemainingLeaves.toString(),
         },
       });
+
     } else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
       // If status was changed from 'PENDING' to 'REJECTED', add the leave duration back to remaining leaves
       if (existingLeave.leaveDuration) {
@@ -779,10 +780,19 @@ const grantedLeave = async (req, res) => {
       },
     });
 
-    return res.status(200).json({
-      grantedLeave,
-      message: 'Application status is updated',
-    });
+    if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
+      req.body.userId = existingLeave.user.id;
+      req.body.grantedLeave = grantedLeave;
+      req.body.fromleave = true;
+      next();
+    }else{
+      return res.status(200).json({
+        grantedLeave,
+        message: 'Application status is updated',
+      });
+    }
+
+    
   } catch (error) {
     return res.status(400).json({ message: 'Failed to update application status' });
   }

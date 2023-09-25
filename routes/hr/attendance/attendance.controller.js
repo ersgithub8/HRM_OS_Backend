@@ -109,10 +109,20 @@ const createAttendance = async (req, res) => {
           outTimeStatus: null,
         },
       });
-      return res.status(200).json({
-        newAttendance,
-        message:"Clock in Successfully"
-      });
+
+      if (req.body.fromleave){
+        return res.status(200).json({
+          newAttendance: newAttendance,
+          grantedLeave : req.body.grantedLeave,
+          message: 'Application status is updated',
+        });
+      }else{
+        return res.status(200).json({
+          newAttendance,
+          message:"Clock in Successfully"
+        });
+      }
+
     } else  {
       const outTime = new Date(moment.now());
       const totalHours = Math.abs(outTime - attendance.inTime) /36000;

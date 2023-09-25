@@ -13,6 +13,10 @@ const {
   yearlyLeaveState,
   MonthlyApprovedLeaves,
 } = require("./leaveApplication.controller");
+const {
+  createAttendance
+} = require("../attendance/attendance.controller");
+
 const authorize = require("../../../utils/authorize"); // authentication middleware
 
 const leaveApplicationRoutes = express.Router();
@@ -28,7 +32,8 @@ leaveApplicationRoutes.get("/:id", authorize(""), getSingleLeave);
 leaveApplicationRoutes.put(
   "/:id",
   authorize("update-leaveApplication"),
-  grantedLeave
+  grantedLeave,
+  createAttendance
 );
 leaveApplicationRoutes.get(
   "/:id/leaveHistory",
