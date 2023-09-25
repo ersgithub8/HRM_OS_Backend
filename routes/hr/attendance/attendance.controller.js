@@ -998,7 +998,7 @@ const search = async (req, res) => {
       const allAttendance = await prisma.attendance.findMany({
         ...attendanceQuery,
       });
-
+console.log(allAttendance,"dfsjkhdk");
       const punchBy = await prisma.user.findMany({
         where: {
           id: { in: allAttendance.map((item) => item.punchBy) },
@@ -1107,6 +1107,42 @@ const search = async (req, res) => {
           applicationStatus: 'REJECTED',
         },
       });
+      const allAttendances = await prisma.attendance.findMany({
+        orderBy: [
+          {
+            id: "desc",
+          },
+        ],
+        skip: Number(skip),
+        take: Number(limit),
+        // where: {
+        //   inTime: {
+        //     gte: new Date(req.query.startdate),
+        //     lte: new Date(req.query.enddate),
+        //   },
+        // },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+          employeeId:true,
+
+            },
+          },
+        },
+      });
+      const punchBys = await prisma.user.findMany({
+        where: {
+          id: { in: allAttendances.map((item) => item.punchBy) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeId:true,
+        },
+      });
 
       const result = {
         totalPresent: presentCount,
@@ -1122,14 +1158,13 @@ const search = async (req, res) => {
         pendingUserCount:pendingUserCount,
         approvedUserCount:approvedUserCount,
         rejectedUserCount:rejectedUserCount,
-        attendanceData: allAttendance.map((attendance) => {
+        attendanceData:allAttendances.map((attendance) => {
           return {
             ...attendance,
             punchBy: punchBy,
           };
-        }),
+        })
       };
-
       return res.status(200).json(result);
     }else if (employeeId && createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
@@ -1208,6 +1243,7 @@ const search = async (req, res) => {
         totalLeaves:leaveCount,
         totalHoliday:holidayCount,
         totalUsers:totalUsers,
+        
         attendanceData: userAttendance.map((attendance) => {
           return {
             ...attendance,
