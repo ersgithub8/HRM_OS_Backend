@@ -866,7 +866,6 @@ const todayLeaveState = async (req, res) => {
     const today = new Date();
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay()); // Get the start of the current week (Sunday)
-
     const endOfWeek = new Date(today);
     endOfWeek.setDate(startOfWeek.getDate() + 7); // Get the end of the current week (Sunday of the next week)
 
@@ -932,6 +931,31 @@ const todayLeaveState = async (req, res) => {
     const pendingLeaveCount = todayPending.length;
     const rejectedLeaveCount = todayRejected.length;
     const totalLeaveCount = todayLeaves.length;
+    // const today = new Date();
+const yesterday = new Date(today);
+yesterday.setDate(today.getDate() - 1); // Set the date to the previous day
+
+// Start of yesterday
+const startOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0);
+
+// End of yesterday
+const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
+
+    const yesterdayLeaves = await prisma.leaveApplication.findMany({
+      where: {
+        createdAt: { gte: startOfYesterday, lt: endOfYesterday },
+      },
+    });
+    
+    const yesterdayTotalCount = yesterdayLeaves.length;
+    
+    let percentageChange = 0;
+    
+    if (yesterdayTotalCount !== 0) {
+      percentageChange = ((approvedLeaveCount - yesterdayTotalCount) / yesterdayTotalCount) * 100;
+    } else if (approvedLeaveCount !== 0) {
+      percentageChange = 100;
+    }
 
     return res.status(200).json({
       weekCounts: dayCounts,
@@ -939,6 +963,9 @@ const todayLeaveState = async (req, res) => {
       totalApproved: approvedLeaveCount,
       totalPending: pendingLeaveCount,
       totalRejected: rejectedLeaveCount,
+      // todayTotal: todayTotalCount,
+      yesterdayTotal: yesterdayTotalCount,
+      percentageChange: percentageChange
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
