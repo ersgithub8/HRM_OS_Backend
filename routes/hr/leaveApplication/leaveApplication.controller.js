@@ -564,10 +564,10 @@ const getapprovedAllLeave = async (req, res) => {
         status: 'APPROVED',
         OR: [
           {
-            createdAt: { gte: todayStart, lt: todayEnd }
+            leaveFrom: { gte: todayStart, lt: todayEnd }
           },
           {
-            updatedAt: { gte: todayStart, lt: todayEnd }
+            leaveTo: { gte: todayStart, lt: todayEnd }
           }
         ]
       },
@@ -999,10 +999,14 @@ const MonthlyApprovedLeaves = async (req, res) => {
     const approvedLeave = await prisma.leaveApplication.findMany({
       where: {
         status: 'APPROVED',
-        updatedAt: {
-          gte: startDate,
-          lt: endDate,
-        },
+       OR: [
+          {
+            leaveFrom: { gte: startDate, lt: endDate }
+          },
+          {
+            leaveTo: { gte: startDate, lt: endDate }
+          }
+        ]
       },
       orderBy: [
         {
