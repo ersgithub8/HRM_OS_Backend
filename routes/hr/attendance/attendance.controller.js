@@ -971,10 +971,13 @@ const search = async (req, res) => {
 
     if (query === "all") {
       const todayStartDate = new Date();
-      todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
+      // todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
       const todayEndDate = new Date();
-      todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
-
+      // todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
+      const currentMonthStart = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth(), 1);
+      const previousMonthStart = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth() - 1, 1);
+      const previousMonthEnd = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth(), 0);
+      
       attendanceQuery.where = {
         createdAt: {
           gte: todayStartDate,
@@ -1024,12 +1027,33 @@ const search = async (req, res) => {
         }
         
       });
+      const currentMonthCount = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: currentMonthStart,
+            lte: todayStartDate,
+          },
+          // status: true,
+        },
+      });
+
+      const previousMonthCount = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: previousMonthStart,
+            lte: previousMonthEnd,
+          },
+          // status: true,
+        },
+      });
 
       const result = {
         totalPresent: presentCount,
         totalAbsent: absentCount,
         totalLeaves:leaveCount,
         totalHoliday:holidayCount,
+        currentMonthUserCount: currentMonthCount,
+        previousMonthUserCount: previousMonthCount,
         totalUsers:totalUsers,
         attendanceData: allAttendance.map((attendance) => {
           return {
@@ -1109,6 +1133,7 @@ const search = async (req, res) => {
           employeeId: true,
         },
       });
+      
     
       const result = {
         totalPresent: presentCount,
