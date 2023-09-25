@@ -142,7 +142,6 @@ let leavecategory;
       
       
       if (req.body.leaveType === 'CompassionateLeave(deductible)'||req.body.leaveType === 'BereavementLeave(deductible)'||req.body.leaveType === 'ParentalLeave(deductible)'||req.body.leaveType === 'PaternityLeave(deductible-if-paid)'){
-        leavecategory= 'paid'
         await prisma.user.update({
           where: {
             id: parseInt(req.body.userId),
@@ -152,9 +151,7 @@ let leavecategory;
           },
         });
       }
-      else{
-        leavecategory= 'unpaid'
-      }
+      
       
       return res.status(200).json({createdLeave,
       message:"Leave application apply successfully"});
