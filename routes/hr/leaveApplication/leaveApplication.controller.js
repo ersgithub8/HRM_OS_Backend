@@ -267,7 +267,19 @@ let leavecategory;
         if (Difference_In_Days < submitDays){
           return res.status(400).json({ message: `You apply ${submitDays} days before the leave date.` });
         }
-       
+        const leaveType = req.body.leaveType; // Get the leaveType from the request
+
+        let leavecategory;
+              if (
+                leaveType === 'CompassionateLeave(deductible)' ||
+                leaveType === 'BereavementLeave(deductible)' ||
+                leaveType === 'ParentalLeave(deductible)' ||
+                leaveType === 'PaternityLeave(deductible-if-paid)'
+              ) {
+                leavecategory = 'paid'; // Set leavecategory to 'paid'
+              } else {
+                leavecategory = 'unpaid'; // Set leavecategory to 'unpaid'
+              }
         const createdLeave = await prisma.leaveApplication.create({
           data: {
             user: {
@@ -276,8 +288,8 @@ let leavecategory;
               },
             },
             acceptLeaveBy: req.auth.sub,
-            leaveType: req.body.leaveType,
-            leavecategory: req.body.leavecategory,
+            leaveType:leaveType,
+            leavecategory: leavecategory,
             daytype: req.body.daytype,
             fromtime: req.body.fromtime,
             totime: req.body.totime,
