@@ -991,7 +991,6 @@ const MonthlyApprovedLeaves = async (req, res) => {
       return res.status(400).json({ message: "Date parameter is missing in the query" });
     }
 
-    // Parse the date from the query parameter
     const startDate = new Date(date);
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 1); // Calculate the next day
@@ -1025,15 +1024,14 @@ const MonthlyApprovedLeaves = async (req, res) => {
       },
     });
 
-    // get the id and acceptLeaveBy from all leave array
     const acceptLeaveBy = approvedLeave.map((item) => {
       return {
         ...item,
+        startDate,
         acceptLeaveBy: item.acceptLeaveBy,
       };
     });
 
-    // get the acceptLeaveBy from user table and return the firstName and lastName into acceptLeaveBy and if acceptLeaveBy is null then return null into acceptLeaveBy for that object
     const result = await Promise.all(
       acceptLeaveBy.map(async (item) => {
         if (item.acceptLeaveBy) {
