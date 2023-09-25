@@ -280,14 +280,6 @@ let leavecategory;
               } else {
                 leavecategory = 'unpaid'; // Set leavecategory to 'unpaid'
               }
-              let acceptLeaveBy=req.auth.sub;
-              let status;
-              if(acceptLeaveBy===DOO||acceptLeaveBy===ASC||acceptLeaveBy||CEO){
-                  status='APPROVED'
-              }
-              else{
-                status='PENDING'
-              }
         const createdLeave = await prisma.leaveApplication.create({
           data: {
             user: {
@@ -295,14 +287,14 @@ let leavecategory;
                 employeeId:req.body.employeeId,
               },
             },
-            acceptLeaveBy: acceptLeaveBy,
+            acceptLeaveBy: req.auth.sub,
             leaveType:leaveType,
             leavecategory: leavecategory,
             daytype: req.body.daytype,
             fromtime: req.body.fromtime,
             totime: req.body.totime,
             leaveFrom: leaveFrom,
-            status:status,
+            status:"APPROVED",
             leaveTo: leaveTo,
             leaveDuration: leaveDuration,
             reason: req.body.reason ? req.body.reason : undefined,
