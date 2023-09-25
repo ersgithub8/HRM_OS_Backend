@@ -983,6 +983,89 @@ const yearlyLeaveState = async (req, res) => {
   }
 };
 
+// const MonthlyApprovedLeaves = async (req, res) => {
+//   try {
+//     const { date } = req.query;
+
+//     if (!date) {
+//       return res.status(400).json({ message: "Date parameter is missing in the query" });
+//     }
+
+//     const startDate = new Date(date);
+//     const endDate = new Date(startDate);
+//     endDate.setDate(startDate.getDate() + 1); // Calculate the next day
+
+//     const approvedLeave = await prisma.leaveApplication.findMany({
+//       where: {
+//         status: 'APPROVED',
+//        OR: [
+//           {
+//             leaveFrom: { gte: startDate, lt: endDate }
+//           },
+//           {
+//             leaveTo: { gte: startDate, lt: endDate }
+//           }
+//         ]
+//       },
+//       orderBy: [
+//         {
+//           id: "desc",
+//         },
+//       ],
+//       include: {
+//         user: {
+//           select: {
+//             firstName: true,
+//             lastName: true,
+//             employeeId:true,
+//             department:true,
+//           },
+//         },
+//       },
+//     });
+
+//     const acceptLeaveBy = approvedLeave.map((item) => {
+//       return {
+//         ...item,
+//         startDate,
+//         acceptLeaveBy: item.acceptLeaveBy,
+//       };
+//     });
+
+//     const result = await Promise.all(
+//       acceptLeaveBy.map(async (item) => {
+//         if (item.acceptLeaveBy) {
+//           const acceptLeaveBy = await prisma.user.findUnique({
+//             where: {
+//               id: item.acceptLeaveBy,
+//             },
+//             select: {
+//               id: true,
+//               firstName: true,
+//               lastName: true,
+//             },
+//           });
+//           return {
+//             ...item,
+//             startDate,
+//             acceptLeaveBy: acceptLeaveBy,
+//           };
+//         } else {
+//           return {
+//             ...item,
+//             startDate,
+//             acceptLeaveBy: null,
+//           };
+//         }
+//       })
+//     );
+//     return res.status(200).json(approvedLeave);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
 const MonthlyApprovedLeaves = async (req, res) => {
   try {
     const { date } = req.query;
@@ -992,13 +1075,17 @@ const MonthlyApprovedLeaves = async (req, res) => {
     }
 
     const startDate = new Date(date);
+
+    // Create an array with year, month, and day of the start date
+    // const startDateArray = [startDate];
+
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 1); // Calculate the next day
 
     const approvedLeave = await prisma.leaveApplication.findMany({
       where: {
         status: 'APPROVED',
-       OR: [
+        OR: [
           {
             leaveFrom: { gte: startDate, lt: endDate }
           },
@@ -1024,42 +1111,16 @@ const MonthlyApprovedLeaves = async (req, res) => {
       },
     });
 
-    const acceptLeaveBy = approvedLeave.map((item) => {
+    const approvedLeaveWithStartDateArray = approvedLeave.map((item) => {
       return {
         ...item,
-        startDate,
-        acceptLeaveBy: item.acceptLeaveBy,
+        startDate: startDate,  // Include start date array for each leave
       };
     });
 
-    const result = await Promise.all(
-      acceptLeaveBy.map(async (item) => {
-        if (item.acceptLeaveBy) {
-          const acceptLeaveBy = await prisma.user.findUnique({
-            where: {
-              id: item.acceptLeaveBy,
-            },
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          });
-          return {
-            ...item,
-            startDate,
-            acceptLeaveBy: acceptLeaveBy,
-          };
-        } else {
-          return {
-            ...item,
-            startDate,
-            acceptLeaveBy: null,
-          };
-        }
-      })
-    );
-    return res.status(200).json({approvedLeave});
+    return res.status(200).json({
+      approvedLeave: approvedLeaveWithStartDateArray,
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
