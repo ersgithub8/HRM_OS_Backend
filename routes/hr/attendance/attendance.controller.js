@@ -1033,7 +1033,7 @@ const search = async (req, res) => {
             gte: currentMonthStart,
             lte: todayStartDate,
           },
-          // status: true,
+          status: true,
         },
       });
 
@@ -1043,7 +1043,58 @@ const search = async (req, res) => {
             gte: previousMonthStart,
             lte: previousMonthEnd,
           },
-          // status: true,
+          status: true,
+        },
+      });
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+      
+      // Calculate the start and end dates for this month
+      const thisMonthStart = new Date(currentYear, currentMonth, 1);
+      const thisMonthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+      
+      // Calculate the start and end dates for last month
+      const lastMonthStart = new Date(currentYear, currentMonth - 1, 1);
+      const lastMonthEnd = new Date(currentYear, currentMonth, 0, 23, 59, 59);
+      
+      // Count users for this month and last month
+      const thisMonthUserCount = await prisma.user.count({
+        where: {
+          createdAt: { gte: thisMonthStart, lte: thisMonthEnd },
+        },
+      });
+      
+      const lastMonthUserCount = await prisma.user.count({
+        where: {
+          createdAt: { gte: lastMonthStart, lte: lastMonthEnd },
+        },
+      });
+      
+      // Calculate the percentage change
+      let percentageChange = 0;
+      if (lastMonthUserCount !== 0) {
+        percentageChange = ((thisMonthUserCount - lastMonthUserCount) / lastMonthUserCount) * 100;
+      } else if (thisMonthUserCount !== 0) {
+        percentageChange = 100;
+      }
+      
+      // Count users with different statuses
+      const pendingUserCount = await prisma.user.count({
+        where: {
+          applicationStatus: 'PENDING',
+        },
+      });
+      
+      const approvedUserCount = await prisma.user.count({
+        where: {
+          applicationStatus: 'APPROVED',
+        },
+      });
+      
+      const rejectedUserCount = await prisma.user.count({
+        where: {
+          applicationStatus: 'REJECTED',
         },
       });
 
@@ -1055,6 +1106,12 @@ const search = async (req, res) => {
         currentMonthUserCount: currentMonthCount,
         previousMonthUserCount: previousMonthCount,
         totalUsers:totalUsers,
+        thisMonthUserCount:thisMonthUserCount,
+        lastMonthUserCount:lastMonthUserCount,
+        percentageChange:percentageChange,
+        pendingUserCount:pendingUserCount,
+        approvedUserCount:approvedUserCount,
+        rejectedUserCount:rejectedUserCount,
         attendanceData: allAttendance.map((attendance) => {
           return {
             ...attendance,
