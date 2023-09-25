@@ -1049,18 +1049,19 @@ const MonthlyApprovedLeaves = async (req, res) => {
           });
           return {
             ...item,
+            startDate,
             acceptLeaveBy: acceptLeaveBy,
           };
         } else {
           return {
             ...item,
+            startDate,
             acceptLeaveBy: null,
           };
         }
       })
     );
-
-    return res.status(200).json(approvedLeave);
+    return res.status(200).json({approvedLeave,startDate});
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
