@@ -868,7 +868,6 @@ const getTodayAttendanceByUserId = async (req, res) => {
 
     const userId = parseInt(req.params.id);
 
-    // Fetch the user's leave policy
     const userLeavePolicy = await prisma.user.findUnique({
       where: {
         id: userId,
@@ -899,9 +898,21 @@ const getTodayAttendanceByUserId = async (req, res) => {
         },
       ],
     });
+//     let isadmin=null;
+// if(todayAttendance.userId===todayAttendance.punchBy){
+// isadmin="user"
+// }
+// else{
+//   isadmin="admin"
+// }
+let isadmin = null;
 
+if (todayAttendance) {
+  isadmin = todayAttendance.punchBy === todayAttendance.userId ? 'user' : 'admin';
+}
     const response = {
       inTime: null,
+      isadmin:isadmin,
       outTime: null,
       totalHours: null,
       totalMinutes: null,
@@ -912,8 +923,9 @@ const getTodayAttendanceByUserId = async (req, res) => {
     };
 
     if (!todayAttendance) {
-      // If there's no attendance record for today, return the empty response
+      
       response.attendenceStatus = null;
+      response.isadmin=null;
       return res.status(200).json(response);
     }
 
@@ -938,21 +950,18 @@ const getTodayAttendanceByUserId = async (req, res) => {
         response.totalSeconds = totalSeconds.toString().padStart(2, '0');
         response.attendenceStatus = todayAttendance.attendenceStatus;
       } else {
-        response.attendenceStatus = todayAttendance.attendenceStatus; // Set attendanceStatus to 'Checked In'
+        response.attendenceStatus = todayAttendance.attendenceStatus; 
       }
 
       return res.status(200).json(response);
     }
 
-    // If no check-in time available, return the empty response with status 'Absent'
     response.attendenceStatus = 'Absent';
     return res.status(200).json(response);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
 
 const search = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
@@ -1326,129 +1335,6 @@ const deleteSingleAttendence = async (req, res) => {
     }
 };
 
-// const createAttendanceonleave = async (req, res) => {
-//   try {
-//     const id = parseInt(req.body.userId);
-//     if (
-//       !(id === req.auth.sub) &&
-//       !req.auth.permissions.includes("create-attendance")
-//     ) {
-//       return res.status(401).json({
-//         message: "Unauthorized. You are not authorize to give attendance",
-//       });
-//     }
-//     // get user shift
-//     const user = await prisma.user.findUnique({
-//       where: {
-//         id: id,
-//       },
-//       include: {
-//         shift: true,
-//       },
-//     });
-
-//     // format time
-//     const startTime = moment(user.shift.startTime, "h:mm A");
-//     const endTime = moment(user.shift.endTime, "h:mm A");
-
-//     // check if user is late or early
-//     const isLate = moment().isAfter(startTime);
-//     const isEarly = moment().isBefore(startTime);
-//     const isOutEarly = moment().isAfter(endTime);
-//     const isOutLate = moment().isBefore(endTime);
-//     const today = moment().startOf('day');
-//     const tomorrow = moment(today).add(1, 'days');
-
-//     const attendance = await prisma.attendance.findFirst({
-//       where: {
-//         userId: id,
-//         inTime: {
-//           gte: today.toDate(),
-//           lt: tomorrow.toDate(),
-//         },
-//       },
-//     });
-    
-//   const existingCheckOut = await prisma.attendance.findFirst({
-//     where: {
-//       userId: id,
-//       outTime: {
-//         gte: today.toDate(),
-//         lt: tomorrow.toDate(),
-//       },
-//     },
-//   });
-//     if (attendance&&existingCheckOut) {
-//       return res.status(400).json({
-//         message: "Clock in has already been marked for today.",
-//       });
-//     }
-
-//     if (req.query.query === "manualPunch") {
-//       const inTime = new Date();
-//       const date = new Date();
-//       const outTime = new Date();
-
-//       const totalHours = Math.abs(outTime - inTime) / 36e5;
-
-//       const newAttendance = await prisma.attendance.create({
-//         data: {
-//           userId: id,
-//           inTime: null,
-//           outTime: null,
-//           punchBy: req.auth.sub,
-//           inTimeStatus:  null,
-//           outTimeStatus:  null,
-//           comment:  null,
-//           date:  new Date(),
-//           attendenceStatus:req.body.attendenceStatus ? req.body.attendenceStatus:"leave",
-//           ip:  null,
-//           totalHour: null,
-//         },
-//       });
-//       return res.status(200).json({
-//         newAttendance,
-//         message:"Clock in Successfully"
-//       });
-//     } else if (attendance === null) {
-//       const inTime = new Date(moment.now());
-//       const newAttendance = await prisma.attendance.create({
-//         data: {
-//           userId: id,
-//           inTime: null,
-//           outTime: null,
-//           punchBy: req.auth.sub,
-//           inTimeStatus:  null,
-//           outTimeStatus:  null,
-//           comment:  null,
-//           date:  new Date(),
-//           attendenceStatus:req.body.attendenceStatus ? req.body.attendenceStatus:"leave",
-//           ip:  null,
-//           totalHour: null,
-//         },
-//       });
-
-//       if (req.body.fromleave){
-//         return res.status(200).json({
-//           newAttendance: newAttendance,
-//           grantedLeave : req.body.grantedLeave,
-//           message: 'Application status is updated',
-//         });
-//       }else{
-//         return res.status(200).json({
-//           newAttendance,
-//           message:"Clock in Successfully"
-//         });
-//       }
-     
-//     }
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
-
-
 const createAttendanceonleave = async (req, res) => {
   try {
     const id = parseInt(req.body.userId);
@@ -1476,7 +1362,6 @@ const createAttendanceonleave = async (req, res) => {
 
     const today = moment(req.body.acceptLeaveFrom).startOf("day");
     const endDay = moment(req.body.acceptLeaveTo).startOf("day");
-
     // Calculate leave duration in days
     const leaveDurationDays = moment(endDay).diff(today, "days") + 1;
 

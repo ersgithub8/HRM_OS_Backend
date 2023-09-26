@@ -390,6 +390,7 @@ const getAllLeave = async (req, res) => {
 
     // get the id and acceptLeaveBy from all leave array
     const acceptLeaveBy = allLeave.map((item) => {
+      
       return {
         ...item,
         acceptLeaveBy: item.acceptLeaveBy,
