@@ -188,7 +188,6 @@ let leavecategory;
             employeeId:req.body.employeeId,
           },
         });
-    
         if (!user) {
           return res.status(400).json({ message: "User not found." });
         }
@@ -277,6 +276,18 @@ let leavecategory;
               } else {
                 leavecategory = 'unpaid'; // Set leavecategory to 'unpaid'
               }
+              let status;
+
+              if (user.roleId === 5) {
+                status = 'PENDING';
+              } else if (user.roleId === 1 || user.roleId === 6 || user.roleId === 4) {
+                status = 'PENDING';
+              } else if (user.roleId === 3) {
+                status = 'APPROVED';
+              } else {
+                status = 'PENDING'; // Set a default status if none of the conditions match
+              }
+              
         const createdLeave = await prisma.leaveApplication.create({
           data: {
             user: {
@@ -291,7 +302,7 @@ let leavecategory;
             fromtime: req.body.fromtime,
             totime: req.body.totime,
             leaveFrom: leaveFrom,
-            status:"APPROVED",
+            status:status,
             leaveTo: leaveTo,
             leaveDuration: leaveDuration,
             reason: req.body.reason ? req.body.reason : undefined,
