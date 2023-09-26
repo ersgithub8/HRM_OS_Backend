@@ -505,10 +505,10 @@ const getapprovedAllLeave = async (req, res) => {
         status: 'APPROVED',
         OR: [
           {
-            leaveFrom: { gte: todayStart, lt: todayEnd }
+            createdAt: { gte: todayStart, lt: todayEnd }
           },
           {
-            leaveTo: { gte: todayStart, lt: todayEnd }
+            updatedAt: { gte: todayStart, lt: todayEnd }
           }
         ]
       },
