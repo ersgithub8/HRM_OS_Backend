@@ -101,6 +101,18 @@ const createSingleLeave = async (req, res) => {
       if (Difference_In_Days < submitDays){
         return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
       }
+      const existingLeave = await prisma.leaveApplication.findFirst({
+        where: {
+          userId: parseInt(req.body.userId),
+          leaveFrom: { lte: leaveTo },
+          leaveTo: { gte: leaveFrom },
+          status: "APPROVED"
+        },
+      });
+
+      if (existingLeave) {
+        return res.status(400).json({ message: "Your leave already approved this day." });
+      }
       const leaveType = req.body.leaveType; // Get the leaveType from the request
 
 let leavecategory;
@@ -263,6 +275,20 @@ let leavecategory;
         if (Difference_In_Days < submitDays){
           return res.status(400).json({ message: `You apply ${submitDays} days before the leave date.` });
         }
+        const existingLeave = await prisma.leaveApplication.findFirst({
+          where: {
+            user: {
+              employeeId: (req.body.employeeId).toString()
+            },
+            leaveFrom: { lte: leaveTo },
+            leaveTo: { gte: leaveFrom },
+            status: "APPROVED"
+          },
+        });
+        
+        if (existingLeave) {
+          return res.status(400).json({ message: "User leave is already approved for this day." });
+        }
         const leaveType = req.body.leaveType; // Get the leaveType from the request
 
         let leavecategory;
@@ -286,8 +312,7 @@ let leavecategory;
                 status = 'APPROVED';
               } else {
                 status = 'PENDING'; // Set a default status if none of the conditions match
-              }
-              
+              } 
         const createdLeave = await prisma.leaveApplication.create({
           data: {
             user: {
@@ -469,126 +494,6 @@ const getAllLeave = async (req, res) => {
     }
   }
 };
-
-//   if (req.query.query === "all") {
-//     const allLeave = await prisma.leaveApplication.findMany({
-//       orderBy: [
-//         {
-//           id: "desc",
-//         },
-//       ],
-//       include: {
-//         user: {
-//           select: {
-//             firstName: true,
-//             lastName: true,
-//             employeeId:true,
-//           },
-//         },
-//       },
-//     });
-
-//     // get the id and acceptLeaveBy from all leave array
-//     const acceptLeaveBy = allLeave.map((item) => {
-//       return {
-//         ...item,
-//         acceptLeaveBy: item.acceptLeaveBy,
-//       };
-//     });
-
-//     // get the acceptLeaveBy from user table and return the firstName and lastName into acceptLeaveBy and if acceptLeaveBy is null then return null into acceptLeaveBy for that object
-//     const result = await Promise.all(
-//       acceptLeaveBy.map(async (item) => {
-//         if (item.acceptLeaveBy) {
-//           const acceptLeaveBy = await prisma.user.findUnique({
-//             where: {
-//               id: item.acceptLeaveBy,
-//             },
-//             select: {
-//               id: true,
-//               firstName: true,
-//               lastName: true,
-//             },
-//           });
-//           return {
-//             ...item,
-//             acceptLeaveBy: acceptLeaveBy,
-//           };
-//         } else {
-//           return {
-//             ...item,
-//             acceptLeaveBy: null,
-//           };
-//         }
-//       })
-//     );
-
-//     return res.status(200).json(result);
-//   } else {
-//     const { skip, limit } = getPagination(req.query);
-//     try {
-//       const allLeave = await prisma.leaveApplication.findMany({
-//         orderBy: [
-//           {
-//             id: "asc",
-//           },
-//         ],
-//         skip: Number(skip),
-//         take: Number(limit),
-//         where: {
-//           status: req.query.status,
-//         },
-//         include: {
-//           user: {
-//             select: {
-//               firstName: true,
-//               lastName: true,
-//             },
-//           },
-//         },
-//       });
-//       // get the id and acceptLeaveBy from all leave array
-//       const acceptLeaveBy = allLeave.map((item) => {
-//         return {
-//           ...item,
-//           acceptLeaveBy: item.acceptLeaveBy,
-//         };
-//       });
-
-//       // get the acceptLeaveBy from user table and return the firstName and lastName into acceptLeaveBy and if acceptLeaveBy is null then return null into acceptLeaveBy for that object
-//       const result = await Promise.all(
-//         acceptLeaveBy.map(async (item) => {
-//           if (item.acceptLeaveBy) {
-//             const acceptLeaveBy = await prisma.user.findUnique({
-//               where: {
-//                 id: item.acceptLeaveBy,
-//               },
-//               select: {
-//                 id: true,
-//                 firstName: true,
-//                 lastName: true,
-//                 department:true,
-//               },
-//             });
-//             return {
-//               ...item,
-//               acceptLeaveBy: acceptLeaveBy,
-//             };
-//           } else {
-//             return {
-//               ...item,
-//               acceptLeaveBy: null,
-//             };
-//           }
-//         })
-//       );
-
-//       return res.status(200).json(result);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   }
-// };
 const getapprovedAllLeave = async (req, res) => {
   try {
     const today = new Date();
@@ -1055,89 +960,6 @@ const yearlyLeaveState = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-// const MonthlyApprovedLeaves = async (req, res) => {
-//   try {
-//     const { date } = req.query;
-
-//     if (!date) {
-//       return res.status(400).json({ message: "Date parameter is missing in the query" });
-//     }
-
-//     const startDate = new Date(date);
-//     const endDate = new Date(startDate);
-//     endDate.setDate(startDate.getDate() + 1); // Calculate the next day
-
-//     const approvedLeave = await prisma.leaveApplication.findMany({
-//       where: {
-//         status: 'APPROVED',
-//        OR: [
-//           {
-//             leaveFrom: { gte: startDate, lt: endDate }
-//           },
-//           {
-//             leaveTo: { gte: startDate, lt: endDate }
-//           }
-//         ]
-//       },
-//       orderBy: [
-//         {
-//           id: "desc",
-//         },
-//       ],
-//       include: {
-//         user: {
-//           select: {
-//             firstName: true,
-//             lastName: true,
-//             employeeId:true,
-//             department:true,
-//           },
-//         },
-//       },
-//     });
-
-//     const acceptLeaveBy = approvedLeave.map((item) => {
-//       return {
-//         ...item,
-//         startDate,
-//         acceptLeaveBy: item.acceptLeaveBy,
-//       };
-//     });
-
-//     const result = await Promise.all(
-//       acceptLeaveBy.map(async (item) => {
-//         if (item.acceptLeaveBy) {
-//           const acceptLeaveBy = await prisma.user.findUnique({
-//             where: {
-//               id: item.acceptLeaveBy,
-//             },
-//             select: {
-//               id: true,
-//               firstName: true,
-//               lastName: true,
-//             },
-//           });
-//           return {
-//             ...item,
-//             startDate,
-//             acceptLeaveBy: acceptLeaveBy,
-//           };
-//         } else {
-//           return {
-//             ...item,
-//             startDate,
-//             acceptLeaveBy: null,
-//           };
-//         }
-//       })
-//     );
-//     return res.status(200).json(approvedLeave);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
 
 const MonthlyApprovedLeaves = async (req, res) => {
   try {
