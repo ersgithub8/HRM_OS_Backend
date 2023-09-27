@@ -1237,6 +1237,11 @@ const getAllLeave = async (req, res) => {
       where: {
         userId: { in: array }
       },
+      orderBy: [
+        {
+          id: "desc",
+        },
+      ],
       include: {
         user: {
           select: {
