@@ -1266,6 +1266,94 @@ console.log(allAttendance,"dfsjkhdk");
     
       return res.status(200).json(result);
     }
+    else if (createdAtFrom && createdAtTo) {
+      const startDate = new Date(createdAtFrom);
+      const endDate = new Date(createdAtTo);
+      endDate.setHours(23, 59, 59);
+    
+      if (isNaN(startDate) || isNaN(endDate)) {
+        return res.status(400).json({ message: "Invalid date parameters." });
+      }
+      
+      // Find user by employeeId
+      // const user = await prisma.user.findUnique({
+      //   where: {
+      //     employeeId: employeeId,
+      //   },
+      // });
+    
+      // if (!user) {
+      //   return res.status(404).json({ message: "User not found with the provided employeeId." });
+      // }
+    
+      attendanceQuery.where = {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+        // userId: user.id,
+      };
+    
+      const userAttendance = await prisma.attendance.findMany({
+        ...attendanceQuery,
+      });
+    
+      // Calculate total present leaves and absent records
+      let presentCount = 0;
+      let absentCount = 0;
+      let leaveCount=0;
+      let holidayCount=0
+      const totalUsers = await prisma.user.count({
+        where: {
+          status: true,
+        },
+      });
+      
+    
+      userAttendance.forEach((attendance) => {
+        if (attendance.attendenceStatus === "present") {
+          presentCount++;
+        } else if (attendance.attendenceStatus === "absent") {
+          absentCount++;
+        }
+        else if (attendance.attendenceStatus === "leave") {
+          leaveCount++;
+        }
+        else if (attendance.attendenceStatus === "holiday") {
+          holidayCount++;
+        }
+      });
+    
+      const punchBy = await prisma.user.findMany({
+        where: {
+          id: { in: userAttendance.map((item) => item.punchBy) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeId: true,
+        },
+      });
+      
+    
+      const result = {
+        totalPresent: presentCount,
+        totalAbsent: absentCount,
+        totalLeaves:leaveCount,
+        totalHoliday:holidayCount,
+        totalUsers:totalUsers,
+        
+        attendanceData: userAttendance.map((attendance) => {
+          return {
+            ...attendance,
+            punchBy: punchBy,
+          };
+        }),
+      };
+    
+      return res.status(200).json(result);
+    }
      else {
       return res.status(400).json({ message: "Invalid query parameters." });
     }
