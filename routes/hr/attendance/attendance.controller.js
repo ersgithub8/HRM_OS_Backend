@@ -993,9 +993,9 @@ const search = async (req, res) => {
 
     if (query === "all") {
       const todayStartDate = new Date();
-      // todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
+      todayStartDate.setHours(0, 0, 0, 0); // Set time to midnight
       const todayEndDate = new Date();
-      // todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
+      todayEndDate.setHours(23, 59, 59, 999); // Set time to end of the day
       const currentMonthStart = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth(), 1);
       const previousMonthStart = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth() - 1, 1);
       const previousMonthEnd = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth(), 0);
@@ -1119,42 +1119,42 @@ console.log(allAttendance,"dfsjkhdk");
           applicationStatus: 'REJECTED',
         },
       });
-      const allAttendances = await prisma.attendance.findMany({
-        orderBy: [
-          {
-            id: "desc",
-          },
-        ],
-        skip: Number(skip),
-        take: Number(limit),
-        // where: {
-        //   inTime: {
-        //     gte: new Date(req.query.startdate),
-        //     lte: new Date(req.query.enddate),
-        //   },
-        // },
-        include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-          employeeId:true,
+      // const allAttendances = await prisma.attendance.findMany({
+      //   orderBy: [
+      //     {
+      //       id: "desc",
+      //     },
+      //   ],
+      //   skip: Number(skip),
+      //   take: Number(limit),
+      //   // where: {
+      //   //   inTime: {
+      //   //     gte: new Date(req.query.startdate),
+      //   //     lte: new Date(req.query.enddate),
+      //   //   },
+      //   // },
+      //   include: {
+      //     user: {
+      //       select: {
+      //         firstName: true,
+      //         lastName: true,
+      //     employeeId:true,
 
-            },
-          },
-        },
-      });
-      const punchBys = await prisma.user.findMany({
-        where: {
-          id: { in: allAttendances.map((item) => item.punchBy) },
-        },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          employeeId:true,
-        },
-      });
+      //       },
+      //     },
+      //   },
+      // });
+      // const punchBys = await prisma.user.findMany({
+      //   where: {
+      //     id: { in: allAttendance.map((item) => item.punchBy) },
+      //   },
+      //   select: {
+      //     id: true,
+      //     firstName: true,
+      //     lastName: true,
+      //     employeeId:true,
+      //   },
+      // });
 
       const result = {
         totalPresent: presentCount,
@@ -1170,7 +1170,7 @@ console.log(allAttendance,"dfsjkhdk");
         pendingUserCount:pendingUserCount,
         approvedUserCount:approvedUserCount,
         rejectedUserCount:rejectedUserCount,
-        attendanceData:allAttendances.map((attendance) => {
+        attendanceData:allAttendance.map((attendance) => {
           return {
             ...attendance,
             punchBy: punchBy,
