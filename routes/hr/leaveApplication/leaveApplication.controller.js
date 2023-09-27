@@ -1119,71 +1119,71 @@ const MonthlyApprovedLeaves = async (req, res) => {
 //   }
 // };
 
-const getAllLeave = async (req, res) => {
-  const userId = parseInt(req.query.userId); 
-  const { skip, limit, status } = req.query;
+// const getAllLeave = async (req, res) => {
+//   const userId = parseInt(req.query.userId); 
+//   const { skip, limit, status } = req.query;
 
-  try {
-    if (isNaN(userId) || userId <= 0) {
-      return res.status(400).json({ message: 'Invalid userId provided' });
-    }
+//   try {
+//     if (isNaN(userId) || userId <= 0) {
+//       return res.status(400).json({ message: 'Invalid userId provided' });
+//     }
 
-    const fetchUsers = async (referenceId, userIdToExclude) => {
-      const users = await prisma.user.findMany({
-        where: {
-          reference_id: referenceId,
-          NOT: {
-            id: userIdToExclude,
-          },
-        },
-        include: {
-          leaveApplication: {
-            where: {
-              status: status,
-            },
-          },
-        },
+//     const fetchUsers = async (referenceId, userIdToExclude) => {
+//       const users = await prisma.user.findMany({
+//         where: {
+//           reference_id: referenceId,
+//           NOT: {
+//             id: userIdToExclude,
+//           },
+//         },
+//         include: {
+//           leaveApplication: {
+//             where: {
+//               status: status,
+//             },
+//           },
+//         },
         
-      });
+//       });
     
-      const linkedUsers = await Promise.all(
-        users.map(async (user) => {
-          return {
-            user: user,
-            linkedUsers: await fetchUsers(user.id)
-          };
-        })
-      );
+//       const linkedUsers = await Promise.all(
+//         users.map(async (user) => {
+//           return {
+//             user: user,
+//             linkedUsers: await fetchUsers(user.id)
+//           };
+//         })
+//       );
     
-      return linkedUsers.flat();
-    };
+//       return linkedUsers.flat();
+//     };
     
     
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        reference_id: true,
-      },
-    });
+//     const user = await prisma.user.findUnique({
+//       where: {
+//         id: userId,
+//       },
+//       select: {
+//         reference_id: true,
+//       },
+//     });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
 
-    const referenceId = user.reference_id;
+//     const referenceId = user.reference_id;
 
-    const usersData = await fetchUsers(referenceId);
+//     const usersData = await fetchUsers(referenceId);
 
-    return res.status(200).json(usersData);
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-};
+//     return res.status(200).json(usersData);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
 
-const getAllLeaveCTO = async (req, res) => {
+const getAllLeave = async (req, res) => {
   const userId = parseInt(req.query.userId); 
   const { skip, limit, status } = req.query;
 
@@ -1277,5 +1277,5 @@ module.exports = {
   todayLeaveState,
   yearlyLeaveState,
   MonthlyApprovedLeaves,
-  getAllLeaveCTO
+  // getAllLeaveCTO
 };
