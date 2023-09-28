@@ -8,7 +8,7 @@ CREATE TABLE "user" (
     "email" TEXT,
     "phone" TEXT,
     "reference_id" INTEGER,
-    "reference_id2" INTEGER,
+    "referenceid_two" INTEGER,
     "dob" TIMESTAMP(3),
     "emergencycontact" TEXT,
     "nicno" TEXT,

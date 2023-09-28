@@ -16,7 +16,7 @@ model user {
   email      String?   @unique
   phone      String?   @unique
   reference_id  Int?
-  reference_id2  Int?
+  referenceid_two  Int?
   dob           DateTime?
   emergencycontact      String?
   nicno                 String?
