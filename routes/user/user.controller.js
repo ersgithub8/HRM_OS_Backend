@@ -592,6 +592,27 @@ if (!singleUser.leavePolicy) {
         singleUser.superviser = null; 
       }
     }
+
+    const roleId2 = singleUser.referenceid_two;
+
+    if (roleId2 === null) {
+      singleUser.superviser2 = null;
+    } else {
+      const superviser2 = await prisma.user.findUnique({
+        where: {
+          id: roleId2,  // Corrected roleId2 usage here
+        },
+      });
+
+      if (superviser2) {
+        const { password, ...userWithoutPassword } = superviser2;
+        singleUser.superviser2 = userWithoutPassword;  // Corrected superviser2 assignment here
+      } else {
+        singleUser.superviser2 = null;
+      }
+    }
+
+    
     const { password, ...userWithoutPassword } = singleUser;
 
     return res.status(200).json(userWithoutPassword);
