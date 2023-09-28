@@ -704,6 +704,7 @@ const updateSingleUser = async (req, res) => {
       departmentId: req.body.departmentId,
       roleId: req.body.roleId,
       reference_id:req.body.id,
+      referenceid_two:req.body.id,
       shiftId: req.body.shiftId,
       locationId: req.body.locationId,
       leavePolicyId: req.body.leavePolicyId,
