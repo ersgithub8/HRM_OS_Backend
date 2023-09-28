@@ -16,6 +16,7 @@ model user {
   email      String?   @unique
   phone      String?   @unique
   reference_id  Int?
+  reference_id2  Int?
   dob           DateTime?
   emergencycontact      String?
   nicno                 String?
@@ -493,4 +494,14 @@ model appSetting {
   email        String
   website      String
   footer       String
+}
+model training {
+  id           Int    @id @default(autoincrement())
+ name          String?
+ daytype       String?
+ fromtime      DateTime? @db.Time
+ totime        DateTime? @db.Time
+ date          DateTime?
+ createdAt     DateTime  @default(now())
+ updatedAt     DateTime  @updatedAt
 }
