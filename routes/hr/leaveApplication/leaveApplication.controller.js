@@ -145,14 +145,10 @@ let leavecategory;
           attachment:req.body.attachment ? req.body.attachment:null,
         },
       });  
-      console.log(createdLeave);
-
       if (req.body.daytype==='HALF'){
         leaveDuration = leaveDuration;
       }
       let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
-      
-      
       if (req.body.leaveType === 'CompassionateLeave(deductible)'||req.body.leaveType === 'BereavementLeave(deductible)'||req.body.leaveType === 'ParentalLeave(deductible)'||req.body.leaveType === 'PaternityLeave(deductible-if-paid)'){
         await prisma.user.update({
           where: {
@@ -163,8 +159,6 @@ let leavecategory;
           },
         });
       }
-      
-      
       return res.status(200).json({createdLeave,
       message:"Leave application apply successfully"});
     } catch (error) {
@@ -556,7 +550,6 @@ const getapprovedAllLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 const getSingleLeave = async (req, res) => {
   try {
     const singleLeave = await prisma.leaveApplication.findUnique({
@@ -612,7 +605,6 @@ const getSingleLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 const grantedLeave = async (req, res, next) => {
   try {
     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
@@ -722,7 +714,6 @@ const grantedLeave = async (req, res, next) => {
     return res.status(400).json({ message: 'Failed to update application status' });
   }
 };
-
 const getLeaveByUserId = async (req, res) => {
   try {
     const getLeaveTo = await prisma.leaveApplication.findMany({
@@ -804,7 +795,6 @@ const getLeaveByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 const deleteSingleLeave=async(req, res)=>{
   try {
     const deletedLeaveApplication = await prisma.leaveApplication.delete({
@@ -931,7 +921,6 @@ const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), y
     return res.status(400).json({ message: error.message });
   }
 };
-
 const yearlyLeaveState = async (req, res) => {
   try {
     const date = new Date();
@@ -969,7 +958,6 @@ const yearlyLeaveState = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 const MonthlyApprovedLeaves = async (req, res) => {
   try {
     const { date } = req.query;
@@ -1029,7 +1017,6 @@ const MonthlyApprovedLeaves = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 // const getAllLeave = async (req, res) => {
 //   const userId = parseInt(req.query.userId); // Parse userId from query params
 //   const { skip, limit, status } = req.query;
@@ -1182,7 +1169,6 @@ const MonthlyApprovedLeaves = async (req, res) => {
 //     return res.status(400).json({ message: error.message });
 //   }
 // };
-
 const getAllLeave = async (req, res) => {
   const userId = parseInt(req.query.userId); 
   const { skip, limit, status } = req.query;
@@ -1250,6 +1236,7 @@ const getAllLeave = async (req, res) => {
             lastName: true,
             userName: true,
             employeeId: true,
+            roleId:true,
             department: true,
           },
         },
@@ -1267,9 +1254,6 @@ const getAllLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
-
 module.exports = {
   createSingleLeave,
   getAllLeave,
