@@ -1182,18 +1182,21 @@ const getAllLeave = async (req, res) => {
     const fetchUsers = async (referenceId, userIdToExclude) => {
       const users = await prisma.user.findMany({
         where: {
-          reference_id: referenceId,
+          OR: [
+            { reference_id: referenceId },
+            { referenceid_two: referenceId }
+          ],
           // NOT: {
           //   id: userIdToExclude,
           // },
         },
-        include: {
-            leaveApplication: {
-            where: {
-              status: status,
-            },
-          },
-        },
+        // include: {
+        //     leaveApplication: {
+        //     where: {
+        //       status: status,
+        //     },
+        //   },
+        // },
         
       });
     
@@ -1203,9 +1206,6 @@ const getAllLeave = async (req, res) => {
             let dd = await fetchUsers(user.id);
             dd.push(user);
             return dd;
-
-            return array;
-            
             
         })
       );
