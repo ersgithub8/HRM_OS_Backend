@@ -502,7 +502,9 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
-      return res.status(200).json(result);
+      return res.status(200).json({
+        // result,
+      message:"Attendence created successfully"});
     } else if (!attendance) {
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -565,7 +567,9 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
-      return res.status(200).json(result);
+      return res.status(200).json({
+        // result,
+        message:"Attendence created successfully"});
     } else {
       const newAttendance = await prisma.attendance.update({
         where: {
@@ -624,7 +628,9 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
-      return res.status(200).json(result);
+      return res.status(200).json({
+        // result,
+        message:"Attendence created successfully"});
     }
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -1241,7 +1247,6 @@ const search = async (req, res) => {
       const allAttendance = await prisma.attendance.findMany({
         ...attendanceQuery,
       });
-console.log(allAttendance,"dfsjkhdk");
       const punchBy = await prisma.user.findMany({
         where: {
           id: { in: allAttendance.map((item) => item.punchBy) },
@@ -1317,17 +1322,20 @@ console.log(allAttendance,"dfsjkhdk");
           createdAt: { gte: thisMonthStart, lte: thisMonthEnd },
         },
       });
-      
+      console.log(thisMonthUserCount,"newmonth");
       const lastMonthUserCount = await prisma.user.count({
         where: {
           createdAt: { gte: lastMonthStart, lte: lastMonthEnd },
         },
       });
+      console.log(lastMonthUserCount,"oldmonth");
+
       
       // Calculate the percentage change
       let percentageChange = 0;
       if (lastMonthUserCount !== 0) {
         percentageChange = ((thisMonthUserCount - lastMonthUserCount) / lastMonthUserCount) * 100;
+        percentageChange = Math.abs(percentageChange);
       } else if (thisMonthUserCount !== 0) {
         percentageChange = 100;
       }

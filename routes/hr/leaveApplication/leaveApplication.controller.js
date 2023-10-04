@@ -899,7 +899,6 @@ const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), y
     
     const yesterdayTotalCount = yesterdayLeaves.length;
     const todayLeavescounts=todayLeaves.length;
-    console.log(todayLeavescounts,"rhjjh");
     
     let percentageChange = 0;
     if (yesterdayTotalCount !== 0) {
