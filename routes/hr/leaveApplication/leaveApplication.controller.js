@@ -898,13 +898,17 @@ const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), y
     });
     
     const yesterdayTotalCount = yesterdayLeaves.length;
+    const todayLeavescounts=todayLeaves.length;
+    console.log(todayLeavescounts,"rhjjh");
     
     let percentageChange = 0;
-    
     if (yesterdayTotalCount !== 0) {
-      percentageChange = ((approvedLeaveCount - yesterdayTotalCount) / yesterdayTotalCount) * 100;
-    } else if (approvedLeaveCount !== 0) {
+      percentageChange = ((todayLeavescounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
+      percentageChange = Math.abs(percentageChange);
+    } else if (todayLeavescounts !== 0) {
       percentageChange = 100;
+      // percentageChange = Math.max(-100, Math.min(percentageChange, 100));
+
     }
 
     return res.status(200).json({
