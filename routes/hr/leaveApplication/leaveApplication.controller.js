@@ -1,5 +1,8 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
+
 
 const createSingleLeave = async (req, res) => {
   if (req.query.query === "deletemany") {
@@ -1257,6 +1260,66 @@ const getAllLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+const Sendnotification = async (req, res) => {
+  let users = await User.findOne({ _id: req.body.userid });
+  var title = req.body.username;
+  var body = req.body.message;
+  var desc = "chatting";
+  var token = users.firebaseToken;
+  if (!token) {
+    return res.status(NOT_FOUND).json({
+      message: "Device not found",
+    });
+  }
+
+  sendnotifiy(title, body, desc, token, users?.device);
+
+  return res.json({
+    message: "Notification Send.",
+  });
+};
+
+function sendnotifiy(Title, Body, Desc, Token, Device) {
+  try {
+    if (Device && Device == "IOS") {
+      const message = {
+        notification: {
+          title: Title,
+          body: Body,
+        },
+        token: Token,
+      };
+      admin
+        .messaging()
+        .send(message)
+        .then((response) => {})
+        .catch((error) => {
+          console.log("Error sending notification:", error);
+        });
+    } else {
+      var fcm = new FCM(process.env.serverkey);
+
+      var notifecation = {
+        to: Token,
+        data: {
+          title: Title,
+          body: Body,
+          description: Desc,
+        },
+      };
+      fcm.send(notifecation, function (err, response) {
+        if (err) {
+          console.log("Error sending message:", err);
+        } else {
+          console.log("Successfully Sent Message:", response);
+        }
+      });
+    }
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
 module.exports = {
   createSingleLeave,
   getAllLeave,

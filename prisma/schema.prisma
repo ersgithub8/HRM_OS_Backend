@@ -11,6 +11,8 @@ model user {
   id         Int       @id @default(autoincrement())
   firstName  String?
   lastName   String?
+  firebaseToken String?
+  device        String @default("Android") 
   userName   String    @unique
   password   String
   email      String?   @unique
@@ -497,11 +499,9 @@ model appSetting {
 }
 model training {
   id           Int    @id @default(autoincrement())
- name          String?
- daytype       String?
- fromtime      DateTime? @db.Time
- totime        DateTime? @db.Time
- date          DateTime?
+ day       String?
+  leaveFrom       DateTime?
+  leaveTo         DateTime?
  createdAt     DateTime  @default(now())
  updatedAt     DateTime  @updatedAt
 }

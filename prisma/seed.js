@@ -41,7 +41,8 @@ const endpoints = [
   "taskTime",
   "priority",
   "assignedTask",
-  "location"
+  "location",
+  "training"
 ];
 
 const permissionTypes = ["create", "readAll", "readSingle", "update", "delete"];
@@ -54,7 +55,7 @@ const permissions = endpoints.reduce((acc, cur) => {
   return [...acc, ...permission];
 }, []);
 
-const roles = ["admin", "staff" ,"CEO","COO","NSC","NDC","ASC","AdminAssistant"];
+const roles = ["admin", "staff" ,"CEO","DOO","NSC","NDC","ASC","AdminAssistant"];
 
 const account = [
   { name: "Asset", type: "Asset" },
@@ -264,6 +265,7 @@ async function main() {
       firstName: "HRM1",
       lastName: "Wise1ne",
       userName: "admin",
+      email:"admin@gmail.com",
       password: adminHash,
       employmentStatusId: 1,
       applicationStatus:'APPROVED',

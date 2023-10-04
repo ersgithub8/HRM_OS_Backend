@@ -3,6 +3,8 @@ CREATE TABLE "user" (
     "id" SERIAL NOT NULL,
     "firstName" TEXT,
     "lastName" TEXT,
+    "firebaseToken" TEXT,
+    "device" TEXT NOT NULL DEFAULT 'Android',
     "userName" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "email" TEXT,
@@ -498,6 +500,18 @@ CREATE TABLE "appSetting" (
     "footer" TEXT NOT NULL,
 
     CONSTRAINT "appSetting_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "training" (
+    "id" SERIAL NOT NULL,
+    "day" TEXT,
+    "leaveFrom" TIMESTAMP(3),
+    "leaveTo" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "training_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
