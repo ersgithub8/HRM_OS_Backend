@@ -11,7 +11,7 @@ const trainingRoutes = express.Router();
 const authorize = require("../../../utils/authorize"); // authentication middleware
 
 trainingRoutes.post(
-    "/addlocation",
+    "/",
     authorize("create-training"),
     createSingleTraining
   );
