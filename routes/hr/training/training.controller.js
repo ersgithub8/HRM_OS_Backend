@@ -85,14 +85,17 @@ const getSingleTrining = async (req, res) => {
 };
 const updateSingleTrining = async (req, res) => {
   try {
+    const leaveFrom = new Date(req.body.leaveFrom);
+      // leaveFrom.setHours(0,0,0,0)
+      const leaveTo = new Date(req.body.leaveTo);
     const updatedTraining = await prisma.training.update({
       where: {
         id: Number(req.params.id),
       },
       data: {
         day: req.body.day,
-          leaveFrom: req.body.leaveFrom,
-          leaveTo:req.body.leaveTo,
+          leaveFrom:leaveFrom,
+          leaveTo:leaveTo,
       },
     });
     return res.status(200).json({
