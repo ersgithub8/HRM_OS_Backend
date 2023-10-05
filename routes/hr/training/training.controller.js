@@ -32,10 +32,11 @@ const createSingleTraining = async (req, res) => {
           ],
         },
       });
-    
+    console.log(overlappingTraining);
       if (overlappingTraining) {
         return res.status(400).json({ message: "Training already exists within this date range." });
       }
+     
       const createdTraining = await prisma.training.create({
         data: {
           day: req.body.day,
