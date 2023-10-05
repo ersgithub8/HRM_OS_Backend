@@ -35,7 +35,7 @@ const createSingleTraining = async (req, res) => {
         message:"Training added successfully"
       });
     } catch (error) {
-      return res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: "Failed to add training" });
     }
   }
 };
@@ -80,7 +80,7 @@ const getSingleTrining = async (req, res) => {
 
     return res.status(200).json(singleTraing);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message: "Failed to get training" });
   }
 };
 const updateSingleTrining = async (req, res) => {
@@ -103,7 +103,7 @@ const updateSingleTrining = async (req, res) => {
       message:"Trainig updated successfully"
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message:"Failed to update training" });
   }
 };
 const deleteSingleTrining = async (req, res) => {
@@ -118,7 +118,9 @@ const deleteSingleTrining = async (req, res) => {
       message:"Training deleted successfully"
      });
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({
+      message:"Failed to delete training"
+    });
   }
 };
 
