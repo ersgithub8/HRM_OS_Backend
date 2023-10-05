@@ -20,7 +20,7 @@ const prisma = require("../../../utils/prisma");
         reqq=4;
     }
     else if(rollId==1){
-        reqq=4;
+        reqq=3;
     }
 
     else if(rollId==7){
