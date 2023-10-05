@@ -56,6 +56,23 @@ const createSingleLeave = async (req, res) => {
         return res.status(400).json({ message: "Already 2 leaves approved for this day." });
       }
   
+      const training = await prisma.training.findMany({
+        where: {
+          OR: [
+            {
+              AND: [
+                { leaveFrom: { lte: new Date(leaveTo) } },
+                { leaveTo: { gte: new Date(leaveFrom) } }
+              ]
+            }
+          ]
+        }
+      });
+      
+      if (training.length > 0) {
+        return res.status(400).json({ message: "You can't apply leave on a training day" });
+      }
+      
 
       if ([0, 1, 8].includes(leaveFrom.getMonth())) {
         return res.status(400).json({ message: "Leave not allowed in Jan,Feb, or Sep." });
@@ -64,15 +81,14 @@ const createSingleLeave = async (req, res) => {
            
       var leaveDuration = Math.round(Difference_In_Time / (1000 * 3600 * 24));
   if (leaveFrom.toDateString() === leaveTo.toDateString()) {
-    // Single-day leave
     if (req.body.daytype === 'FULL') {
-      leaveDuration = leaveDuration; // One-day full leave
+      leaveDuration = leaveDuration;
     } else if (req.body.daytype === 'HALF') {
-      leaveDuration =leaveDuration/2; // One-day half leave
+      leaveDuration =leaveDuration/2;
     }
   } else {
     if (req.body.daytype === 'HALF') {
-      leaveDuration = leaveDuration / 2; // Adjust for half-day leave
+      leaveDuration = leaveDuration / 2; 
     }
   }
       if (user.remainingannualallowedleave < leaveDuration) {
@@ -222,7 +238,22 @@ let leavecategory;
           return res.status(400).json({ message: "Already 2 leaves approved for this day." });
         }
     
-  
+        const training = await prisma.training.findMany({
+          where: {
+            OR: [
+              {
+                AND: [
+                  { leaveFrom: { lte: new Date(leaveTo) } },
+                  { leaveTo: { gte: new Date(leaveFrom) } }
+                ]
+              }
+            ]
+          }
+        });
+        
+        if (training.length > 0) {
+          return res.status(400).json({ message: "You can't apply leave on a training day" });
+        }
         if ([0, 1, 8].includes(leaveFrom.getMonth())) {
           return res.status(400).json({ message: "Leave not allowed in Jan,Feb, or Sep." });
         }

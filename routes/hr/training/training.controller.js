@@ -19,11 +19,14 @@ const createSingleTraining = async (req, res) => {
     }
   }else {
     try {
+      const leaveFrom = new Date(req.body.leaveFrom);
+      // leaveFrom.setHours(0,0,0,0)
+      const leaveTo = new Date(req.body.leaveTo);
       const createdTraining = await prisma.training.create({
         data: {
           day: req.body.day,
-          leaveFrom: req.body.leaveFrom,
-          leaveTo:req.body.leaveTo,
+          leaveFrom: leaveFrom,
+          leaveTo:leaveTo,
         },
       });
 
@@ -108,7 +111,7 @@ const deleteSingleTrining = async (req, res) => {
       },
     });
     return res.status(200).json({ 
-      deletedTraing,
+      // deletedTraing,
       message:"Training deleted successfully"
      });
   } catch (error) {
