@@ -145,8 +145,8 @@ app.use(
   "/hirarchy",
   require("./routes/hr/hirarchy/hirarchy.route")
 );
-// app.use(
-//   "/training",
-//   require("./routes/hr/training/training.routes")
-// );
+app.use(
+  "/training",
+  require("./routes/hr/training/training.routes")
+);
 module.exports = app;
