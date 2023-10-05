@@ -22,6 +22,20 @@ const createSingleTraining = async (req, res) => {
       const leaveFrom = new Date(req.body.leaveFrom);
       // leaveFrom.setHours(0,0,0,0)
       const leaveTo = new Date(req.body.leaveTo);
+      const overlappingTraining = await prisma.training.findFirst({
+        where: {
+          OR: [
+            {
+              leaveFrom: { lte: leaveTo },
+              leaveTo: { gte: leaveFrom },
+            },
+          ],
+        },
+      });
+    
+      if (overlappingTraining) {
+        return res.status(400).json({ message: "Training already exists within this date range." });
+      }
       const createdTraining = await prisma.training.create({
         data: {
           day: req.body.day,
