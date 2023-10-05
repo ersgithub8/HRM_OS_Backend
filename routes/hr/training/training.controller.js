@@ -49,7 +49,7 @@ const getAllTrining = async (req, res) => {
   } else {
     const { skip, limit } = getPagination(req.query);
     try {
-      const allTraining = await prisma.location.findMany({
+      const allTraining = await prisma.training.findMany({
         orderBy: [
           {
             id: "desc",

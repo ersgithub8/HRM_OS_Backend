@@ -17,7 +17,7 @@ const prisma = require("../../../utils/prisma");
         reqq=6;
     }
     else if(rollId==6){
-        reqq=1;
+        reqq=4;
     }
     else if(rollId==1){
         reqq=4;
