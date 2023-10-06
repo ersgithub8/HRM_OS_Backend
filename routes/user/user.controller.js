@@ -181,6 +181,12 @@ const register = async (req, res) => {
       },
       
     });
+    let remainingannualallowedleave;
+    if (req.body.manualleave) {
+      remainingannualallowedleave = req.body.manualleave.toString();
+    } else {
+      remainingannualallowedleave = leavs.paidLeaveCount.toString();
+    }
     const join_date = new Date();
     const leave_date = req.body.leaveDate ? req.body.leaveDate : null;
 
@@ -204,9 +210,7 @@ const register = async (req, res) => {
         dbschecktext:req.body.dbschecktext,
         safeguarding:req.body.safeguarding,
         safeguardingtext:req.body.safeguardingtext,
-
-
-
+        // manualleave:manualleave,
         companyname:req.body.companyname,
         designation:req.body.designation,
         joining_date:req.body.joining_date,
@@ -231,7 +235,7 @@ const register = async (req, res) => {
         bankallowedleave:process.env.totalbankleaves,
         remaingbankallowedleave:process.env.totalremainbank,
         annualallowedleave:process.env.totalanualleaves,
-        remainingannualallowedleave:leavs.paidLeaveCount.toString(),
+        remainingannualallowedleave:remainingannualallowedleave,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
