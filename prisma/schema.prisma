@@ -38,6 +38,7 @@ model user {
   joining_date          DateTime?
   end_date              DateTime?
   address               String?
+  manualleave           Float?
   reference_contact     String?
   resetPasswordToken   String?
   resetPasswordExpires  DateTime @default(now())

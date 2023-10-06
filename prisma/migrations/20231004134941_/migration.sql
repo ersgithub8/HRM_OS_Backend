@@ -7,6 +7,7 @@ CREATE TABLE "user" (
     "device" TEXT NOT NULL DEFAULT 'Android',
     "userName" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "manualleave"  DOUBLE PRECISION,
     "email" TEXT,
     "phone" TEXT,
     "reference_id" INTEGER,
