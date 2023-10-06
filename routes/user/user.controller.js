@@ -6,6 +6,7 @@ const hirarchy=require("../hr/hirarchy/hirarchy.controller")
 
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+const _ = require("lodash");
 
 const jwt = require("jsonwebtoken");
 const { isNullOrUndefined } = require("util");
@@ -70,10 +71,18 @@ const login = async (req, res) => {
           expiresIn: "24h",
         }
       );
+      const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          firebaseToken: req.body.firebaseToken || user.firebaseToken,
+          device: req.body.device || "Android",
+        },
+      });
       const { password, ...userWithoutPassword } = user;
       return res.status(200).json({
         ...userWithoutPassword,
         token,
+        // updatedUser,
       });
     }
 
@@ -704,8 +713,11 @@ const updateSingleUser = async (req, res) => {
       where: {
         id: id,
       },
+      include:{
+            leavePolicy:true,
+      }
     });
-
+    
     if (!existingUser) {
       return res.status(404).json({
         message: "User not found.",
@@ -718,6 +730,7 @@ const updateSingleUser = async (req, res) => {
       street: req.body.street,
       city: req.body.city,
       state: req.body.state,
+      remainingannualallowedleave:(existingUser.leavePolicy.paidLeaveCount).toString(),
       documents: req.body.documents ? req.body.documents : null,
       applicationStatus: req.body.applicationStatus,
       zipCode: req.body.zipCode,
@@ -763,9 +776,8 @@ const updateSingleUser = async (req, res) => {
         dob: req.body.dob || existingUser.dob,
         reference_contact:req.body.reference_contact || existingUser.reference_contact,
         bankallowedleave:req.body.bankallowedleave || existingUser.bankallowedleave,
-        remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
+        remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.leavePolicy.unpaidLeaveCount,
         annualallowedleave:req.body.annualallowedleave || existingUser.annualallowedleave,
-        remainingannualallowedleave:req.body.remainingannualallowedleave || existingUser.remainingannualallowedleave,
 
 
       };

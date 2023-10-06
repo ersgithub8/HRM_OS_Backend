@@ -944,7 +944,7 @@ const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), y
     if (yesterdayTotalCount !== 0) {
       percentageChange = ((todayLeavescounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
       percentageChange = Math.abs(percentageChange);
-    } else if (todayLeavescounts !== 0) {
+    } else if (todayLeavescounts === 0) {
       percentageChange = 0;
       // percentageChange = Math.max(-100, Math.min(percentageChange, 100));
 
