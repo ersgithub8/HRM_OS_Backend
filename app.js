@@ -18,6 +18,11 @@ let allowedOrigins = [
   "http://3.111.150.18:3000",
 ];
 
+const admin = require("firebase-admin");
+const serviceAccount = require("./serviceAccountKey.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 // limit the number of requests from a single IP address
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

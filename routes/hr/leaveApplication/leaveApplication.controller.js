@@ -672,8 +672,15 @@ const grantedLeave = async (req, res, next) => {
           remainingannualallowedleave: currentRemainingLeaves.toString(),
         },
       });
-
-    } else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
+      const Title = 'Leave Approved';
+      const Body = existingLeave.user.firstName + " " +existingLeave.user.lastName+"  "+ 'Your leave request has been approved.';
+      const Desc = 'Leave approval notification';
+      const Token = existingLeave.user.firebaseToken;
+      const Device = existingLeave.user.device;
+console.log(Title, Body, Desc, Token, Device);
+      await sendnotifiy(Title, Body, Desc, Token, Device);
+    }
+     else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
       // If status was changed from 'PENDING' to 'REJECTED', add the leave duration back to remaining leaves
       if (existingLeave.leaveDuration) {
         const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
@@ -730,7 +737,6 @@ const grantedLeave = async (req, res, next) => {
         status: req.body.status,
       },
     });
-
     if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
       req.body.userId = existingLeave.user.id;
       req.body.grantedLeave = grantedLeave;
@@ -939,7 +945,7 @@ const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), y
       percentageChange = ((todayLeavescounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
       percentageChange = Math.abs(percentageChange);
     } else if (todayLeavescounts !== 0) {
-      percentageChange = 100;
+      percentageChange = 0;
       // percentageChange = Math.max(-100, Math.min(percentageChange, 100));
 
     }
@@ -1290,25 +1296,6 @@ const getAllLeave = async (req, res) => {
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
-};
-
-const Sendnotification = async (req, res) => {
-  let users = await User.findOne({ _id: req.body.userid });
-  var title = req.body.username;
-  var body = req.body.message;
-  var desc = "chatting";
-  var token = users.firebaseToken;
-  if (!token) {
-    return res.status(NOT_FOUND).json({
-      message: "Device not found",
-    });
-  }
-
-  sendnotifiy(title, body, desc, token, users?.device);
-
-  return res.json({
-    message: "Notification Send.",
-  });
 };
 
 function sendnotifiy(Title, Body, Desc, Token, Device) {
