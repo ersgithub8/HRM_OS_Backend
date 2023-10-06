@@ -717,7 +717,6 @@ const updateSingleUser = async (req, res) => {
             leavePolicy:true,
       }
     });
-    
     if (!existingUser) {
       return res.status(404).json({
         message: "User not found.",
@@ -730,7 +729,6 @@ const updateSingleUser = async (req, res) => {
       street: req.body.street,
       city: req.body.city,
       state: req.body.state,
-      remainingannualallowedleave:(existingUser.leavePolicy.paidLeaveCount).toString(),
       documents: req.body.documents ? req.body.documents : null,
       applicationStatus: req.body.applicationStatus,
       zipCode: req.body.zipCode,
@@ -776,8 +774,9 @@ const updateSingleUser = async (req, res) => {
         dob: req.body.dob || existingUser.dob,
         reference_contact:req.body.reference_contact || existingUser.reference_contact,
         bankallowedleave:req.body.bankallowedleave || existingUser.bankallowedleave,
-        remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.leavePolicy.unpaidLeaveCount,
+        remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
         annualallowedleave:req.body.annualallowedleave || existingUser.annualallowedleave,
+        remainingannualallowedleave:req.body.remainingannualallowedleave || existingUser.remainingannualallowedleave,
 
 
       };
