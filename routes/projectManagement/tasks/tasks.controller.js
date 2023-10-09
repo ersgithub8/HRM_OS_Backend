@@ -86,12 +86,6 @@ const createTask = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
 //get all tasks controller
 const getAllTasks = async (req, res) => {
   if (req.query.query === "all") {
