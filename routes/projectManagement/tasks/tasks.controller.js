@@ -55,52 +55,36 @@ const createTask = async (req, res) => {
     const userIds = req.body.userId;  // Array of user IDs
     const tasks = [];
 
-    // Create the task
-    const newTask = await prisma.task.create({
-      data: {
-        
-        name: req.body.name,
-        startDate: new Date(req.body.startDate),
-        endDate: new Date(req.body.endDate),
-        assignedBy: req.body.assignedBy||null,
-        description: req.body.description,
-        completionTime: parseFloat(req.body.completionTime),
-        adminattachment: req.body.adminattachment,
-        userAttachment: req.body.userAttachment,
-        reviewComment:req.body.reviewComment,
-        priority: {
-          connect: {
-            id: req.body.priorityId,
+    for (const userId of userIds) {
+      const newTask = await prisma.task.create({
+        data: {
+          user: { connect: { id: userId } },  // Connect the user to the task
+          name: req.body.name,
+          startDate: new Date(req.body.startDate),
+          endDate: new Date(req.body.endDate),
+          description: req.body.description,
+          completionTime: parseFloat(req.body.completionTime),
+          adminattachment: req.body.adminattachment,
+          userAttachment: req.body.userAttachment,
+          priority: {
+            connect: {
+              id: req.body.priorityId,
+            },
           },
         },
-      },
-    });
-
-    // Assign the task to each user
-    for (const userId of userIds) {
-      const userTaskAssignment = await prisma.userTaskAssignment.create({
-        data: {
-          userId: userId,
-          taskId: newTask.id,  // Associate the task with the user
-        },
       });
 
-      tasks.push({
-        taskId: newTask.id,
-        userId: userId,
-        assignmentId: userTaskAssignment.id,
-      });
+      tasks.push(newTask);
     }
 
     return res.status(200).json({
-      tasks,
-      message: "Task created successfully",
-    });
+       tasks,
+       message:"Task created Successfully"
+     });
   } catch (error) {
-    return res.status(400).json({ message: "Failed to create task and assign to users" });
+    return res.status(400).json({ message:"Failed to create task"});
   }
 };
-
 
 //get all tasks controller
 const getAllTasks = async (req, res) => {
