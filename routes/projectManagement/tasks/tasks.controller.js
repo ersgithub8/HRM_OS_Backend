@@ -231,10 +231,73 @@ const deleteTask = async (req, res) => {
   }
 };
 
+const getAlluserHirarchy = async (req, res) => {
+  const userId = parseInt(req.query.userId); 
+  const { skip, limit, status } = req.query;
+
+  let users = [];
+
+  try {
+    if (isNaN(userId) || userId <= 0) {
+      return res.status(400).json({ message: 'Invalid userId provided' });
+    }
+    const fetchUsers = async (referenceId, userIdToExclude) => {
+      const users = await prisma.user.findMany({
+        where: {
+          OR: [
+            { reference_id: referenceId },
+            { referenceid_two: referenceId }
+          ],
+        }, 
+      });
+    
+      const linkedUsers = await Promise.all(
+        users.map(async (user) => {
+
+            let dd = await fetchUsers(user.id);
+            dd.push(user);
+            return dd;
+            
+        })
+      );
+    
+      return linkedUsers.flat();
+    };
+    const usersData = await fetchUsers(userId);
+    let array = [];
+    for (let x of usersData){
+      array.push(x.id);
+    }
+    console.log(array);
+
+    const leave = await prisma.user.findMany({
+      where: {
+        id: { in: array }
+      },
+      orderBy: [
+        {
+          id: "desc",
+        },
+      ],
+      
+    });
+
+
+    
+    return res.status(200).json(
+      leave,
+      // array
+      );
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createTask,
   getAllTasks,
   getTaskById,
   updateTask,
   deleteTask,
+  getAlluserHirarchy,
 };
