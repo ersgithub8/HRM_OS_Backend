@@ -366,9 +366,7 @@ model task {
   userAttachment    String?
   status         Boolean        @default(true)
   createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  assignedTask   assignedTask[]
- 
+  updatedAt      DateTime       @updatedAt 
 }
 
 model taskStatus {
@@ -414,8 +412,8 @@ model projectTeamMember {
 
 model assignedTask {
   id            Int         @id @default(autoincrement())
-  task          task        @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  taskId        Int
+  //task          task        @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  //taskId        Int
   projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectTeamId Int
   status        Boolean     @default(true)
