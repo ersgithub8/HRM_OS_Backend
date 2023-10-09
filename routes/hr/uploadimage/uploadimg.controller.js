@@ -158,6 +158,22 @@ const uploadimages = async (req, res) => {
           path: fileKey
         };
       }
+      if (req.files?.adminattachment) {
+        const ext = req.files.adminattachment.name.split('.').pop();
+        const name = "attachment_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.adminattachment, name);
+        uploadedFiles.adminattachment = {
+          path: fileKey
+        };
+      }
+      if (req.files?.userAttachment) {
+        const ext = req.files.userAttachment.name.split('.').pop();
+        const name = "attachment_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.userAttachment, name);
+        uploadedFiles.userAttachment = {
+          path: fileKey
+        };
+      }
 
       if (Object.keys(uploadedFiles).length === 0) {
         return res.status(400).json({

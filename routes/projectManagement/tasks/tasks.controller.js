@@ -166,6 +166,17 @@ const getTaskByuserId = async (req, res) => {
           userId: Number(req.params.id),
         },
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+          },
+        },
+      },
       orderBy: [
         {
           id: "desc",
@@ -174,7 +185,7 @@ const getTaskByuserId = async (req, res) => {
     });
 
     if (singletask.length === 0)
-      return res.status(200).json({ message: "No leave found for this user" });
+      return res.status(200).json({ message: "No task found for this user" });
 
     const singleusertask = await Promise.all(
       singletask.map(async (leave) => {
