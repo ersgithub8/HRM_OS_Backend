@@ -354,6 +354,8 @@ model task {
   id             Int            @id @default(autoincrement())
   project        project        @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectId      Int
+  milestone      milestone?     @relation(fields: [milestoneId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  milestoneId    Int?
   name           String
   startDate      DateTime
   endDate        DateTime
@@ -365,8 +367,8 @@ model task {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   assignedTask   assignedTask[]
- // taskStatus     taskStatus     @relation(fields: [taskStatusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
- // taskStatusId   Int
+  taskStatus     taskStatus     @relation(fields: [taskStatusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  taskStatusId   Int
 }
 
 model taskStatus {
