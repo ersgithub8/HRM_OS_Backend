@@ -349,18 +349,18 @@ CREATE TABLE "milestone" (
 -- CreateTable
 CREATE TABLE "task" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "projectId" INTEGER NOT NULL,
+    "milestoneId" INTEGER,
     "name" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "completionTime" DOUBLE PRECISION,
-    "description" TEXT,
-    "adminattachment" TEXT,
-    "userAttachment"  TEXT,
+    "description" TEXT NOT NULL,
     "priorityId" INTEGER NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "taskStatusId" INTEGER NOT NULL,
 
     CONSTRAINT "task_pkey" PRIMARY KEY ("id")
 );

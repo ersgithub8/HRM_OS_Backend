@@ -52,17 +52,13 @@ const prisma = require("../../../utils/prisma");
 
 const createTask = async (req, res) => {
   try {
-    const userId = req.body.userId;  // Array of user IDs
+    const userIds = req.body.userId;  // Array of user IDs
     const tasks = [];
 
-    for (const userId of userId) {
+    for (const userId of userIds) {
       const newTask = await prisma.task.create({
         data: {
-          user: {
-            connect: {
-              id: userId,
-            },
-          },
+          userId: userId,  // Assign the user ID to the task
           name: req.body.name,
           startDate: new Date(req.body.startDate),
           endDate: new Date(req.body.endDate),
@@ -72,17 +68,6 @@ const createTask = async (req, res) => {
             connect: {
               id: req.body.priorityId,
             },
-          },
-          assignedTask: {
-            create: req.body.assignedTask
-              ? req.body.assignedTask.map((projectTeamId) => ({
-                  projectTeam: {
-                    connect: {
-                      id: Number(projectTeamId),
-                    },
-                  },
-                }))
-              : undefined,
           },
         },
       });
@@ -95,6 +80,9 @@ const createTask = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
 
 
 
