@@ -52,10 +52,10 @@ const prisma = require("../../../utils/prisma");
 
 const createTask = async (req, res) => {
   try {
-    const userId = req.body.userId;  // Array of user IDs
-    const newTasks = [];
+    const userIds = req.body.userIds;  // Array of user IDs
+    const tasks = [];
 
-    for (const userId of userId) {
+    for (const userId of userIds) {
       const newTask = await prisma.task.create({
         data: {
           user: {
@@ -87,14 +87,15 @@ const createTask = async (req, res) => {
         },
       });
 
-      newTasks.push(newTask);
+      tasks.push(newTask);
     }
 
-    return res.status(201).json(newTasks);
+    return res.status(201).json({ tasks });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 
 //get all tasks controller
