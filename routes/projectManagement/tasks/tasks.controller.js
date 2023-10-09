@@ -58,12 +58,14 @@ const createTask = async (req, res) => {
     for (const userId of userIds) {
       const newTask = await prisma.task.create({
         data: {
-          userId: userId,  // Assign the user ID to the task
+          user: { connect: { id: userId } },  // Connect the user to the task
           name: req.body.name,
           startDate: new Date(req.body.startDate),
           endDate: new Date(req.body.endDate),
           description: req.body.description,
           completionTime: parseFloat(req.body.completionTime),
+          adminattachment: req.body.adminattachment,
+          userAttachment: req.body.userAttachment,
           priority: {
             connect: {
               id: req.body.priorityId,
@@ -80,6 +82,7 @@ const createTask = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 
 
