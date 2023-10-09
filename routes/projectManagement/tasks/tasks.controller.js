@@ -77,9 +77,12 @@ const createTask = async (req, res) => {
       tasks.push(newTask);
     }
 
-    return res.status(201).json({ tasks });
+    return res.status(200).json({
+       tasks,
+       message:"Task created Successfully"
+     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message:"Failed to create task"});
   }
 };
 
@@ -147,10 +150,7 @@ const getTaskById = async (req, res) => {
         id: Number(req.params.id),
       },
       include: {
-        project: true,
-        milestone: true,
         priority: true,
-        taskStatus: true,
       },
     });
     return res.status(200).json(task);
@@ -158,6 +158,56 @@ const getTaskById = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+const getTaskByuserId = async (req, res) => {
+  try {
+    const singletask = await prisma.task.findMany({
+      where: {
+        AND: {
+          userId: Number(req.params.id),
+        },
+      },
+      orderBy: [
+        {
+          id: "desc",
+        },
+      ],
+    });
+
+    if (singletask.length === 0)
+      return res.status(200).json({ message: "No leave found for this user" });
+
+    const singleusertask = await Promise.all(
+      singletask.map(async (leave) => {
+        let approvedByUser = null;
+        if (leave.acceptLeaveBy) {
+          approvedByUser = await prisma.user.findUnique({
+            where: {
+              id: leave.acceptLeaveBy,
+            },
+          });
+        }
+
+        return {
+          ...leave,
+          approvedBy: approvedByUser,
+        };
+      })
+    );
+
+ 
+   
+
+    
+
+    return res.status(200).json({
+      singleusertask,
+    
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 
 //update task controller
 const updateTask = async (req, res) => {
@@ -339,4 +389,5 @@ module.exports = {
   updateTask,
   deleteTask,
   getAlluserHirarchy,
+  getTaskByuserId,
 };

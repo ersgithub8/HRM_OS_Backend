@@ -7,6 +7,7 @@ const {
   updateTask,
   deleteTask,
   getAlluserHirarchy,
+  getTaskByuserId,
 } = require("./tasks.controller");
 const authorize = require("../../../utils/authorize");
 
@@ -14,6 +15,7 @@ tasksRoutes.post("/", authorize("create-task"), createTask);
 tasksRoutes.get("/", authorize("readAll-task"), getAllTasks);
 tasksRoutes.get("/alluser", authorize("readAll-task"), getAlluserHirarchy);
 tasksRoutes.get("/:id", authorize("readSingle-task"), getTaskById);
+tasksRoutes.get("/user/:id", authorize("readSingle-task"), getTaskByuserId);
 tasksRoutes.put("/:id", authorize("update-task"), updateTask);
 tasksRoutes.delete("/:id", authorize("delete-task"), deleteTask);
 
