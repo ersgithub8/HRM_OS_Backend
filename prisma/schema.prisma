@@ -72,6 +72,7 @@ model user {
  
   attendance         attendance[]
   leaveApplication   leaveApplication[]
+  task   task[]
   payslip            payslip[]
   educations         education[]
   salaryHistory      salaryHistory[]
