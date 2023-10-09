@@ -7,7 +7,6 @@ CREATE TABLE "user" (
     "device" TEXT NOT NULL DEFAULT 'Android',
     "userName" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "manualleave"  DOUBLE PRECISION,
     "email" TEXT,
     "phone" TEXT,
     "reference_id" INTEGER,
@@ -31,6 +30,7 @@ CREATE TABLE "user" (
     "joining_date" TIMESTAMP(3),
     "end_date" TIMESTAMP(3),
     "address" TEXT,
+    "manualleave" DOUBLE PRECISION,
     "reference_contact" TEXT,
     "resetPasswordToken" TEXT,
     "resetPasswordExpires" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -349,18 +349,20 @@ CREATE TABLE "milestone" (
 -- CreateTable
 CREATE TABLE "task" (
     "id" SERIAL NOT NULL,
-    "projectId" INTEGER NOT NULL,
-    "milestoneId" INTEGER,
+    "userId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "completionTime" DOUBLE PRECISION,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
+    "reviewComment" TEXT,
     "priorityId" INTEGER NOT NULL,
+    "taskStatus" TEXT NOT NULL DEFAULT 'PENDING',
+    "adminattachment" TEXT,
+    "userAttachment" TEXT,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "taskStatusId" INTEGER NOT NULL,
 
     CONSTRAINT "task_pkey" PRIMARY KEY ("id")
 );
@@ -411,7 +413,6 @@ CREATE TABLE "projectTeamMember" (
 -- CreateTable
 CREATE TABLE "assignedTask" (
     "id" SERIAL NOT NULL,
-    "taskId" INTEGER NOT NULL,
     "projectTeamId" INTEGER NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -621,16 +622,10 @@ ALTER TABLE "project" ADD CONSTRAINT "project_projectManagerId_fkey" FOREIGN KEY
 ALTER TABLE "milestone" ADD CONSTRAINT "milestone_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "task" ADD CONSTRAINT "task_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "task" ADD CONSTRAINT "task_milestoneId_fkey" FOREIGN KEY ("milestoneId") REFERENCES "milestone"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "task" ADD CONSTRAINT "task_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "task" ADD CONSTRAINT "task_priorityId_fkey" FOREIGN KEY ("priorityId") REFERENCES "priority"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "task" ADD CONSTRAINT "task_taskStatusId_fkey" FOREIGN KEY ("taskStatusId") REFERENCES "taskStatus"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "taskStatus" ADD CONSTRAINT "taskStatus_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -643,9 +638,6 @@ ALTER TABLE "projectTeamMember" ADD CONSTRAINT "projectTeamMember_projectTeamId_
 
 -- AddForeignKey
 ALTER TABLE "projectTeamMember" ADD CONSTRAINT "projectTeamMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "assignedTask" ADD CONSTRAINT "assignedTask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "assignedTask" ADD CONSTRAINT "assignedTask_projectTeamId_fkey" FOREIGN KEY ("projectTeamId") REFERENCES "projectTeam"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -72,6 +72,7 @@ model user {
  
   attendance         attendance[]
   leaveApplication   leaveApplication[]
+  task   task[]
   payslip            payslip[]
   educations         education[]
   salaryHistory      salaryHistory[]
@@ -331,7 +332,7 @@ model project {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   milestone        milestone[]
-  task             task[]
+  
   projectTeam      projectTeam[]
   taskStatus       taskStatus[]
 }
@@ -347,28 +348,27 @@ model milestone {
   status      String   @default("PENDING") //progress, completed, or delayed.
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  task        task[]
+  
 }
 
 model task {
   id             Int            @id @default(autoincrement())
-  project        project        @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  projectId      Int
-  milestone      milestone?     @relation(fields: [milestoneId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  milestoneId    Int?
+  user            user      @relation(fields: [userId], references: [id])
+  userId          Int
   name           String
   startDate      DateTime
   endDate        DateTime
   completionTime Float?
-  description    String
+  description    String?
+  reviewComment  String?
   priority       priority       @relation(fields: [priorityId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   priorityId     Int
+  taskStatus     String        @default("PENDING")
+  adminattachment   String?
+  userAttachment    String?
   status         Boolean        @default(true)
   createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  assignedTask   assignedTask[]
-  taskStatus     taskStatus     @relation(fields: [taskStatusId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  taskStatusId   Int
+  updatedAt      DateTime       @updatedAt 
 }
 
 model taskStatus {
@@ -377,7 +377,7 @@ model taskStatus {
   projectId Int
   name      String
   status    Boolean @default(true)
-  task      task[]
+  
 
   @@unique([projectId, name])
 }
@@ -414,8 +414,8 @@ model projectTeamMember {
 
 model assignedTask {
   id            Int         @id @default(autoincrement())
-  task          task        @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  taskId        Int
+  //task          task        @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  //taskId        Int
   projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectTeamId Int
   status        Boolean     @default(true)
