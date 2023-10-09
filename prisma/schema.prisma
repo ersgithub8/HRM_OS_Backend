@@ -359,6 +359,7 @@ model task {
   startDate      DateTime
   endDate        DateTime
   completionTime Float?
+  assignedBy   Int?
   description    String?
   reviewComment  String?
   priority       priority       @relation(fields: [priorityId], references: [id], onDelete: Cascade, onUpdate: Cascade)

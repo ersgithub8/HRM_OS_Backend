@@ -355,6 +355,7 @@ CREATE TABLE "task" (
     "endDate" TIMESTAMP(3) NOT NULL,
     "completionTime" DOUBLE PRECISION,
     "description" TEXT,
+    "assignedBy" INTEGER,
     "reviewComment" TEXT,
     "priorityId" INTEGER NOT NULL,
     "taskStatus" TEXT NOT NULL DEFAULT 'PENDING',

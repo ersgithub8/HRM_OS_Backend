@@ -55,36 +55,51 @@ const createTask = async (req, res) => {
     const userIds = req.body.userId;  // Array of user IDs
     const tasks = [];
 
-    for (const userId of userIds) {
-      const newTask = await prisma.task.create({
-        data: {
-          user: { connect: { id: userId } },  // Connect the user to the task
-          name: req.body.name,
-          startDate: new Date(req.body.startDate),
-          endDate: new Date(req.body.endDate),
-          description: req.body.description,
-          completionTime: parseFloat(req.body.completionTime),
-          adminattachment: req.body.adminattachment,
-          userAttachment: req.body.userAttachment,
-          priority: {
-            connect: {
-              id: req.body.priorityId,
-            },
+    // Create the task
+    const newTask = await prisma.task.create({
+      data: {
+        name: req.body.name,
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
+        assignedBy: req.body.assignedBy||null,
+        description: req.body.description,
+        completionTime: parseFloat(req.body.completionTime),
+        adminattachment: req.body.adminattachment,
+        userAttachment: req.body.userAttachment,
+        reviewComment:req.body.reviewComment,
+        priority: {
+          connect: {
+            id: req.body.priorityId,
           },
+        },
+      },
+    });
+
+    // Assign the task to each user
+    for (const userId of userIds) {
+      const userTaskAssignment = await prisma.userTaskAssignment.create({
+        data: {
+          userId: userId,
+          taskId: newTask.id,  // Associate the task with the user
         },
       });
 
-      tasks.push(newTask);
+      tasks.push({
+        taskId: newTask.id,
+        userId: userId,
+        assignmentId: userTaskAssignment.id,
+      });
     }
 
     return res.status(200).json({
-       tasks,
-       message:"Task created Successfully"
-     });
+      tasks,
+      message: "Task created successfully",
+    });
   } catch (error) {
-    return res.status(400).json({ message:"Failed to create task"});
+    return res.status(400).json({ message: "Failed to create task and assign to users" });
   }
 };
+
 
 //get all tasks controller
 const getAllTasks = async (req, res) => {
@@ -96,6 +111,24 @@ const getAllTasks = async (req, res) => {
             id: "desc",
           },
         ],
+       include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+          },
+        },
+        priority: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      }
+      
       });
       return res.status(200).json(allTasks);
     } catch (error) {
@@ -109,6 +142,19 @@ const getAllTasks = async (req, res) => {
             id: "desc",
           },
         ],
+       include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+        
+          },
+        },
+        
+      },
         where: {
           status: true,
         },
@@ -125,6 +171,19 @@ const getAllTasks = async (req, res) => {
             id: "desc",
           },
         ],
+       include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+            priority:true
+
+          },
+        },
+      },
         where: {
           status: false,
         },
@@ -144,8 +203,22 @@ const getTaskById = async (req, res) => {
         id: Number(req.params.id),
       },
       include: {
-        priority: true,
-      },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+          },
+        },
+        priority: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      }
     });
     return res.status(200).json(task);
   } catch (error) {
@@ -170,6 +243,13 @@ const getTaskByuserId = async (req, res) => {
             employeeId: true,
           },
         },
+        
+        priority: {
+          select: {
+            id: true,
+            name: true,
+          },
+      },
       },
       orderBy: [
         {
@@ -213,34 +293,9 @@ const getTaskByuserId = async (req, res) => {
   }
 };
 
-
 //update task controller
 const updateTask = async (req, res) => {
-  if (req.query.query === "all") {
-    try {
-      const updatedTask = await prisma.task.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          milestone: {
-            connect: {
-              id: req.body.milestoneId,
-            },
-          },
-          name: req.body.name,
-          startDate: new Date(req.body.startDate),
-          endDate: new Date(req.body.endDate),
-          description: req.body.description,
-          completionTime: parseFloat(req.body.completionTime),
-          description: req.body.description,
-        },
-      });
-      return res.status(200).json(updatedTask);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  } else if (req.query.query === "status") {
+  
     try {
       const updatedTask = await prisma.task.update({
         where: {
@@ -250,66 +305,13 @@ const updateTask = async (req, res) => {
           status: req.body.status,
         },
       });
-      return res.status(200).json(updatedTask);
+      return res.status(200).json({updatedTask,
+      message:"Task updated successfully"});
     } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  } else if (req.query.query === "priority") {
-    try {
-      const updatedTask = await prisma.task.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          priority: {
-            connect: {
-              id: req.body.priorityId,
-            },
-          },
-        },
-      });
-      return res.status(200).json(updatedTask);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  } else if (req.query.query === "milestone") {
-    try {
-      const updatedTask = await prisma.task.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          milestone: {
-            connect: {
-              id: req.body.milestoneId,
-            },
-          },
-        },
-      });
-      return res.status(200).json(updatedTask);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  } else if (req.query.query === "taskStatus") {
-    try {
-      const updatedTask = await prisma.task.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          taskStatus: {
-            connect: {
-              id: parseInt(req.body.taskStatusId),
-            },
-          },
-        },
-      });
-      return res.status(200).json(updatedTask);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: "Fialed to update task" });
     }
   }
-};
+
 
 //delete task controller
 const deleteTask = async (req, res) => {
