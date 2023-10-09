@@ -1,54 +1,101 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
 //create tasks controller
+// const createTask = async (req, res) => {
+//   try {
+//     const newTask = await prisma.task.create({
+//       data: {
+//         project: {
+//           connect: {
+//             id: req.body.projectId,
+//           },
+//         },
+//         milestone: {
+//           connect: {
+//             id: req.body.milestoneId,
+//           },
+//         },
+//         name: req.body.name,
+//         startDate: new Date(req.body.startDate),
+//         endDate: new Date(req.body.endDate),
+//         description: req.body.description,
+//         completionTime: parseFloat(req.body.completionTime),
+//         priority: {
+//           connect: {
+//             id: req.body.priorityId,
+//           },
+//         },
+//         taskStatus: {
+//           connect: {
+//             id: req.body.taskStatusId,
+//           },
+//         },
+//         assignedTask: {
+//           create: req.body.assignedTask
+//             ? req.body.assignedTask.map((projectTeamId) => ({
+//                 projectTeam: {
+//                   connect: {
+//                     id: Number(projectTeamId),
+//                   },
+//                 },
+//               }))
+//             : undefined,
+//         },
+//       },
+//     });
+
+//     return res.status(201).json(newTask);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 const createTask = async (req, res) => {
   try {
-    const newTask = await prisma.task.create({
-      data: {
-        project: {
-          connect: {
-            id: req.body.projectId,
-          },
-        },
-        milestone: {
-          connect: {
-            id: req.body.milestoneId,
-          },
-        },
-        name: req.body.name,
-        startDate: new Date(req.body.startDate),
-        endDate: new Date(req.body.endDate),
-        description: req.body.description,
-        completionTime: parseFloat(req.body.completionTime),
-        priority: {
-          connect: {
-            id: req.body.priorityId,
-          },
-        },
-        taskStatus: {
-          connect: {
-            id: req.body.taskStatusId,
-          },
-        },
-        assignedTask: {
-          create: req.body.assignedTask
-            ? req.body.assignedTask.map((projectTeamId) => ({
-                projectTeam: {
-                  connect: {
-                    id: Number(projectTeamId),
-                  },
-                },
-              }))
-            : undefined,
-        },
-      },
-    });
+    const userId = req.body.userId;  // Array of user IDs
+    const newTasks = [];
 
-    return res.status(201).json(newTask);
+    for (const userId of userId) {
+      const newTask = await prisma.task.create({
+        data: {
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
+          name: req.body.name,
+          startDate: new Date(req.body.startDate),
+          endDate: new Date(req.body.endDate),
+          description: req.body.description,
+          completionTime: parseFloat(req.body.completionTime),
+          priority: {
+            connect: {
+              id: req.body.priorityId,
+            },
+          },
+          assignedTask: {
+            create: req.body.assignedTask
+              ? req.body.assignedTask.map((projectTeamId) => ({
+                  projectTeam: {
+                    connect: {
+                      id: Number(projectTeamId),
+                    },
+                  },
+                }))
+              : undefined,
+          },
+        },
+      });
+
+      newTasks.push(newTask);
+    }
+
+    return res.status(201).json(newTasks);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 //get all tasks controller
 const getAllTasks = async (req, res) => {

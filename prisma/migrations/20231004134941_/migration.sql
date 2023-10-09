@@ -349,13 +349,14 @@ CREATE TABLE "milestone" (
 -- CreateTable
 CREATE TABLE "task" (
     "id" SERIAL NOT NULL,
-    "projectId" INTEGER NOT NULL,
-    "milestoneId" INTEGER,
+    "userId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "completionTime" DOUBLE PRECISION,
-    "description" TEXT NOT NULL,
+    "description" TEXT,
+    "adminattachment" TEXT,
+    "userAttachment"  TEXT,
     "priorityId" INTEGER NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
