@@ -320,27 +320,19 @@ const getTaskByuserId = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const userId = Number(req.params.id); 
+    const taskId = Number(req.params.id);
+    const userId = Number(req.body.id); // Assuming you have access to the user ID from the request
 
-    const task = await prisma.task.findFirst({
-      where: {
-        user: { some: { id: userId } },
-      },
-    });
-    if (!task) {
-      return res.status(404).json({ message: "Task not found for this user." });
-    }
-
-    // Update the found task
+    // Update the task by its ID
     const updatedTask = await prisma.task.update({
       where: {
-        id: task.id,
+        id: taskId,
       },
       data: {
         userAttachment: req.body.userAttachment,
         reviewComment: req.body.reviewComment,
         taskStatus: req.body.taskStatus,
-        updatedBy: userId,
+        updatedBy: userId, // Set the updatedBy field to the user ID
       },
     });
 
@@ -352,6 +344,7 @@ const updateTask = async (req, res) => {
     return res.status(400).json({ message: "Failed to update task" });
   }
 };
+
 
 
 
