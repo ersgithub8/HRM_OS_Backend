@@ -174,9 +174,12 @@ const getAllTasks = async (req, res) => {
 //get task by id controller
 const getTaskById = async (req, res) => {
   try {
+    const taskId = Number(req.params.id);
+
+    // Retrieve the task by its ID and include related data
     const task = await prisma.task.findUnique({
       where: {
-        id: Number(req.params.id),
+        id: taskId,
       },
       include: {
         priority: {
@@ -192,16 +195,34 @@ const getTaskById = async (req, res) => {
             lastName: true,
             userName: true,
             employeeId: true,
+            department: true,
           },
         },
-        
-      }
+      },
     });
-    return res.status(200).json(task);
+
+    // If the task is found, fetch the assignedBy user
+    if (task && task.assignedBy) {
+      const assignedByUser = await prisma.user.findUnique({
+        where: { id: task.assignedBy },
+        select: { id: true, firstName: true, lastName: true, userName: true },
+      });
+      
+      // Merge assignedByUser details into the task
+      const taskWithAssignedBy = {
+        ...task,
+        assignedBy: assignedByUser,
+      };
+
+      return res.status(200).json(taskWithAssignedBy);
+    }
+
+    return res.status(404).json({ message: 'Task not found or assignedBy user not available.' });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
 const getTaskByuserId = async (req, res) => {
   try {
     const userId = Number(req.params.id);
@@ -218,6 +239,7 @@ const getTaskByuserId = async (req, res) => {
             lastName: true,
             userName: true,
             employeeId: true,
+            department:true,
           },
         },
       },
