@@ -294,25 +294,63 @@ const getTaskByuserId = async (req, res) => {
 
 
 //update task controller
-const updateTask = async (req, res) => {
+// const updateTask = async (req, res) => {
   
-    try {
-      const updatedTask = await prisma.task.update({
-        where: {
-          id: Number(req.params.id),
-        },
-        data: {
-          userAttachment:req.body.userAttachment,
-          reviewComment:req.body.reviewComment,
-          taskStatus:req.body.taskStatus,
-        },
-      });
-      return res.status(200).json({updatedTask,
-      message:"Task updated successfully"});
-    } catch (error) {
-      return res.status(400).json({ message: "Fialed to update task" });
+//     try {
+//       const updatedTask = await prisma.task.update({
+//         where: {
+//           id: Number(req.params.id),
+//         },
+//         data: {
+//           userAttachment:req.body.userAttachment,
+//           reviewComment:req.body.reviewComment,
+//           taskStatus:req.body.taskStatus,
+//         },
+//       });
+//       return res.status(200).json({updatedTask,
+//       message:"Task updated successfully"});
+//     } catch (error) {
+//       return res.status(400).json({ message: "Fialed to update task" });
+//     }
+//   }
+
+const updateTask = async (req, res) => {
+  try {
+    const userId = Number(req.params.id); 
+
+    const task = await prisma.task.findFirst({
+      where: {
+        user: { some: { id: userId } },
+      },
+    });
+    if (!task) {
+      return res.status(404).json({ message: "Task not found for this user." });
     }
+
+    // Update the found task
+    const updatedTask = await prisma.task.update({
+      where: {
+        id: task.id,
+      },
+      data: {
+        userAttachment: req.body.userAttachment,
+        reviewComment: req.body.reviewComment,
+        taskStatus: req.body.taskStatus,
+        updatedBy: userId,
+      },
+    });
+
+    return res.status(200).json({
+      updatedTask,
+      message: "Task updated successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({ message: "Failed to update task" });
   }
+};
+
+
+
 //delete task controller
 const deleteTask = async (req, res) => {
   try {
