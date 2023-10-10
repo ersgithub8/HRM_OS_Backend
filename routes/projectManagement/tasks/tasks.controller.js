@@ -321,7 +321,7 @@ const getTaskByuserId = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const taskId = Number(req.params.id);
-    const userId = Number(req.body.id); // Assuming you have access to the user ID from the request
+    const userId = Number(req.body.userId); 
 
     // Update the task by its ID
     const updatedTask = await prisma.task.update({
@@ -344,8 +344,6 @@ const updateTask = async (req, res) => {
     return res.status(400).json({ message: "Failed to update task" });
   }
 };
-
-
 
 
 //delete task controller
