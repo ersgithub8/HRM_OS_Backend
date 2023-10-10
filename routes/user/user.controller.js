@@ -691,6 +691,7 @@ const updateSingleUser = async (req, res) => {
       leavePolicyId: req.body.leavePolicyId,
       weeklyHolidayId: req.body.weeklyHolidayId,
       remainingannualallowedleave:leavs.paidLeaveCount.toString(),
+      contractAttachment: req.body.contractAttachment||null,
 
     };
 
@@ -713,6 +714,7 @@ const updateSingleUser = async (req, res) => {
         firstaidtext: req.body.firstaidtext || existingUser.firstaidtext,
         dbscheck: req.body.dbscheck || existingUser.dbscheck,
         dbschecktext: req.body.dbschecktext || existingUser.dbschecktext,
+        contractAttachment: req.body.contractAttachment || existingUser.contractAttachment,
         safeguarding: req.body.safeguarding || existingUser.safeguarding,
         safeguardingtext: req.body.safeguardingtext || existingUser.safeguardingtext,
         companyname: req.body.companyname || existingUser.companyname,
