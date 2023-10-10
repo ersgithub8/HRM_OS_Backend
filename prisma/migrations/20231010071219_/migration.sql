@@ -21,7 +21,7 @@ CREATE TABLE "user" (
     "dbschecktext" TEXT,
     "safeguarding" TEXT,
     "safeguardingtext" TEXT,
-    "bankallowedleave" TEXT NOT NULL DEFAULT '20',
+    "bankallowedleave" TEXT NOT NULL DEFAULT '8',
     "remaingbankallowedleave" TEXT NOT NULL DEFAULT '20',
     "annualallowedleave" TEXT NOT NULL DEFAULT '20',
     "remainingannualallowedleave" TEXT NOT NULL DEFAULT '20',
@@ -350,6 +350,7 @@ CREATE TABLE "milestone" (
 -- CreateTable
 CREATE TABLE "task" (
     "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
@@ -517,12 +518,6 @@ CREATE TABLE "training" (
     CONSTRAINT "training_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "_taskTouser" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "user_userName_key" ON "user"("userName");
 
@@ -573,12 +568,6 @@ CREATE UNIQUE INDEX "account_name_key" ON "account"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "subAccount_name_key" ON "subAccount"("name");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_taskTouser_AB_unique" ON "_taskTouser"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_taskTouser_B_index" ON "_taskTouser"("B");
 
 -- AddForeignKey
 ALTER TABLE "user" ADD CONSTRAINT "user_employmentStatusId_fkey" FOREIGN KEY ("employmentStatusId") REFERENCES "employmentStatus"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -635,6 +624,9 @@ ALTER TABLE "project" ADD CONSTRAINT "project_projectManagerId_fkey" FOREIGN KEY
 ALTER TABLE "milestone" ADD CONSTRAINT "milestone_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "task" ADD CONSTRAINT "task_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "task" ADD CONSTRAINT "task_priorityId_fkey" FOREIGN KEY ("priorityId") REFERENCES "priority"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -666,9 +658,3 @@ ALTER TABLE "transaction" ADD CONSTRAINT "transaction_debit_id_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_credit_id_fkey" FOREIGN KEY ("credit_id") REFERENCES "subAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_taskTouser" ADD CONSTRAINT "_taskTouser_A_fkey" FOREIGN KEY ("A") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_taskTouser" ADD CONSTRAINT "_taskTouser_B_fkey" FOREIGN KEY ("B") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
