@@ -231,9 +231,16 @@ const getTaskById = async (req, res) => {
 const getTaskByuserId = async (req, res) => {
   try {
     const userId = Number(req.params.id);
+    const taskStatus = req.query.taskStatus;  // Extract taskStatus from query
+
+    let taskFilter = {};
+    if (taskStatus === 'PENDING' || taskStatus === 'INPROGRESS'|| taskStatus === 'COMPLETED') {
+      taskFilter = { taskStatus: taskStatus }; // Filter tasks based on taskStatus
+    }
     const tasks = await prisma.task.findMany({
       where: {
         user: { some: { id: userId } },
+        ...taskFilter, 
       },
       include: {
         priority: { select: { id: true, name: true } },
@@ -280,6 +287,10 @@ const getTaskByuserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
 
 
 //update task controller
