@@ -103,7 +103,11 @@ const getAllTasks = async (req, res) => {
             name: true,
           },
         },
+        
       }
+
+      
+      
       
       });
       return res.status(200).json(allTasks);
@@ -359,9 +363,10 @@ const deleteTask = async (req, res) => {
         id: Number(req.params.id),
       },
     });
-    return res.status(200).json(deletedTask);
+    return res.status(200).json({
+    message:"Task deleted successfully"});
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message:"Failed to delete task" });
   }
 };
 
