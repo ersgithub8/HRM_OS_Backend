@@ -131,7 +131,7 @@ const uploadimages = async (req, res) => {
           path: fileKey
         };
       }
-      
+
 
       if (req.files?.dbscheck) {
         const ext = req.files.dbscheck.name.split('.').pop();
@@ -172,6 +172,14 @@ const uploadimages = async (req, res) => {
         const name = "attachment_" + Date.now() + "." + ext;
         const fileKey = await uploadFile(req.files.userAttachment, name);
         uploadedFiles.userAttachment = {
+          path: fileKey
+        };
+      }
+      if (req.files?.contractAttachment) {
+        const ext = req.files.contractAttachment.name.split('.').pop();
+        const name = "attachment_" + Date.now() + "." + ext;
+        const fileKey = await uploadFile(req.files.contractAttachment, name);
+        uploadedFiles.contractAttachment = {
           path: fileKey
         };
       }
