@@ -361,6 +361,7 @@ CREATE TABLE "task" (
     "taskStatus" TEXT NOT NULL DEFAULT 'PENDING',
     "adminattachment" TEXT,
     "userAttachment" TEXT,
+     "updatedBy" INTEGER,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

@@ -367,6 +367,7 @@ model task {
   taskStatus     String        @default("PENDING")
   adminattachment   String?
   userAttachment    String?
+  updatedBy         Int?
   status         Boolean        @default(true)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt 
