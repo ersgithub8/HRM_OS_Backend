@@ -207,14 +207,18 @@ const getTaskById = async (req, res) => {
         where: { id: task.assignedBy },
         select: { id: true, firstName: true, lastName: true, userName: true },
       });
-      
-      // Merge assignedByUser details into the task
-      const taskWithAssignedBy = {
+
+      // Calculate the number of assigned users
+      const numAssignedUsers = task.user.length;
+
+      // Merge assignedByUser details and the user count into the task
+      const taskWithAssignedByAndCount = {
         ...task,
         assignedBy: assignedByUser,
+        numAssignedUsers: numAssignedUsers,
       };
 
-      return res.status(200).json(taskWithAssignedBy);
+      return res.status(200).json(taskWithAssignedByAndCount);
     }
 
     return res.status(404).json({ message: 'Task not found or assignedBy user not available.' });
@@ -222,6 +226,7 @@ const getTaskById = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 const getTaskByuserId = async (req, res) => {
   try {
