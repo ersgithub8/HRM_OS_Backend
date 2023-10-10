@@ -52,39 +52,39 @@ const prisma = require("../../../utils/prisma");
 
 const createTask = async (req, res) => {
   try {
-    const userIds = req.body.userId;  // Array of user IDs
-    const tasks = [];
+    const { userId, name, startDate, endDate, description, completionTime, adminattachment, userAttachment, priorityId } = req.body;
 
-    for (const userId of userIds) {
-      const newTask = await prisma.task.create({
-        data: {
-          user: { connect: { id: userId } },  // Connect the user to the task
-          name: req.body.name,
-          startDate: new Date(req.body.startDate),
-          endDate: new Date(req.body.endDate),
-          description: req.body.description,
-          completionTime: parseFloat(req.body.completionTime),
-          adminattachment: req.body.adminattachment,
-          userAttachment: req.body.userAttachment,
-          priority: {
-            connect: {
-              id: req.body.priorityId,
-            },
+    const newTask = await prisma.task.create({
+      data: {
+        name,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        description,
+        completionTime: parseFloat(completionTime),
+        adminattachment,
+        userAttachment,
+        assignedBy:req.auth.sub,
+        priority: {
+          connect: {
+            id: priorityId,
           },
         },
-      });
-
-      tasks.push(newTask);
-    }
+        user: {
+          connect: userId.map(id => ({ id })),
+        }
+      },
+    });
 
     return res.status(200).json({
-       tasks,
-       message:"Task created Successfully"
-     });
+      newTask,
+      message: "Task created Successfully"
+    });
   } catch (error) {
-    return res.status(400).json({ message:"Failed to create task"});
+    return res.status(400).json({ message: "Failed to create task" });
   }
 };
+
+
 
 //get all tasks controller
 const getAllTasks = async (req, res) => {
@@ -97,15 +97,6 @@ const getAllTasks = async (req, res) => {
           },
         ],
        include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-            employeeId: true,
-          },
-        },
         priority: {
           select: {
             id: true,
@@ -188,37 +179,12 @@ const getTaskById = async (req, res) => {
         id: Number(req.params.id),
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-            employeeId: true,
-          },
-        },
         priority: {
           select: {
             id: true,
             name: true,
           },
         },
-      }
-    });
-    return res.status(200).json(task);
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-};
-const getTaskByuserId = async (req, res) => {
-  try {
-    const singletask = await prisma.task.findMany({
-      where: {
-        AND: {
-          userId: Number(req.params.id),
-        },
-      },
-      include: {
         user: {
           select: {
             id: true,
@@ -229,54 +195,65 @@ const getTaskByuserId = async (req, res) => {
           },
         },
         
-        priority: {
-          select: {
-            id: true,
-            name: true,
-          },
-      },
-      },
-      orderBy: [
-        {
-          id: "desc",
-        },
-      ],
+      }
     });
-
-    if (singletask.length === 0)
-      return res.status(200).json({ message: "No task found for this user" });
-
-    const singleusertask = await Promise.all(
-      singletask.map(async (leave) => {
-        let approvedByUser = null;
-        if (leave.acceptLeaveBy) {
-          approvedByUser = await prisma.user.findUnique({
-            where: {
-              id: leave.acceptLeaveBy,
-            },
-          });
-        }
-
-        return {
-          ...leave,
-          approvedBy: approvedByUser,
-        };
-      })
-    );
-
- 
-   
-
-    
-
-    return res.status(200).json({
-      singleusertask,
-    
-    });
+    return res.status(200).json(task);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+const getTaskByuserId = async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    const tasks = await prisma.task.findMany({
+      where: {
+        user: { some: { id: userId } },
+      },
+      include: {
+        priority: { select: { id: true, name: true } },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+          },
+        },
+      },
+      orderBy: [{ id: "desc" }],
+    });
+
+    if (tasks.length === 0)
+      return res.status(200).json({ message: "No tasks found for this user" });
+
+    // Filter tasks to only include the user with the specified ID in the array
+    const tasksFilteredByUserId = tasks.map((task) => ({
+      ...task,
+      user: task.user.filter((user) => user.id === userId),
+    }));
+
+    // Fetch assignedBy information and embed tasksFilteredByUserId
+    const tasksWithAssignedBy = await Promise.all(
+      tasksFilteredByUserId.map(async (task) => {
+        let assignedByUser = null;
+        if (task.assignedBy) {
+          assignedByUser = await prisma.user.findUnique({
+            where: { id: task.assignedBy },
+            select: { id: true, firstName: true, lastName: true, userName: true },
+          });
+        }
+
+        return { ...task, assignedBy: assignedByUser };
+      })
+    );
+
+    return res.status(200).json({ tasks: tasksWithAssignedBy });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 
 //update task controller
 const updateTask = async (req, res) => {
@@ -287,7 +264,9 @@ const updateTask = async (req, res) => {
           id: Number(req.params.id),
         },
         data: {
-          status: req.body.status,
+          userAttachment:req.body.userAttachment,
+          reviewComment:req.body.reviewComment,
+          taskStatus:req.body.taskStatus,
         },
       });
       return res.status(200).json({updatedTask,
@@ -296,8 +275,6 @@ const updateTask = async (req, res) => {
       return res.status(400).json({ message: "Fialed to update task" });
     }
   }
-
-
 //delete task controller
 const deleteTask = async (req, res) => {
   try {

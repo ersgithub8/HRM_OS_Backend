@@ -354,7 +354,8 @@ model milestone {
 
 model task {
   id             Int            @id @default(autoincrement())
- user           user[]
+  user            user      @relation(fields: [userId], references: [id])
+  userId          Int
   name           String
   startDate      DateTime
   endDate        DateTime
