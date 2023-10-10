@@ -131,6 +131,7 @@ const uploadimages = async (req, res) => {
           path: fileKey
         };
       }
+      
 
       if (req.files?.dbscheck) {
         const ext = req.files.dbscheck.name.split('.').pop();
