@@ -74,6 +74,7 @@ model user {
   attendance         attendance[]
   leaveApplication   leaveApplication[]
   task   task[]
+  meeting    meeting[]
   payslip            payslip[]
   educations         education[]
   salaryHistory      salaryHistory[]
@@ -107,6 +108,7 @@ model education {
 model location {
   id           Int       @id @default(autoincrement())
    user      user[]
+   meeting    meeting[]
   latitude     String?
   longitude    String?
   locationName String?
@@ -144,6 +146,7 @@ model department {
   name   String
   status Boolean @default(true)
   user   user[]
+  meeting    meeting[]
 }
 
 model employmentStatus {
@@ -505,6 +508,23 @@ model training {
  day       String?
   leaveFrom       DateTime?
   leaveTo         DateTime?
+ createdAt     DateTime  @default(now())
+ updatedAt     DateTime  @updatedAt
+}
+
+model meeting {
+  id           Int    @id @default(autoincrement())
+  department         department?       @relation(fields: [departmentId], references: [id])
+  departmentId       Int?
+  location              location?            @relation(fields: [locationId], references: [id])
+  locationId            Int?
+  user           user[]
+  assignedBy   Int?
+  meetingdate       DateTime?
+  startTime DateTime @db.Time
+  endTime   DateTime @db.Time
+  meetingType       String?
+  meetingLink       String?
  createdAt     DateTime  @default(now())
  updatedAt     DateTime  @updatedAt
 }

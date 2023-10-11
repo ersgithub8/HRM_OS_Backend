@@ -361,7 +361,7 @@ CREATE TABLE "task" (
     "taskStatus" TEXT NOT NULL DEFAULT 'PENDING',
     "adminattachment" TEXT,
     "userAttachment" TEXT,
-     "updatedBy" INTEGER,
+    "updatedBy" INTEGER,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -519,7 +519,30 @@ CREATE TABLE "training" (
 );
 
 -- CreateTable
+CREATE TABLE "meeting" (
+    "id" SERIAL NOT NULL,
+    "departmentId" INTEGER,
+    "locationId" INTEGER,
+    "assignedBy" INTEGER,
+    "meetingdate" TIMESTAMP(3),
+    "startTime" TIME NOT NULL,
+    "endTime" TIME NOT NULL,
+    "meetingType" TEXT,
+    "meetingLink" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "meeting_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_taskTouser" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_meetingTouser" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -580,6 +603,12 @@ CREATE UNIQUE INDEX "_taskTouser_AB_unique" ON "_taskTouser"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_taskTouser_B_index" ON "_taskTouser"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_meetingTouser_AB_unique" ON "_meetingTouser"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_meetingTouser_B_index" ON "_meetingTouser"("B");
 
 -- AddForeignKey
 ALTER TABLE "user" ADD CONSTRAINT "user_employmentStatusId_fkey" FOREIGN KEY ("employmentStatusId") REFERENCES "employmentStatus"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -669,7 +698,19 @@ ALTER TABLE "transaction" ADD CONSTRAINT "transaction_debit_id_fkey" FOREIGN KEY
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_credit_id_fkey" FOREIGN KEY ("credit_id") REFERENCES "subAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "meeting" ADD CONSTRAINT "meeting_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "meeting" ADD CONSTRAINT "meeting_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "location"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "_taskTouser" ADD CONSTRAINT "_taskTouser_A_fkey" FOREIGN KEY ("A") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_taskTouser" ADD CONSTRAINT "_taskTouser_B_fkey" FOREIGN KEY ("B") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_meetingTouser" ADD CONSTRAINT "_meetingTouser_A_fkey" FOREIGN KEY ("A") REFERENCES "meeting"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_meetingTouser" ADD CONSTRAINT "_meetingTouser_B_fkey" FOREIGN KEY ("B") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

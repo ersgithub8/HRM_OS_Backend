@@ -154,4 +154,8 @@ app.use(
   "/training",
   require("./routes/hr/training/training.routes")
 );
+app.use(
+  "/meeting",
+  require("./routes/meeting/meeting.routes")
+);
 module.exports = app;

@@ -42,7 +42,8 @@ const endpoints = [
   "priority",
   "assignedTask",
   "location",
-  "training"
+  "training",
+  "meeting"
 ];
 
 const permissionTypes = ["create", "readAll", "readSingle", "update", "delete"];
@@ -107,7 +108,7 @@ const designation = [
   { name: "CEO" },
   { name: "CTO" },
   { name: "CFO" },
-  { name: "COO" },
+  { name: "DOO" },
   { name: "HR Manager" },
 ];
 

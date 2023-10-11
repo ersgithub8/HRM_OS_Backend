@@ -188,7 +188,7 @@ const register = async (req, res) => {
       remainingannualallowedleave = leavs.paidLeaveCount.toString();
     }
     const join_date = new Date();
-    const leave_date = req.body.leaveDate ? req.body.leaveDate : null;
+    const leave_date = new Date(req.body.leaveDate) ? new Date(req.body.leaveDate) : null;
 
     const hash = await bcrypt.hash(req.body.password, saltRounds);
     const createUser = await prisma.user.create({
