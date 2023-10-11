@@ -4,7 +4,41 @@ const prisma = require("../../utils/prisma");
 
 const createmeeting = async (req, res) => {
     try {
-      const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body;  
+      const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body; 
+      const conflictingMeeting = await prisma.meeting.findFirst({
+        where: {
+          meetingdate: new Date(meetingdate),
+          OR: [
+            {
+              // New meeting's start time falls within existing meeting's range
+              startTime: {
+                lte: startTime,
+                gte: startTime,
+              },
+            },
+            {
+              // New meeting's end time falls within existing meeting's range
+              endTime: {
+                lte: endTime,
+                gte: endTime,
+              },
+            },
+            {
+              // Existing meeting's range falls within new meeting's range
+              startTime: {
+                lte: startTime,
+              },
+              endTime: {
+                gte: endTime,
+              },
+            },
+          ],
+        },
+      });
+  
+      if (conflictingMeeting) {
+        return res.status(400).json({ message: 'Already meeting schedule between this time' });
+      } 
       const newMeeting = await prisma.meeting.create({
         data: {
           meetingdate: new Date(meetingdate),
