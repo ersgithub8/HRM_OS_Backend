@@ -24,10 +24,22 @@ const createPublicHoliday = async (req, res) => {
     return res.status(201).json(createdPublicHoliday);
   } else {
     try {
+      const date = new Date(req.body.date);
+
+      // Check if a public holiday already exists for the specified date
+      const existingPublicHoliday = await prisma.publicHoliday.findFirst({
+        where: {
+          date,
+        },
+      });
+  
+      if (existingPublicHoliday) {
+        return res.status(400).json({ message: 'A public holiday already exists for the specified date' });
+      }
       const createdPublicHoliday = await prisma.publicHoliday.create({
         data: {
           name: req.body.name,
-          date: new Date(req.body.date),
+          date,
         },
       });
 
