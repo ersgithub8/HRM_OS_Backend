@@ -227,62 +227,38 @@ const getAllMeeting = async (req, res) => {
   
 //get task by id controller
 const getMeetingById = async (req, res) => {
-  try {
-    const meetingId = Number(req.params.id);
-
-    // Retrieve the task by its ID and include related data
-    const meeting = await prisma.meeting.findUnique({
-      where: {
-        id: meetingId,
-      },
-      include: {
-        location: {
-          select: {
-            id: true,
-            locationName: true,
-          },
+    try {
+      const meetingId = Number(req.params.id);
+  
+      // Retrieve the meeting by its ID and select only the user array
+      const meeting = await prisma.meeting.findUnique({
+        where: {
+          id: meetingId,
         },
-        department: {
+        select: {
+          user: {
             select: {
               id: true,
-              name: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+              employeeId: true,
+              department: true,
             },
           },
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-            employeeId: true,
-            department: true,
-          },
         },
-      },
-    });
-
-    if (meeting && meeting.assignedBy) {
-      const assignedByUser = await prisma.user.findUnique({
-        where: { id: meeting.assignedBy },
-        select: { id: true, firstName: true, lastName: true, userName: true },
       });
-
-      const numAssignedUsers = meeting.user.length;
-
-      const taskWithAssignedByAndCount = {
-        ...meeting,
-        assignedBy: assignedByUser,
-        numAssignedUsers: numAssignedUsers,
-      };
-
-      return res.status(200).json(taskWithAssignedByAndCount);
+  
+      if (meeting) {
+        return res.status(200).json(meeting);
+      }
+  
+      return res.status(404).json({ message: 'Meeting not found' });
+    } catch (error) {
+      return res.status(400).json({ message: 'Failed to get meeting', error: error.message });
     }
-
-    return res.status(400).json({ message: 'Failed to get meeting' });
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-};
+  };
+  
 
 
 const getMeetingByuserId = async (req, res) => {
