@@ -303,9 +303,20 @@ const getMeetingByuserId = async (req, res) => {
             userName: true,
             employeeId: true,
             department:true,
-            location:true,
           },
         },
+        department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          location: {
+            select: {
+              id: true,
+              locationName: true,
+            },
+          },
       },
       orderBy: [{ id: "desc" }],
     });
