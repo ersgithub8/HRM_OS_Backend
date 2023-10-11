@@ -1,69 +1,70 @@
 const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
+const moment = require("moment");
 
 
-const createmeeting = async (req, res) => {
-    try {
-      const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body; 
-      const conflictingMeeting = await prisma.meeting.findFirst({
-        where: {
-          meetingdate: new Date(meetingdate),
-          OR: [
-            {
-              // New meeting's start time falls within existing meeting's range
-              startTime: {
-                lte: startTime,
-                gte: startTime,
-              },
-            },
-            {
-              // New meeting's end time falls within existing meeting's range
-              endTime: {
-                lte: endTime,
-                gte: endTime,
-              },
-            },
-            {
-              // Existing meeting's range falls within new meeting's range
-              startTime: {
-                lte: startTime,
-              },
-              endTime: {
-                gte: endTime,
-              },
-            },
-          ],
-        },
-      });
+// const createmeeting = async (req, res) => {
+//     try {
+//       const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body; 
+//       const conflictingMeeting = await prisma.meeting.findFirst({
+//         where: {
+//           meetingdate: new Date(meetingdate),
+//           OR: [
+//             {
+//               // New meeting's start time falls within existing meeting's range
+//               startTime: {
+//                 lte: startTime,
+//                 gte: startTime,
+//               },
+//             },
+//             {
+//               // New meeting's end time falls within existing meeting's range
+//               endTime: {
+//                 lte: endTime,
+//                 gte: endTime,
+//               },
+//             },
+//             {
+//               // Existing meeting's range falls within new meeting's range
+//               startTime: {
+//                 lte: startTime,
+//               },
+//               endTime: {
+//                 gte: endTime,
+//               },
+//             },
+//           ],
+//         },
+//       });
   
-      if (conflictingMeeting) {
-        return res.status(400).json({ message: 'Already meeting schedule between this time' });
-      } 
-      const newMeeting = await prisma.meeting.create({
-        data: {
-          meetingdate: new Date(meetingdate),
-          startTime,
-          endTime,
-          meetingType,
-          meetingLink,
-          departmentId: departmentId, 
-          locationId: locationId,
-          assignedBy: req.auth.sub,
-          user: {
-            connect: userId.map(id => ({ id })),
-          }
-        },
-      });
+//       if (conflictingMeeting) {
+//         return res.status(400).json({ message: 'Already meeting schedule between this time' });
+//       } 
+//       const newMeeting = await prisma.meeting.create({
+//         data: {
+//           meetingdate: new Date(meetingdate),
+//           startTime,
+//           endTime,
+//           meetingType,
+//           meetingLink,
+//           departmentId: departmentId, 
+//           locationId: locationId,
+//           assignedBy: req.auth.sub,
+//           user: {
+//             connect: userId.map(id => ({ id })),
+//           }
+//         },
+//       });
   
-      return res.status(200).json({
-        newMeeting,
-        message: "Meeting created successfully"
-      });
-    } catch (error) {
-      console.error("Error creating meeting:", error);
-      return res.status(400).json({ message: "Failed to create meeting", error: error.message });
-    }
-  };
+//       return res.status(200).json({
+//         newMeeting,
+//         message: "Meeting created successfully"
+//       });
+//     } catch (error) {
+//       console.error("Error creating meeting:", error);
+//       return res.status(400).json({ message: "Failed to create meeting", error: error.message });
+//     }
+//   };
   
   
 
@@ -106,6 +107,74 @@ const createmeeting = async (req, res) => {
 //   }
 // };
 
+
+
+const createmeeting = async (req, res) => {
+  try {
+    const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body;
+
+    // Parse startTime and endTime using Moment.js
+    const parsedStartTime = moment(startTime, "h:mm A");
+    const parsedEndTime = moment(endTime, "h:mm A");
+
+    // Check for conflicting meetings
+    const conflictingMeeting = await prisma.meeting.findFirst({
+      where: {
+        meetingdate: new Date(meetingdate),
+        OR: [
+          {
+            startTime: {
+              lte: parsedStartTime.toDate(),
+              gte: parsedStartTime.toDate(),
+            },
+          },
+          {
+            endTime: {
+              lte: parsedEndTime.toDate(),
+              gte: parsedEndTime.toDate(),
+            },
+          },
+          {
+            startTime: {
+              lte: parsedStartTime.toDate(),
+            },
+            endTime: {
+              gte: parsedEndTime.toDate(),
+            },
+          },
+        ],
+      },
+    });
+
+    if (conflictingMeeting) {
+      return res.status(400).json({ message: 'A meeting is already scheduled during this time' });
+    }
+
+    const newMeeting = await prisma.meeting.create({
+      data: {
+        meetingdate: new Date(meetingdate),
+        startTime: parsedStartTime.toDate(),
+        endTime: parsedEndTime.toDate(),
+        meetingType,
+        meetingLink,
+        departmentId,
+        locationId,
+        assignedBy: req.auth.sub,
+        user: {
+          connect: userId.map(id => ({ id })),
+        },
+      },
+    });
+
+    return res.status(200).json({
+      newMeeting,
+      message: 'Meeting created successfully',
+    });
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+    return res.status(400).json({ message: 'Failed to create meeting', error: error.message });
+  }
+};
 
 const getAllMeeting = async (req, res) => {
     try {
@@ -155,11 +224,6 @@ const getAllMeeting = async (req, res) => {
     }
   };
   
-  
-  
-  
-  
-
 //get task by id controller
 const getMeetingById = async (req, res) => {
   try {
@@ -213,7 +277,7 @@ const getMeetingById = async (req, res) => {
       return res.status(200).json(taskWithAssignedByAndCount);
     }
 
-    return res.status(404).json({ message: 'Meeting not found or assignedBy user not available.' });
+    return res.status(400).json({ message: 'Failed to get meeting' });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -246,7 +310,7 @@ const getMeetingByuserId = async (req, res) => {
     });
 
     if (tasks.length === 0)
-      return res.status(200).json([]);
+      return res.status(400).json([]);
 
     // Filter tasks to only include the user with the specified ID in the array
     const tasksFilteredByUserId = tasks.map((task) => ({
@@ -271,35 +335,48 @@ const getMeetingByuserId = async (req, res) => {
 
     return res.status(200).json({ tasks: tasksWithAssignedBy });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message:"Failed to get meeting" });
   }
 };
 
-// const updateTask = async (req, res) => {
-//   try {
-//     const taskId = Number(req.params.id);
-//     const userId = Number(req.body.userId); 
-//     // Update the task by its ID
-//     const updatedTask = await prisma.task.update({
-//       where: {
-//         id: taskId,
-//       },
-//       data: {
-//         userAttachment: req.body.userAttachment,
-//         reviewComment: req.body.reviewComment,
-//         taskStatus: req.body.taskStatus,
-//         updatedBy: userId, // Set the updatedBy field to the user ID
-//       },
-//     });
+const updateMeeting = async (req, res) => {
+    try {
+      const { userId, meetingType, meetingLink, departmentId, locationId } = req.body;
+  
+      const meetingdate = new Date(req.body.meetingdate);
+      const startTime = new Date(req.body.startTime);
+      const endTime = new Date(req.body.endTime);
+  
+      const updatedMeeting = await prisma.meeting.update({
+        where: {
+          id: Number(req.params.id),
+        },
+        data: {
+          meetingdate,
+          startTime,
+          endTime,
+          meetingType,
+          meetingLink,
+          departmentId,
+          locationId,
+          assignedBy: req.auth.sub,
+          user: {
+            connect: userId.map(id => ({ id })),
+          },
+        },
+      });
+  
+      return res.status(200).json({
+        updatedMeeting,
+        message: "Meeting updated successfully",
+      });
+    } catch (error) {
+      return res.status(400).json({ message: "Failed to update meeting"});
+    }
+  };
+  
 
-//     return res.status(200).json({
-//       updatedTask,
-//       message: "Task updated successfully",
-//     });
-//   } catch (error) {
-//     return res.status(400).json({ message: "Failed to update task" });
-//   }
-// };
+
 
 
 //delete task controller
@@ -322,7 +399,7 @@ module.exports = {
     createmeeting,
   getAllMeeting,
   getMeetingById,
-//   updateTask,
+  updateMeeting,
   deleteMeeting,
   getMeetingByuserId,
 };
