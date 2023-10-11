@@ -263,7 +263,7 @@ const getTaskByuserId = async (req, res) => {
     });
 
     if (tasks.length === 0)
-      return res.status(200).json({ message: "No tasks found for this user" });
+      return res.status(200).json([]);
 
     // Filter tasks to only include the user with the specified ID in the array
     const tasksFilteredByUserId = tasks.map((task) => ({
@@ -322,7 +322,6 @@ const updateTask = async (req, res) => {
   try {
     const taskId = Number(req.params.id);
     const userId = Number(req.body.userId); 
-
     // Update the task by its ID
     const updatedTask = await prisma.task.update({
       where: {
