@@ -198,6 +198,7 @@ const getAllMeeting = async (req, res) => {
               lastName: true,
               userName: true,
               employeeId: true,
+              department:true,
             },
           },
           department: {
