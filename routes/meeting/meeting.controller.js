@@ -114,8 +114,8 @@ const createmeeting = async (req, res) => {
     const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body;
 
     // Parse startTime and endTime using Moment.js
-    const parsedStartTime = moment(startTime, "h:mm A");
-    const parsedEndTime = moment(endTime, "h:mm A");
+    const parsedStartTime =startTime;
+    const parsedEndTime = endTime;
 
     // Check for conflicting meetings
     const conflictingMeeting = await prisma.meeting.findFirst({
@@ -124,22 +124,22 @@ const createmeeting = async (req, res) => {
         OR: [
           {
             startTime: {
-              lte: parsedStartTime.toDate(),
-              gte: parsedStartTime.toDate(),
+              lte: parsedStartTime,
+              gte: parsedStartTime,
             },
           },
           {
             endTime: {
-              lte: parsedEndTime.toDate(),
-              gte: parsedEndTime.toDate(),
+              lte: parsedEndTime,
+              gte: parsedEndTime,
             },
           },
           {
             startTime: {
-              lte: parsedStartTime.toDate(),
+              lte: parsedStartTime,
             },
             endTime: {
-              gte: parsedEndTime.toDate(),
+              gte: parsedEndTime,
             },
           },
         ],
@@ -153,8 +153,8 @@ const createmeeting = async (req, res) => {
     const newMeeting = await prisma.meeting.create({
       data: {
         meetingdate: new Date(meetingdate),
-        startTime: parsedStartTime.toDate(),
-        endTime: parsedEndTime.toDate(),
+        startTime: parsedStartTime,
+        endTime: parsedEndTime,
         meetingType,
         meetingLink,
         departmentId,
@@ -259,7 +259,65 @@ const getMeetingById = async (req, res) => {
     }
   };
   
+//original
 
+// const getMeetingById = async (req, res) => {
+//     try {
+//       const meetingId = Number(req.params.id);
+  
+//       // Retrieve the task by its ID and include related data
+//       const meeting = await prisma.meeting.findUnique({
+//         where: {
+//           id: meetingId,
+//         },
+//         include: {
+//           location: {
+//             select: {
+//               id: true,
+//               locationName: true,
+//             },
+//           },
+//           department: {
+//               select: {
+//                 id: true,
+//                 name: true,
+//               },
+//             },
+//           user: {
+//             select: {
+//               id: true,
+//               firstName: true,
+//               lastName: true,
+//               userName: true,
+//               employeeId: true,
+//               department: true,
+//             },
+//           },
+//         },
+//       });
+  
+//       if (meeting && meeting.assignedBy) {
+//         const assignedByUser = await prisma.user.findUnique({
+//           where: { id: meeting.assignedBy },
+//           select: { id: true, firstName: true, lastName: true, userName: true },
+//         });
+  
+//         const numAssignedUsers = meeting.user.length;
+  
+//         const taskWithAssignedByAndCount = {
+//           ...meeting,
+//           assignedBy: assignedByUser,
+//           numAssignedUsers: numAssignedUsers,
+//         };
+  
+//         return res.status(200).json(taskWithAssignedByAndCount);
+//       }
+  
+//       return res.status(400).json({ message: 'Failed to get meeting' });
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   };
 
 const getMeetingByuserId = async (req, res) => {
   try {
