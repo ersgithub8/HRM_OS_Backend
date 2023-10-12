@@ -409,7 +409,7 @@ const getMeetingByuserId = async (req, res) => {
     try {
       const userId = Number(req.params.id);
   
-      const tasks = await prisma.meeting.findMany({
+      const meeting = await prisma.meeting.findMany({
         where: {
           user: { some: { id: userId } },
         },
@@ -439,30 +439,30 @@ const getMeetingByuserId = async (req, res) => {
         orderBy: [{ id: "desc" }],
       });
   
-      if (tasks.length === 0)
+      if (meeting.length === 0)
         return res.status(400).json([]);
   
       // Filter tasks to only include the user with the specified ID in the array
-      const tasksFilteredByUserId = tasks.map((task) => ({
-        ...task,
-        user: task.user.filter((user) => user.id === userId),
+      const tasksFilteredByUserId = meeting.map((metting) => ({
+        ...metting,
+        user: metting.user.filter((user) => user.id === userId),
       }));
   
       // Fetch assignedBy information and embed tasksFilteredByUserId
       const tasksWithAssignedBy = await Promise.all(
-        tasksFilteredByUserId.map(async (task) => {
+        tasksFilteredByUserId.map(async (meeting) => {
           let assignedByUser = null;
-          if (task.assignedBy) {
+          if (meeting.assignedBy) {
             assignedByUser = await prisma.user.findUnique({
-              where: { id: task.assignedBy },
+              where: { id: meeting.assignedBy },
               select: { id: true, firstName: true, lastName: true, userName: true },
             });
           }
   
           // Calculate meeting duration
-          const startTime = new Date(task.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          const endTime = new Date(task.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          const durationInMinutes = (new Date(task.endTime) - new Date(task.startTime)) / (1000 * 60);
+          const startTime = new Date(meeting.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const endTime = new Date(meeting.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const durationInMinutes = (new Date(meeting.endTime) - new Date(meeting.startTime)) / (1000 * 60);
           
           // Round duration to nearest whole number
           const durationHours = Math.round(durationInMinutes / 60);
@@ -470,7 +470,7 @@ const getMeetingByuserId = async (req, res) => {
           const duration = `${durationHours.toString().padStart(2, '0')} hours and ${durationMinutes.toString().padStart(2, '0')} minutes`;
 
           return {
-            ...task,
+            ...meeting,
             assignedBy: assignedByUser,
             startTime,
             endTime,
@@ -481,7 +481,7 @@ const getMeetingByuserId = async (req, res) => {
         })
       );
   
-      return res.status(200).json({ tasks: tasksWithAssignedBy });
+      return res.status(200).json({ meeting: tasksWithAssignedBy });
     } catch (error) {
       return res.status(400).json({ message: "Failed to get meeting", error: error.message });
     }
