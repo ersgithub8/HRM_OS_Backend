@@ -521,8 +521,8 @@ model meeting {
   user           user[]
   assignedBy   Int?
   meetingdate       DateTime?
-  startTime DateTime @db.Time
-  endTime   DateTime @db.Time
+  startTime DateTime
+  endTime   DateTime 
   meetingType       String?
   meetingLink       String?
  createdAt     DateTime  @default(now())

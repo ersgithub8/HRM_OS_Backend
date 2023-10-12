@@ -319,27 +319,91 @@ const getMeetingById = async (req, res) => {
 //     }
 //   };
 
-const getMeetingByuserId = async (req, res) => {
-  try {
-    const userId = Number(req.params.id);
+// const getMeetingByuserId = async (req, res) => {
+//   try {
+//     const userId = Number(req.params.id);
     
-    const tasks = await prisma.meeting.findMany({
-      where: {
-        user: { some: { id: userId } }, 
-      },
-      include: {
-        // priority: { select: { id: true, name: true } },
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-            employeeId: true,
-            department:true,
-          },
+//     const tasks = await prisma.meeting.findMany({
+//       where: {
+//         user: { some: { id: userId } }, 
+//       },
+//       include: {
+//         // priority: { select: { id: true, name: true } },
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             userName: true,
+//             employeeId: true,
+//           },
+//         },
+//         department: {
+//             select: {
+//               id: true,
+//               name: true,
+//             },
+//           },
+//           location: {
+//             select: {
+//               id: true,
+//               locationName: true,
+//             },
+//           },
+//       },
+//       orderBy: [{ id: "desc" }],
+//     });
+
+//     if (tasks.length === 0)
+//       return res.status(400).json([]);
+
+//     // Filter tasks to only include the user with the specified ID in the array
+//     const tasksFilteredByUserId = tasks.map((task) => ({
+//       ...task,
+//       user: task.user.filter((user) => user.id === userId),
+//     }));
+
+//     // Fetch assignedBy information and embed tasksFilteredByUserId
+//     const tasksWithAssignedBy = await Promise.all(
+//       tasksFilteredByUserId.map(async (task) => {
+//         let assignedByUser = null;
+//         if (task.assignedBy) {
+//           assignedByUser = await prisma.user.findUnique({
+//             where: { id: task.assignedBy },
+//             select: { id: true, firstName: true, lastName: true, userName: true },
+//           });
+//         }
+
+//         return { ...task, assignedBy: assignedByUser };
+//       })
+//     );
+    
+
+//     return res.status(200).json({ tasks: tasksWithAssignedBy });
+//   } catch (error) {
+//     return res.status(400).json({ message:"Failed to get meeting" });
+//   }
+// };
+
+const getMeetingByuserId = async (req, res) => {
+    try {
+      const userId = Number(req.params.id);
+  
+      const tasks = await prisma.meeting.findMany({
+        where: {
+          user: { some: { id: userId } },
         },
-        department: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+              employeeId: true,
+            },
+          },
+          department: {
             select: {
               id: true,
               name: true,
@@ -351,39 +415,54 @@ const getMeetingByuserId = async (req, res) => {
               locationName: true,
             },
           },
-      },
-      orderBy: [{ id: "desc" }],
-    });
-
-    if (tasks.length === 0)
-      return res.status(400).json([]);
-
-    // Filter tasks to only include the user with the specified ID in the array
-    const tasksFilteredByUserId = tasks.map((task) => ({
-      ...task,
-      user: task.user.filter((user) => user.id === userId),
-    }));
-
-    // Fetch assignedBy information and embed tasksFilteredByUserId
-    const tasksWithAssignedBy = await Promise.all(
-      tasksFilteredByUserId.map(async (task) => {
-        let assignedByUser = null;
-        if (task.assignedBy) {
-          assignedByUser = await prisma.user.findUnique({
-            where: { id: task.assignedBy },
-            select: { id: true, firstName: true, lastName: true, userName: true },
-          });
-        }
-
-        return { ...task, assignedBy: assignedByUser };
-      })
-    );
-
-    return res.status(200).json({ tasks: tasksWithAssignedBy });
-  } catch (error) {
-    return res.status(400).json({ message:"Failed to get meeting" });
-  }
-};
+        },
+        orderBy: [{ id: "desc" }],
+      });
+  
+      if (tasks.length === 0)
+        return res.status(400).json([]);
+  
+      // Filter tasks to only include the user with the specified ID in the array
+      const tasksFilteredByUserId = tasks.map((task) => ({
+        ...task,
+        user: task.user.filter((user) => user.id === userId),
+      }));
+  
+      // Fetch assignedBy information and embed tasksFilteredByUserId
+      const tasksWithAssignedBy = await Promise.all(
+        tasksFilteredByUserId.map(async (task) => {
+          let assignedByUser = null;
+          if (task.assignedBy) {
+            assignedByUser = await prisma.user.findUnique({
+              where: { id: task.assignedBy },
+              select: { id: true, firstName: true, lastName: true, userName: true },
+            });
+          }
+  
+          // Calculate meeting duration
+          const startTime = new Date(task.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const endTime = new Date(task.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const durationInMinutes = (new Date(task.endTime) - new Date(task.startTime)) / (1000 * 60);
+          const durationHours = Math.floor(durationInMinutes / 60);
+          const durationMinutes = durationInMinutes % 60;
+  
+          return {
+            ...task,
+            assignedBy: assignedByUser,
+            startTime,
+            endTime,
+            durationHours,
+            durationMinutes,
+          };
+        })
+      );
+  
+      return res.status(200).json({ tasks: tasksWithAssignedBy });
+    } catch (error) {
+      return res.status(400).json({ message: "Failed to get meeting", error: error.message });
+    }
+  };
+  
 
 const updateMeeting = async (req, res) => {
     try {
