@@ -443,15 +443,17 @@ const getMeetingByuserId = async (req, res) => {
           
           // Round duration to nearest whole number
           const durationHours = Math.round(durationInMinutes / 60);
-          const durationMinutes = Math.round(durationInMinutes % 60);;
-  
+          const durationMinutes = Math.round(durationInMinutes % 60);
+          const duration = `${durationHours.toString().padStart(2, '0')} hours and ${durationMinutes.toString().padStart(2, '0')} minutes`;
+
           return {
             ...task,
             assignedBy: assignedByUser,
             startTime,
             endTime,
-            durationHours,
-            durationMinutes,
+            // durationHours,
+            // durationMinutes,
+            duration
           };
         })
       );
