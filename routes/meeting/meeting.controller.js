@@ -113,9 +113,6 @@ const createmeeting = async (req, res) => {
   try {
     const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body;
 
-    // Parse startTime and endTime using Moment.js
-    const parsedStartTime =startTime;
-    const parsedEndTime = endTime;
 
     // Check for conflicting meetings
     const conflictingMeeting = await prisma.meeting.findFirst({
@@ -124,22 +121,22 @@ const createmeeting = async (req, res) => {
         OR: [
           {
             startTime: {
-              lte: parsedStartTime,
-              gte: parsedStartTime,
+              lte: startTime,
+              gte: startTime,
             },
           },
           {
             endTime: {
-              lte: parsedEndTime,
-              gte: parsedEndTime,
+              lte: endTime,
+              gte: endTime,
             },
           },
           {
             startTime: {
-              lte: parsedStartTime,
+              lte: startTime,
             },
             endTime: {
-              gte: parsedEndTime,
+              gte: endTime,
             },
           },
         ],
@@ -153,8 +150,8 @@ const createmeeting = async (req, res) => {
     const newMeeting = await prisma.meeting.create({
       data: {
         meetingdate: new Date(meetingdate),
-        startTime: parsedStartTime,
-        endTime: parsedEndTime,
+        startTime: startTime,
+        endTime: endTime,
         meetingType,
         meetingLink,
         departmentId,
@@ -172,7 +169,7 @@ const createmeeting = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating meeting:', error);
-    return res.status(400).json({ message: 'Failed to create meeting', error: error.message });
+    return res.status(400).json({ message: 'Failed to create meeting'});
   }
 };
 
@@ -443,8 +440,10 @@ const getMeetingByuserId = async (req, res) => {
           const startTime = new Date(task.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const endTime = new Date(task.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const durationInMinutes = (new Date(task.endTime) - new Date(task.startTime)) / (1000 * 60);
-          const durationHours = Math.floor(durationInMinutes / 60);
-          const durationMinutes = durationInMinutes % 60;
+          
+          // Round duration to nearest whole number
+          const durationHours = Math.round(durationInMinutes / 60);
+          const durationMinutes = Math.round(durationInMinutes % 60);;
   
           return {
             ...task,
