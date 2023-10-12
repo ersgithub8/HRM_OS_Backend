@@ -116,36 +116,59 @@ const createmeeting = async (req, res) => {
 
     // Check for conflicting meetings
     const conflictingMeeting = await prisma.meeting.findFirst({
-      where: {
-        meetingdate: new Date(meetingdate),
-        OR: [
-          {
-            startTime: {
-              lte: startTime,
-              gte: startTime,
+        where: {
+          meetingdate: new Date(meetingdate),
+          OR: [
+            {
+              AND: [
+                {
+                  startTime: {
+                    lte: startTime,
+                  },
+                },
+                {
+                  endTime: {
+                    gte: startTime,
+                  },
+                },
+              ],
             },
-          },
-          {
-            endTime: {
-              lte: endTime,
-              gte: endTime,
+            {
+              AND: [
+                {
+                  startTime: {
+                    lte: endTime,
+                  },
+                },
+                {
+                  endTime: {
+                    gte: endTime,
+                  },
+                },
+              ],
             },
-          },
-          {
-            startTime: {
-              lte: startTime,
+            {
+              AND: [
+                {
+                  startTime: {
+                    gte: startTime,
+                  },
+                },
+                {
+                  endTime: {
+                    lte: endTime,
+                  },
+                },
+              ],
             },
-            endTime: {
-              gte: endTime,
-            },
-          },
-        ],
-      },
-    });
-
-    if (conflictingMeeting) {
-      return res.status(400).json({ message: 'A meeting is already scheduled during this time' });
-    }
+          ],
+        },
+      });
+      
+      if (conflictingMeeting) {
+        return res.status(400).json({ message: 'A meeting is already scheduled during this time' });
+      }
+      
 
     const newMeeting = await prisma.meeting.create({
       data: {
