@@ -201,21 +201,30 @@ const getAllTasks = async (req, res) => {
 
       // Fetch the updatedBy user information for each task
       const tasksWithUpdatedBy = await Promise.all(allTasks.map(async task => {
-        const updatedByUser = await prisma.user.findUnique({
-          where: { id: task.updatedBy },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-          },
-        });
-
-        return {
-          ...task,
-          updatedByUser: updatedByUser || null,
-        };
+        if (task.updatedBy) {
+          const updatedByUser = await prisma.user.findUnique({
+            where: { id: task.updatedBy },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+            },
+          });
+      
+          return {
+            ...task,
+            updatedByUser: updatedByUser || undefined,
+          };
+        } else {
+          return {
+            ...task,
+            updatedByUser: undefined,
+          };
+        }
       }));
+      
+      
 
       return res.status(200).json(tasksWithUpdatedBy);
     } catch (error) {
