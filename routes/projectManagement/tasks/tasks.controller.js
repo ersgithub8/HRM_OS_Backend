@@ -87,93 +87,143 @@ const createTask = async (req, res) => {
 
 
 //get all tasks controller
+// const getAllTasks = async (req, res) => {
+//   if (req.query.query === "all") {
+//     try {
+//       const allTasks = await prisma.task.findMany({
+//         orderBy: [
+//           {
+//             id: "desc",
+//           },
+//         ],
+//        include: {
+//         priority: {
+//           select: {
+//             id: true,
+//             name: true,
+//           },
+//         },
+        
+//       }
+
+      
+      
+      
+//       });
+//       return res.status(200).json(allTasks);
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   } else if (req.query.status === "true") {
+//     try {
+//       const allTasks = await prisma.task.findMany({
+//         orderBy: [
+//           {
+//             id: "desc",
+//           },
+//         ],
+//        include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             userName: true,
+//             employeeId: true,
+        
+//           },
+//         },
+        
+//       },
+//         where: {
+//           status: true,
+//         },
+//       });
+//       return res.status(200).json(allTasks);
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   } else if (req.query.status === "false") {
+//     try {
+//       const allTasks = await prisma.task.findMany({
+//         orderBy: [
+//           {
+//             id: "desc",
+//           },
+//         ],
+//        include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             userName: true,
+//             employeeId: true,
+//             priority:true
+
+//           },
+//         },
+//       },
+//         where: {
+//           status: false,
+//         },
+//       });
+//       return res.status(200).json(allTasks);
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   }
+// };
+
 const getAllTasks = async (req, res) => {
-  if (req.query.query === "all") {
+  if (req.query.query === 'all') {
     try {
       const allTasks = await prisma.task.findMany({
-        orderBy: [
-          {
-            id: "desc",
+        orderBy: [{ id: 'desc' }],
+        include: {
+          priority: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
-        ],
-       include: {
-        priority: {
-          select: {
-            id: true,
-            name: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+              employeeId: true,
+            },
           },
         },
-        
-      }
-
-      
-      
-      
       });
-      return res.status(200).json(allTasks);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  } else if (req.query.status === "true") {
-    try {
-      const allTasks = await prisma.task.findMany({
-        orderBy: [
-          {
-            id: "desc",
-          },
-        ],
-       include: {
-        user: {
+
+      // Fetch the updatedBy user information for each task
+      const tasksWithUpdatedBy = await Promise.all(allTasks.map(async task => {
+        const updatedByUser = await prisma.user.findUnique({
+          where: { id: task.updatedBy },
           select: {
             id: true,
             firstName: true,
             lastName: true,
             userName: true,
-            employeeId: true,
-        
           },
-        },
-        
-      },
-        where: {
-          status: true,
-        },
-      });
-      return res.status(200).json(allTasks);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  } else if (req.query.status === "false") {
-    try {
-      const allTasks = await prisma.task.findMany({
-        orderBy: [
-          {
-            id: "desc",
-          },
-        ],
-       include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-            employeeId: true,
-            priority:true
+        });
 
-          },
-        },
-      },
-        where: {
-          status: false,
-        },
-      });
-      return res.status(200).json(allTasks);
+        return {
+          ...task,
+          updatedByUser: updatedByUser || null,
+        };
+      }));
+
+      return res.status(200).json(tasksWithUpdatedBy);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
-  }
+  } 
 };
+
 
 //get task by id controller
 const getTaskById = async (req, res) => {
