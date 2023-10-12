@@ -16,6 +16,7 @@ let allowedOrigins = [
   "http://4.227.140.35:3001",
   "http://4.227.140.35:3000",
   "http://3.111.150.18:3000",
+  "https://www.wise1ne.com"
 ];
 
 const admin = require("firebase-admin");
