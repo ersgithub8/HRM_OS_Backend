@@ -553,7 +553,7 @@ const getMeetingByuserId = async (req, res) => {
           if (meetingDate > currentDate) {
             status = "UPCOMING";
           } else if (currentDate >= startTime && currentDate <= endTime) {
-            status = "ONGOING";
+            status = "STARTED";
           } else {
             status = "ENDED";
           }
