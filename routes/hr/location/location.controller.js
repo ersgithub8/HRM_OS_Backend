@@ -193,7 +193,6 @@ const getSingleLocation = async (req, res) => {
 
 const getfullLocation = async (req, res) => {
   try {
-    
     const singleLocation = await prisma.location.findUnique({
       where: {
         id: Number(req.params.id),
@@ -202,17 +201,10 @@ const getfullLocation = async (req, res) => {
         user: {
           select: {
             id: true,
-            
-            fullName: {
-              // Use the concat function to concatenate firstName and lastName
-              concat: [
-                { firstName: true },
-                " - ", // Add a separator, e.g., a space or a hyphen
-                { lastName: true }
-              ],
-            },
+            firstName: true,
+            lastName: true,
             userName: true,
-            employeeId: true,
+            employeeId:true,
             role: {
               select: {
                 name: true,
@@ -237,11 +229,11 @@ const getfullLocation = async (req, res) => {
             },
           },
         },
-        
       },
     });
 
-
+console.log(singleLocation.user.firstName+""+singleLocation.user.firstName);
+return
     return res.status(200).json(singleLocation);
   } catch (error) {
     return res.status(400).json({ message: error.message });

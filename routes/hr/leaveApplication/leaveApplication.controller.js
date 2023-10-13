@@ -850,7 +850,7 @@ const getLeaveByUserId = async (req, res) => {
     const userId = Number(req.params.id);
 
     // Fetch leave applications for the user
-    const singleLeave = await prisma.leaveApplication.findMany({
+    const getLeaveTo = await prisma.leaveApplication.findMany({
       where: {
         userId,
       },
@@ -865,10 +865,27 @@ const getLeaveByUserId = async (req, res) => {
         },
       },
     });
+    
 
     // if (singleLeave.length === 0)
     //   return res.status(200).json({ message: "No leave found for this user" });
+    const singleLeave = await Promise.all(
+      getLeaveTo.map(async (leave) => {
+        let approvedByUser = null;
+        if (leave.acceptLeaveBy) {
+          approvedByUser = await prisma.user.findUnique({
+            where: {
+              id: leave.acceptLeaveBy,
+            },
+          });
+        }
 
+        return {
+          ...leave,
+          approvedBy: approvedByUser,
+        };
+      })
+    )
     // Initialize counts for paid, unpaid, and pending leaves
     let  AcqiredpaidLeave = 0;
     let  AcqiredunpaidLeave = 0;
