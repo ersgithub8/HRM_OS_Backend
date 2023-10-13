@@ -175,18 +175,23 @@ const register = async (req, res) => {
     // if (existingUserByEmployeeId) {
     //   return res.status(400).json({ message: "EmployeeId already exists." });
     // }
-    const leavs = await prisma.leavePolicy.findUnique({
-      where: {
-        id: req.body.leavePolicyId,
-      },
-      
-    });
-    let remainingannualallowedleave;
-    if (req.body.manualleave) {
-      remainingannualallowedleave = req.body.manualleave.toString();
-    } else {
-      remainingannualallowedleave = leavs.paidLeaveCount.toString();
-    }
+    const leavs = req.body.leavePolicyId
+    ? await prisma.leavePolicy.findUnique({
+        where: {
+          id: req.body.leavePolicyId,
+        },
+      })
+    : null;
+  
+  let remainingannualallowedleave;
+  
+  if (req.body.manualleave) {
+    remainingannualallowedleave = req.body.manualleave.toString();
+  } else if (!req.body.manualleave) {
+    remainingannualallowedleave = process.env.remainingannualallowedleave;
+  } else {
+    remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+  }
     const join_date = new Date();
     const leave_date = req.body.leaveDate ? req.body.leaveDate : null;
 
@@ -235,7 +240,7 @@ const register = async (req, res) => {
         bankallowedleave:process.env.totalbankleaves,
         remaingbankallowedleave:process.env.totalremainbank,
         annualallowedleave:process.env.totalanualleaves,
-        remainingannualallowedleave:remainingannualallowedleave,
+        remainingannualallowedleave:remainingannualallowedleave?remainingannualallowedleave:process.env.remaingbankallowedleave,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
