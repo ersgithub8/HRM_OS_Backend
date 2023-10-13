@@ -1101,6 +1101,8 @@ const getLastAttendanceByUserId = async (req, res) => {
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
     const today = new Date();
+    // console.log(today,"fdhsj");
+    // return
     today.setHours(0, 0, 0, 0);
 
     const userId = parseInt(req.params.id);
@@ -1125,7 +1127,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
     const todayAttendance = await prisma.attendance.findFirst({
       where: {
         userId: userId,
-        inTime: {
+        date: {
           gte: today,
         },
       },
@@ -1135,13 +1137,6 @@ const getTodayAttendanceByUserId = async (req, res) => {
         },
       ],
     });
-//     let isadmin=null;
-// if(todayAttendance.userId===todayAttendance.punchBy){
-// isadmin="user"
-// }
-// else{
-//   isadmin="admin"
-// }
 let isadmin = null;
 
 if (todayAttendance) {
