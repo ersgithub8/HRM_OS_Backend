@@ -1272,15 +1272,15 @@ const MonthlyApprovedLeaves = async (req, res) => {
 //             id: userIdToExclude,
 //           },
 //         },
-//         include: {
-//           leaveApplication: {
-//             where: {
-//               status: status,
-//             },
-//           },
-//         },
+      //   include: {
+      //     leaveApplication: {
+      //       where: {
+      //         status: status,
+      //       },
+      //     },
+      //   },
         
-//       });
+      // });
     
 //       const linkedUsers = await Promise.all(
 //         users.map(async (user) => {
@@ -1329,15 +1329,13 @@ const getAllLeave = async (req, res) => {
       return res.status(400).json({ message: 'Invalid userId provided' });
     }
     const fetchUsers = async (referenceId, userIdToExclude) => {
+      const { skip, limit, status } = req.query;
       const users = await prisma.user.findMany({
         where: {
           OR: [
             { reference_id: referenceId },
             { referenceid_two: referenceId }
           ],
-          // NOT: {
-          //   id: userIdToExclude,
-          // },
         },
         // include: {
         //     leaveApplication: {
@@ -1367,16 +1365,25 @@ const getAllLeave = async (req, res) => {
       array.push(x.id);
     }
     console.log(array);
-
+    const { skip, limit, status } = req.query;
     const leave = await prisma.leaveApplication.findMany({
+      
       where: {
-        userId: { in: array }
+        userId: { in: array },
+        status: status, // Filter by status
       },
       orderBy: [
         {
           id: "desc",
         },
       ],
+      include: {
+        leaveApplication: {
+        where: {
+          status: status,
+        },
+      },
+    },
       include: {
         user: {
           select: {
