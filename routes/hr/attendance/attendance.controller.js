@@ -1188,7 +1188,7 @@ if (todayAttendance) {
       return res.status(200).json(response);
     }
 
-    response.attendenceStatus = 'Absent';
+    response.attendenceStatus =todayAttendance.attendenceStatus;
     return res.status(200).json(response);
   } catch (error) {
     return res.status(400).json({ message: error.message });
