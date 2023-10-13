@@ -187,7 +187,7 @@ const register = async (req, res) => {
   
   if (req.body.manualleave) {
     remainingannualallowedleave = req.body.manualleave.toString();
-  } else if (!req.body.manualleave) {
+  } else if (!req.body.leavePolicyId) {
     remainingannualallowedleave = process.env.remainingannualallowedleave;
   } else {
     remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
