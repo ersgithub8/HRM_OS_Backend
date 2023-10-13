@@ -754,79 +754,167 @@ console.log(Title, Body, Desc, Token, Device);
     return res.status(400).json({ message: 'Failed to update application status' });
   }
 };
+// const getLeaveByUserId = async (req, res) => {
+//   try {
+//     const getLeaveTo = await prisma.leaveApplication.findMany({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//         },
+//       },
+//       orderBy: [
+//         {
+//           id: "desc",
+//         },
+//       ],
+//       include: {
+        // user: {
+        //   select: {
+        //     annualallowedleave:true,
+        //     remainingannualallowedleave:true,
+
+        //   },
+        // },
+//       },
+//     });
+//     if (getLeaveTo.length === 0)
+//       return res.status(200).json({ message: "No leave found for this user" });
+
+    // const singleLeave = await Promise.all(
+    //   getLeaveTo.map(async (leave) => {
+    //     let approvedByUser = null;
+    //     if (leave.acceptLeaveBy) {
+    //       approvedByUser = await prisma.user.findUnique({
+    //         where: {
+    //           id: leave.acceptLeaveBy,
+    //         },
+    //       });
+    //     }
+
+    //     return {
+    //       ...leave,
+    //       approvedBy: approvedByUser,
+    //     };
+    //   })
+    // );
+
+//     const currentDate = new Date();
+
+//     const leaveStatus = singleLeave.map((leave) => {
+//       if (leave.leaveTo > currentDate) return "onleave";
+//       else return "not on leave";
+//     });
+
+//     const totalPendingLeaves = await prisma.leaveApplication.count({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//           status: "PENDING",
+//         },
+//       },
+//     });
+
+//     const totalAcceptedLeaves = await prisma.leaveApplication.count({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//           status: "APPROVED",
+//         },
+//       },
+//     });
+
+//     const totalRejectedLeaves = await prisma.leaveApplication.count({
+//       where: {
+//         AND: {
+//           userId: Number(req.params.id),
+//           status: "REJECTED",
+//         },
+//       },
+//     });
+
+//     return res.status(200).json({
+//       singleLeave,
+//       leaveStatus,
+//       totalAcceptedLeaves,
+//       totalRejectedLeaves,
+//       totalPendingLeaves,
+//     });
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
 const getLeaveByUserId = async (req, res) => {
   try {
-    const getLeaveTo = await prisma.leaveApplication.findMany({
+    const userId = Number(req.params.id);
+
+    // Fetch leave applications for the user
+    const singleLeave = await prisma.leaveApplication.findMany({
       where: {
-        AND: {
-          userId: Number(req.params.id),
+        userId,
+      },
+      orderBy: [{ id: "desc" }],
+      include: {
+        user: {
+          select: {
+            annualallowedleave:true,
+            remainingannualallowedleave:true,
+
+          },
         },
       },
-      orderBy: [
-        {
-          id: "desc",
-        },
-      ],
     });
 
-    if (getLeaveTo.length === 0)
+    if (singleLeave.length === 0)
       return res.status(200).json({ message: "No leave found for this user" });
 
-    const singleLeave = await Promise.all(
-      getLeaveTo.map(async (leave) => {
-        let approvedByUser = null;
-        if (leave.acceptLeaveBy) {
-          approvedByUser = await prisma.user.findUnique({
-            where: {
-              id: leave.acceptLeaveBy,
-            },
-          });
+    // Initialize counts for paid, unpaid, and pending leaves
+    let  AcqiredpaidLeave = 0;
+    let  AcqiredunpaidLeave = 0;
+    let  paidLeavePending = 0;
+    let  unpaidLeavePending= 0;
+
+    // Iterate through leave applications to calculate counts
+    singleLeave.forEach((leave) => {
+      if (leave.leavecategory === "paid") {
+        if (leave.leaveType.includes("deductible")) {
+          if (leave.status === "PENDING") {
+            paidLeavePending++;
+          } else if (leave.status === "APPROVED") {
+            AcqiredpaidLeave++;
+          }
         }
-
-        return {
-          ...leave,
-          approvedBy: approvedByUser,
-        };
-      })
-    );
-
-    const currentDate = new Date();
-
-    const leaveStatus = singleLeave.map((leave) => {
-      if (leave.leaveTo > currentDate) return "onleave";
-      else return "not on leave";
+      } else if (leave.leavecategory === "unpaid") {
+        if (leave.leaveType.includes("non-deductible")) {
+          if (leave.status === "PENDING") {
+            unpaidLeavePending++;
+          } else if (leave.status === "APPROVED") {
+            AcqiredunpaidLeave++;
+          }
+        }
+      }
     });
+    
+    // Calculate total accepted, rejected, and pending leaves
+    const totalAcceptedLeaves = singleLeave.filter(
+      (leave) => leave.status === "APPROVED"
+    ).length;
 
-    const totalPendingLeaves = await prisma.leaveApplication.count({
-      where: {
-        AND: {
-          userId: Number(req.params.id),
-          status: "PENDING",
-        },
-      },
-    });
+    const totalRejectedLeaves = singleLeave.filter(
+      (leave) => leave.status === "REJECTED"
+    ).length;
 
-    const totalAcceptedLeaves = await prisma.leaveApplication.count({
-      where: {
-        AND: {
-          userId: Number(req.params.id),
-          status: "APPROVED",
-        },
-      },
-    });
-
-    const totalRejectedLeaves = await prisma.leaveApplication.count({
-      where: {
-        AND: {
-          userId: Number(req.params.id),
-          status: "REJECTED",
-        },
-      },
-    });
+    const totalPendingLeaves = singleLeave.filter(
+      (leave) => leave.status === "PENDING"
+    ).length;
 
     return res.status(200).json({
       singleLeave,
-      leaveStatus,
+      AcqiredpaidLeave,
+      AcqiredunpaidLeave,
+      paidLeavePending,
+      unpaidLeavePending,
       totalAcceptedLeaves,
       totalRejectedLeaves,
       totalPendingLeaves,
@@ -835,6 +923,7 @@ const getLeaveByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 const deleteSingleLeave=async(req, res)=>{
   try {
     const deletedLeaveApplication = await prisma.leaveApplication.delete({
