@@ -866,8 +866,8 @@ const getLeaveByUserId = async (req, res) => {
       },
     });
 
-    if (singleLeave.length === 0)
-      return res.status(200).json({ message: "No leave found for this user" });
+    // if (singleLeave.length === 0)
+    //   return res.status(200).json({ message: "No leave found for this user" });
 
     // Initialize counts for paid, unpaid, and pending leaves
     let  AcqiredpaidLeave = 0;

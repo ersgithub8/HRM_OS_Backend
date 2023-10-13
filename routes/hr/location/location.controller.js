@@ -191,6 +191,63 @@ const getSingleLocation = async (req, res) => {
   }
 };
 
+const getfullLocation = async (req, res) => {
+  try {
+    
+    const singleLocation = await prisma.location.findUnique({
+      where: {
+        id: Number(req.params.id),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            
+            fullName: {
+              // Use the concat function to concatenate firstName and lastName
+              concat: [
+                { firstName: true },
+                " - ", // Add a separator, e.g., a space or a hyphen
+                { lastName: true }
+              ],
+            },
+            userName: true,
+            employeeId: true,
+            role: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+            designationHistory: {
+              orderBy: [
+                {
+                  id: "desc",
+                },
+              ],
+              take: 1,
+              select: {
+                designation: {
+                  select: {
+                    name: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        
+      },
+    });
+
+
+    return res.status(200).json(singleLocation);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 const updateSingleLocation = async (req, res) => {
   try {
     const updatedLocation = await prisma.location.update({
@@ -228,4 +285,5 @@ module.exports = {
   getSingleLocation,
   updateSingleLocation,
   deletedLocation,
+  getfullLocation
 };
