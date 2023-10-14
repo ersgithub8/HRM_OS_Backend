@@ -541,7 +541,7 @@ const getSingleUser = async (req, res) => {
     const leaveDays = await prisma.leaveApplication.findMany({
       where: {
         userId: userId,
-        status: "ACCEPTED",
+        status: "APPROVED",
         acceptLeaveFrom: {
           gte: new Date(new Date().getFullYear(), 0, 1),
         },
@@ -565,11 +565,11 @@ const getSingleUser = async (req, res) => {
     // singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
     // singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
     const paidLeaveDays = leaveDays
-  .filter((l) => l.leaveType === "PAID")
+  .filter((l) => l.leavecategory === "paid")
   .reduce((acc, item) => acc + item.leaveDuration, 0);
 
 const unpaidLeaveDays = leaveDays
-  .filter((l) => l.leaveType === "UNPAID")
+  .filter((l) => l.leavecategory === "unpaid")
   .reduce((acc, item) => acc + item.leaveDuration, 0);
 
 // Calculate remaining leave days
