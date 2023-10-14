@@ -1116,22 +1116,18 @@ const MonthlyApprovedLeaves = async (req, res) => {
     }
 
     const startDate = new Date(date);
-
-    // Create an array with year, month, and day of the start date
-    // const startDateArray = [startDate];
-
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 1); // Calculate the next day
 
     const approvedLeave = await prisma.leaveApplication.findMany({
       where: {
         status: 'APPROVED',
-        OR: [
+        AND: [
           {
-            leaveFrom: { gte: startDate, lt: endDate }
+            leaveFrom: { lte: endDate }
           },
           {
-            leaveTo: { gte: startDate, lt: endDate }
+            leaveTo: { gte: startDate }
           }
         ]
       },
