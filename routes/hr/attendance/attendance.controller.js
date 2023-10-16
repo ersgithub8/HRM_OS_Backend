@@ -69,8 +69,19 @@ let inTimeStatus
       //     const startTime = moment(user.shift.startTime, "HH:mm");
 
     const endTimes = moment(user.shift.endTime, "HH:mm");
-    const isOutEarly = moment().isBefore(endTimes);
-    const isOutLate = moment().isAfter(endTimes);
+    // const isOutEarly = moment().isBefore(endTimes);
+    // const isOutLate = moment().isAfter(endTimes);
+    let outTimeStatus
+    if (timeDifferenceMinutes >= 0) {
+      outTimeStatus="OnTime"
+    }
+    // else if(timeDifferenceMinutes <= 0)
+    // {
+    //   outTimeStatus="Early"
+    // }
+    else{
+      outTimeStatus="OnTime"
+    }
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
     const attendance = await prisma.attendance.findFirst({
@@ -169,7 +180,7 @@ let inTimeStatus
         data: {
           outTime: outTime,
           totalHour: parseFloat(totalMinutes.toFixed(0)),
-          outTimeStatus: isOutEarly ? "Late" : isOutLate ? "Early" : "OnTime",
+          outTimeStatus: outTimeStatus,
 
         },
       });
