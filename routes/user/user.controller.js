@@ -201,6 +201,7 @@ const register = async (req, res) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         userName: req.body.userName,
+        firebaseToken:req.body.firebaseToken,
         password: hash,
         email: req.body.email,
         phone: req.body.phone,
@@ -753,6 +754,15 @@ const updateSingleUser = async (req, res) => {
     });
 
     const { password, ...userWithoutPassword } = updateUser;
+
+    if(req.body.applicationStatus)
+    {
+      const Title = req.body.applicationStatus;
+      const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your leave request has been ' + req.body.applicationStatus;
+      const Token = existingUser.firebaseToken;
+      // const Device = existingLeave.user.device;
+      sendnotifiy(Title, Body, Desc, Token);
+    }
     return res.status(200).json({
       userWithoutPassword,
       message: "User profile updated successfully",
@@ -762,6 +772,27 @@ const updateSingleUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+function sendnotifiy(Title, Body, Desc, Token) {
+  try {
+    const message = {
+      notification: {
+        title: Title,
+        body: Body,
+      },
+      token: Token,
+    };
+    admin
+      .messaging()
+      .send(message)
+      .then((response) => {console.log("Notification Send ....") })
+      .catch((error) => {
+        console.log("Error sending notification:", error);
+      });
+
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
 
 const updateSingleUserprofile = async (req, res) => {
   const id = parseInt(req.params.id);
@@ -1175,7 +1206,27 @@ const users_resetpassword = async (req, res) => {
 
 
 
+function sendnotifiy(Title, Body, Desc, Token) {
+  try {
+    const message = {
+      notification: {
+        title: Title,
+        body: Body,
+      },
+      token: Token,
+    };
+    admin
+      .messaging()
+      .send(message)
+      .then((response) => {console.log("Notification Send ....") })
+      .catch((error) => {
+        console.log("Error sending notification:", error);
+      });
 
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
 
 
 

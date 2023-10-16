@@ -655,7 +655,8 @@ const grantedLeave = async (req, res, next) => {
         user: true,
       },
     });
-    const leaveDuration =existingLeave.leaveDuration
+    console.log("dvghcahgdhagvdhgsavdhgsavdvghsavdshga", existingLeave.user.firebaseToken);
+    const leaveDuration = existingLeave.leaveDuration
 
     if (!existingLeave) {
       return res.status(404).json({ message: 'Leave application not found' });
@@ -664,23 +665,23 @@ const grantedLeave = async (req, res, next) => {
     if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-      await prisma.user.update({
-        where: {
-          id: existingLeave.user.id,
-        },
-        data: {
-          remainingannualallowedleave: currentRemainingLeaves.toString(),
-        },
-      });
+      // await prisma.user.update({
+      //   where: {
+      //     id: existingLeave.user.id,
+      //   },
+      //   data: {
+      //     remainingannualallowedleave: currentRemainingLeaves ? currentRemainingLeaves.toString() : '',
+      //   },
+      // });
       const Title = 'Leave Approved';
-      const Body = existingLeave.user.firstName + " " +existingLeave.user.lastName+"  "+ 'Your leave request has been approved.';
+      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been approved.';
       const Desc = 'Leave approval notification';
       const Token = existingLeave.user.firebaseToken;
-      const Device = existingLeave.user.device;
-console.log(Title, Body, Desc, Token, Device);
-      await sendnotifiy(Title, Body, Desc, Token, Device);
+      // const Device = existingLeave.user.device;
+      console.log(Title, Body, Desc, Token);
+      sendnotifiy(Title, Body, Desc, Token);
     }
-     else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
+    else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
       // If status was changed from 'PENDING' to 'REJECTED', add the leave duration back to remaining leaves
       if (existingLeave.leaveDuration) {
         const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
@@ -693,6 +694,12 @@ console.log(Title, Body, Desc, Token, Device);
             remainingannualallowedleave: updatedRemainingLeaves.toString(),
           },
         });
+        const Title = 'Leave Rejected';
+      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been rejected.';
+      const Desc = 'Leave rejection notification';
+      const Token = existingLeave.user.firebaseToken;
+      // const Device = existingLeave.user.device;
+      sendnotifiy(Title, Body, Desc, Token);
       }
     } else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
       // If status was changed from 'APPROVED' to 'REJECTED', add the leave duration back to remaining leaves
@@ -707,6 +714,12 @@ console.log(Title, Body, Desc, Token, Device);
           remainingannualallowedleave: updatedRemainingLeaves.toString(),
         },
       });
+      const Title = 'Leave Rejected';
+      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been rejected.';
+      const Desc = 'Leave rejection notification';
+      const Token = existingLeave.user.firebaseToken;
+      // const Device = existingLeave.user.device;
+      sendnotifiy(Title, Body, Desc, Token);
     } else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
@@ -721,6 +734,12 @@ console.log(Title, Body, Desc, Token, Device);
           remainingannualallowedleave: updatedRemainingLeaves.toString(),
         },
       });
+      const Title = 'Leave Approved';
+      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been approved.';
+      const Desc = 'Leave approval notification';
+      const Token = existingLeave.user.firebaseToken;
+      // const Device = existingLeave.user.device;
+      sendnotifiy(Title, Body, Desc, Token);
     }
 
     // Update the leave details
@@ -742,15 +761,16 @@ console.log(Title, Body, Desc, Token, Device);
       req.body.grantedLeave = grantedLeave;
       req.body.fromleave = true;
       next();
-    }else{
+    } else {
       return res.status(200).json({
         grantedLeave,
         message: 'Application status is updated',
       });
     }
 
-    
+
   } catch (error) {
+    console.log("Errorrrrrrr", error);
     return res.status(400).json({ message: 'Failed to update application status' });
   }
 };
@@ -1317,42 +1337,23 @@ const getAllLeave = async (req, res) => {
   }
 };
 
-function sendnotifiy(Title, Body, Desc, Token, Device) {
+function sendnotifiy(Title, Body, Desc, Token) {
   try {
-    if (Device && Device == "IOS") {
-      const message = {
-        notification: {
-          title: Title,
-          body: Body,
-        },
-        token: Token,
-      };
-      admin
-        .messaging()
-        .send(message)
-        .then((response) => {})
-        .catch((error) => {
-          console.log("Error sending notification:", error);
-        });
-    } else {
-      var fcm = new FCM(process.env.serverkey);
-
-      var notifecation = {
-        to: Token,
-        data: {
-          title: Title,
-          body: Body,
-          description: Desc,
-        },
-      };
-      fcm.send(notifecation, function (err, response) {
-        if (err) {
-          console.log("Error sending message:", err);
-        } else {
-          console.log("Successfully Sent Message:", response);
-        }
+    const message = {
+      notification: {
+        title: Title,
+        body: Body,
+      },
+      token: Token,
+    };
+    admin
+      .messaging()
+      .send(message)
+      .then((response) => {console.log("Notification Send ....") })
+      .catch((error) => {
+        console.log("Error sending notification:", error);
       });
-    }
+
   } catch (error) {
     console.log("Error:", error);
   }
