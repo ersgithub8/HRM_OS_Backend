@@ -159,4 +159,8 @@ app.use(
   "/meeting",
   require("./routes/meeting/meeting.routes")
 );
+app.use(
+  "/rooms",
+  require("./routes/rooms/rooms.routes")
+);
 module.exports = app;

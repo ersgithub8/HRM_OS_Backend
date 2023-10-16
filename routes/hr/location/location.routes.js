@@ -6,6 +6,7 @@ const {
   getSingleLocation,
   updateSingleLocation,
   deletedLocation,
+  getfullLocation,
 } = require("./location.controller");
 const authorize = require("../../../utils/authorize"); // authentication middleware
 
@@ -22,6 +23,9 @@ locationRoutes.get("/",
 locationRoutes.get("/:id",
  authorize("readSingle-location"),
   getSingleLocation);
+  locationRoutes.get("/full/:id",
+ authorize("readSingle-location"),
+ getfullLocation);
 locationRoutes.put(
   "/:id",
   authorize("update-location"),

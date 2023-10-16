@@ -43,7 +43,8 @@ const endpoints = [
   "assignedTask",
   "location",
   "training",
-  "meeting"
+  "meeting",
+  "room"
 ];
 
 const permissionTypes = ["create", "readAll", "readSingle", "update", "delete"];

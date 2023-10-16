@@ -188,7 +188,7 @@ const register = async (req, res) => {
   if (req.body.manualleave) {
     remainingannualallowedleave = req.body.manualleave.toString();
   } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    remainingannualallowedleave = process.env.remainingannualallowedleave;
+    remainingannualallowedleave = "0";
   } else {
     remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
   }
@@ -240,7 +240,7 @@ const register = async (req, res) => {
         bankallowedleave:process.env.totalbankleaves,
         remaingbankallowedleave:process.env.totalremainbank,
         annualallowedleave:process.env.totalanualleaves,
-        remainingannualallowedleave:remainingannualallowedleave?remainingannualallowedleave:process.env.remaingbankallowedleave,
+        remainingannualallowedleave:remainingannualallowedleave,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
@@ -571,7 +571,6 @@ const getSingleUser = async (req, res) => {
 const unpaidLeaveDays = leaveDays
   .filter((l) => l.leavecategory === "unpaid")
   .reduce((acc, item) => acc + item.leaveDuration, 0);
-
 // Calculate remaining leave days
 singleUser.paidLeaveDays = paidLeaveDays;
 singleUser.unpaidLeaveDays = unpaidLeaveDays;

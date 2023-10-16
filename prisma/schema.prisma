@@ -75,6 +75,7 @@ model user {
   leaveApplication   leaveApplication[]
   task   task[]
   meeting    meeting[]
+  room    room[]
   payslip            payslip[]
   educations         education[]
   salaryHistory      salaryHistory[]
@@ -109,6 +110,7 @@ model location {
   id           Int       @id @default(autoincrement())
    user      user[]
    meeting    meeting[]
+   room    room[]
   latitude     String?
   longitude    String?
   locationName String?
@@ -525,6 +527,17 @@ model meeting {
   endTime   DateTime 
   meetingType       String?
   meetingLink       String?
+ createdAt     DateTime  @default(now())
+ updatedAt     DateTime  @updatedAt
+}
+model room {
+  id           Int    @id @default(autoincrement())
+  location              location?            @relation(fields: [locationId], references: [id])
+  locationId            Int?
+    user            user      @relation(fields: [userId], references: [id]) 
+  userId          Int
+  roomName     String?
+  status       Boolean  @default(true)
  createdAt     DateTime  @default(now())
  updatedAt     DateTime  @updatedAt
 }

@@ -536,6 +536,19 @@ CREATE TABLE "meeting" (
 );
 
 -- CreateTable
+CREATE TABLE "room" (
+    "id" SERIAL NOT NULL,
+    "locationId" INTEGER,
+    "userId" INTEGER NOT NULL,
+    "roomName" TEXT,
+    "status" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "room_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_taskTouser" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
@@ -702,6 +715,12 @@ ALTER TABLE "meeting" ADD CONSTRAINT "meeting_departmentId_fkey" FOREIGN KEY ("d
 
 -- AddForeignKey
 ALTER TABLE "meeting" ADD CONSTRAINT "meeting_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "location"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "room" ADD CONSTRAINT "room_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "location"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "room" ADD CONSTRAINT "room_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_taskTouser" ADD CONSTRAINT "_taskTouser_A_fkey" FOREIGN KEY ("A") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;

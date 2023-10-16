@@ -29,23 +29,8 @@ const createAttendance = async (req, res) => {
         shift: true,
       },
     });
-
-//     // format time
-//     const startTime = moment(user.shift.startTime, "HH:mm");
-
-//     const endTime = moment(user.shift.endTime, "HH:mm");
-
-//     console.log(startTime);
-//     const curTime = moment(new Date()).format("HH:mm") ;
-// console.log(curTime);
-//     const isLate = moment().isAfter(startTime);
-//     const isEarly = moment().isBefore(startTime);
-//     console.log(isLate, "late");
-//     console.log(isEarly, "early");
-
       const startTime = moment(new Date()).format('HH:mm'); // Example start time
       const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
-      console.log("..............................", startTime, endTime)
       const startTimeParts = startTime.split(':');
       const endTimeParts = endTime.split(':');
       const startHour = parseInt(startTimeParts[0], 10);
@@ -59,29 +44,22 @@ const createAttendance = async (req, res) => {
 
       const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
 let inTimeStatus
-      console.log("Time difference .....", timeDifferenceMinutes);
       if (timeDifferenceMinutes >= 0) {
         inTimeStatus="OnTime"
       }
       else{
         inTimeStatus="Late"
       }
-      //     const startTime = moment(user.shift.startTime, "HH:mm");
-
     const endTimes = moment(user.shift.endTime, "HH:mm");
-    // const isOutEarly = moment().isBefore(endTimes);
-    // const isOutLate = moment().isAfter(endTimes);
     let outTimeStatus
     if (timeDifferenceMinutes >= 0) {
       outTimeStatus="OnTime"
     }
-    // else if(timeDifferenceMinutes <= 0)
-    // {
-    //   outTimeStatus="Early"
-    // }
-    else{
+    else if(timeDifferenceMinutes <= 0)
+    {
       outTimeStatus="Early"
     }
+   
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
     const attendance = await prisma.attendance.findFirst({
@@ -169,9 +147,7 @@ let inTimeStatus
         message:"Clock in Successfully"
       });
     } else  {
-      const outTime = new Date(moment.now());
-      const timeDifferenceMs = Math.abs(outTime - attendance.inTime);
-      const totalMinutes = timeDifferenceMs / 60000; // 60000 milliseconds in a minute
+      const totalHours = Math.abs(outTime - inTime) / 36e5
    
       const newAttendance = await prisma.attendance.update({
         where: {
@@ -179,7 +155,7 @@ let inTimeStatus
         },
         data: {
           outTime: outTime,
-          totalHour: parseFloat(totalMinutes.toFixed(0)),
+          totalHour: parseFloat(totalHours.toFixed(3)),
           outTimeStatus: outTimeStatus,
 
         },
