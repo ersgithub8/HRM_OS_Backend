@@ -45,7 +45,13 @@ const createAttendanceOnLeave = async () => {
     const today = new Date();  
     console.log(today);
 
-    const isTodayPublicHoliday = await prisma.publicHoliday.findMany();
+    const isTodayPublicHoliday = await prisma.publicHoliday.findFirst({
+      where: {
+        date: {
+          equals: today.toISOString().split('T')[0],
+        },
+      },
+    });
 
 //     console.log('Is today a public holiday?', isTodayPublicHoliday);
 // return

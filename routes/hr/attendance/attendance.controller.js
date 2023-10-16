@@ -31,17 +31,14 @@ const createAttendance = async (req, res) => {
     });
 
     // format time
-    const startTime = moment(user.shift.startTime, "h:mm A");
-    const endTime = moment(user.shift.endTime, "h:mm A");
-
-    // check if user is late or early
+    const startTime = moment(user.shift.startTime, "h:mm A", true);
+    const endTime = moment(user.shift.endTime, "h:mm A", true);
     const isLate = moment().isAfter(startTime);
     const isEarly = moment().isBefore(startTime);
-    const isOutEarly = moment().isAfter(endTime);
-    const isOutLate = moment().isBefore(endTime);
+    const isOutEarly = moment().isBefore(endTime);
+    const isOutLate = moment().isAfter(endTime);
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
-
     const attendance = await prisma.attendance.findFirst({
       where: {
         userId: id,
@@ -72,7 +69,7 @@ const createAttendance = async (req, res) => {
       const date = new Date();
       const outTime = new Date();
 
-      const totalHours = Math.abs(outTime - inTime) / 36e5;
+      const totalHours = Math.abs(outTime - inTime) / (1000 * 60 * 60);
 
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -105,7 +102,7 @@ const createAttendance = async (req, res) => {
           ip: req.body.ip ? req.body.ip : null,
           date: req.body.date ? req.body.date :new Date(),
           attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"present",
-          inTimeStatus:isEarly ? "OnTime" : isLate ? "Late" : "OnTime",
+          inTimeStatus: isEarly ? "Late" : (isLate ? "Ontime" : "OnTime"),
           outTimeStatus: null,
         },
       });
@@ -128,15 +125,16 @@ const createAttendance = async (req, res) => {
       });
     } else  {
       const outTime = new Date(moment.now());
-      const totalHours = Math.abs(outTime - attendance.inTime) /36000;
-
+      const timeDifferenceMs = Math.abs(outTime - attendance.inTime);
+      const totalMinutes = timeDifferenceMs / 60000; // 60000 milliseconds in a minute
+   
       const newAttendance = await prisma.attendance.update({
         where: {
           id: attendance.id,
         },
         data: {
           outTime: outTime,
-          totalHour: parseFloat(totalHours.toFixed(3)),
+          totalHour: parseFloat(totalMinutes.toFixed(0)),
           outTimeStatus: isOutEarly ? "Early" : isOutLate ? "OnTime" : "OnTime",
 
         },
@@ -150,259 +148,6 @@ const createAttendance = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-// const createadminAttendance = async (req, res) => {
-//   try {
-//     const employeeId = req.body.employeeId;
-//     const date = req.body.date ? req.body.date : new Date();
-//     const attendenceStatus = req.body.attendenceStatus ? req.body.attendenceStatus : "present";
-
-//     // Fetch the user by employeeId
-//     const user = await prisma.user.findUnique({
-//       where: {
-//         employeeId: employeeId,
-//       },
-//       include: {
-//         shift: true,
-//       },
-//     });
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found with the provided employeeId." });
-//     }
-
-//     // format time
-//     const startTime = moment(user.shift.startTime, "h:mm A");
-//     const endTime = moment(user.shift.endTime, "h:mm A");
-
-//     // check if user is late or early
-//     const isLate = moment().isAfter(startTime);
-//     const isEarly = moment().isBefore(startTime);
-//     const isOutEarly = moment().isAfter(endTime);
-//     const isOutLate = moment().isBefore(endTime);
-//     const today = moment().startOf('day');
-//     const tomorrow = moment(today).add(1, 'days');
-
-//     const attendance = await prisma.attendance.findFirst({
-//       where: {
-//         userId: user.id,
-//         date: {
-//           gte: today.toDate(),
-//           lt: tomorrow.toDate(),
-//         },
-//       },
-//     });
-
-//     const existingCheckOut = await prisma.attendance.findFirst({
-//       where: {
-//         userId: user.id,
-//         date: {
-//           gte: today.toDate(),
-//           lt: tomorrow.toDate(),
-//         },
-//       },
-//     });
-
-//     if (req.query.query === "manualPunch") {
-//       const inTime = new Date();
-//       const outTime = new Date();
-//       const totalHours = new Date();
-
-//       const newAttendance = await prisma.attendance.create({
-//         data: {
-//           userId: user.id, // Change to user.id instead of userId
-//           inTime: null,
-//           outTime: null,
-//           punchBy: req.auth.sub,
-//           inTimeStatus:  null,
-//           outTimeStatus:  null,
-//           comment:  null,
-//           date: date,
-//           attendenceStatus: attendenceStatus,
-//           ip:  null,
-//           totalHour: null,
-//         },
-//       });
-
-//       // Fetch all today's attendance records including the newly created one
-//       const allAttendance = await prisma.attendance.findMany({
-//         where: {
-//           date: {
-//             gte: today.toDate(),
-//             lt: tomorrow.toDate(),
-//           },
-//         },
-//         orderBy: [
-//           {
-//             id: "desc",
-//           },
-//         ],
-//         include: {
-//           user: {
-//             select: {
-//               firstName: true,
-//               lastName: true,
-//               employeeId: true,
-//             },
-//           },
-//         },
-//       });
-
-//       const punchBy = await prisma.user.findMany({
-//         where: {
-//           id: { in: allAttendance.map((item) => item.punchBy) },
-//         },
-//         select: {
-//           id: true,
-//           firstName: true,
-//           lastName: true,
-//           employeeId: true,
-//         },
-//       });
-
-//       const result = allAttendance.map((attendance) => {
-//         return {
-//           ...attendance,
-//           punchBy: punchBy,
-//         };
-//       });
-
-//       return res.status(200).json(result);
-//     } else if (!attendance) {
-//       // const inTime = null;
-//       // const outTime = null;
-//       // const totalHours = null;
-
-//       const newAttendance = await prisma.attendance.create({
-//         data: {
-//           userId: user.id, // Change to user.id instead of userId
-//           inTime: null,
-//           outTime: null,
-//           punchBy: req.auth.sub,
-//           inTimeStatus:  null,
-//           outTimeStatus:  null,
-//           comment:  null,
-//           date: date,
-//           attendenceStatus: attendenceStatus,
-//           ip:  null,
-//           totalHour: null,
-//         },
-//       });
-
-//       // Fetch all today's attendance records including the newly created one
-//       const allAttendance = await prisma.attendance.findMany({
-//         where: {
-//           date: {
-//             gte: today.toDate(),
-//             lt: tomorrow.toDate(),
-//           },
-//         },
-//         orderBy: [
-//           {
-//             id: "desc",
-//           },
-//         ],
-//         include: {
-//           user: {
-//             select: {
-//               firstName: true,
-//               lastName: true,
-//               employeeId: true,
-//             },
-//           },
-//         },
-//       });
-
-//       const punchBy = await prisma.user.findMany({
-//         where: {
-//           id: { in: allAttendance.map((item) => item.punchBy) },
-//         },
-//         select: {
-//           id: true,
-//           firstName: true,
-//           lastName: true,
-//           employeeId: true,
-//         },
-//       });
-
-//       const result = allAttendance.map((attendance) => {
-//         return {
-//           ...attendance,
-//           punchBy: punchBy,
-//         };
-//       });
-
-//       return res.status(200).json(result);
-//     } else {
-//       const inTime = new Date();
-//       const outTime = new Date();
-//       const totalHours = 0;
-
-//       const newAttendance = await prisma.attendance.update({
-//         where: {
-//           id: attendance.id,
-//         },
-//         data: {
-//           outTime: null,
-//           inTime:null,
-//           totalHour: null,
-//           outTimeStatus: null,
-//           attendenceStatus: req.body.attendenceStatus,
-//            // Update the attendanceStatus here
-//            date:req.body.date,
-//         },
-//       });
-
-//       // Fetch all today's attendance records including the updated one
-//       const allAttendance = await prisma.attendance.findMany({
-//         where: {
-//           date: {
-//             gte: today.toDate(),
-//             lt: tomorrow.toDate(),
-//           },
-//         },
-//         orderBy: [
-//           {
-//             id: "desc",
-//           },
-//         ],
-//         include: {
-//           user: {
-//             select: {
-//               firstName: true,
-//               lastName: true,
-//               employeeId: true,
-//             },
-//           },
-//         },
-//       });
-
-//       const punchBy = await prisma.user.findMany({
-//         where: {
-//           id: { in: allAttendance.map((item) => item.punchBy) },
-//         },
-//         select: {
-//           id: true,
-//           firstName: true,
-//           lastName: true,
-//           employeeId: true,
-//         },
-//       });
-
-//       const result = allAttendance.map((attendance) => {
-//         return {
-//           ...attendance,
-//           punchBy: punchBy,
-//         };
-//       });
-
-//       return res.status(200).json(result);
-//     }
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }  
-// };
-
 
 const createadminAttendance = async (req, res) => {
   try {
@@ -1101,7 +846,7 @@ const getLastAttendanceByUserId = async (req, res) => {
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
     const today = new Date();
-    // console.log(today,"fdhsj");
+    console.log(today,"fdhsj");
     // return
     today.setHours(0, 0, 0, 0);
 
@@ -1137,6 +882,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
         },
       ],
     });
+    console.log(todayAttendance);
 let isadmin = null;
 
 if (todayAttendance) {
