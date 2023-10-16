@@ -48,8 +48,6 @@ const createAttendance = async (req, res) => {
       console.log("..............................", startTime, endTime)
       const startTimeParts = startTime.split(':');
       const endTimeParts = endTime.split(':');
-let isEarly
-let isLate
       const startHour = parseInt(startTimeParts[0], 10);
       const startMinute = parseInt(startTimeParts[1], 10);
 
@@ -68,8 +66,11 @@ let inTimeStatus
       else{
         inTimeStatus="Late"
       }
-    const isOutEarly = moment().isBefore(endTime);
-    const isOutLate = moment().isAfter(endTime);
+      //     const startTime = moment(user.shift.startTime, "HH:mm");
+
+    const endTimes = moment(user.shift.endTime, "HH:mm");
+    const isOutEarly = moment().isBefore(endTimes);
+    const isOutLate = moment().isAfter(endTimes);
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
     const attendance = await prisma.attendance.findFirst({
