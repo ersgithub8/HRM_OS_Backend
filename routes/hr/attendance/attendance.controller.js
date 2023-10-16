@@ -39,6 +39,7 @@ const createAttendance = async (req, res) => {
     console.log(isEarly);
     const isLate = moment().isAfter(startTime);
     const isOutEarly = moment().isBefore(endTime);
+    console.log(isOutEarly,"out");
     const isOutLate = moment().isAfter(endTime);
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
@@ -138,7 +139,7 @@ const createAttendance = async (req, res) => {
         data: {
           outTime: outTime,
           totalHour: parseFloat(totalMinutes.toFixed(0)),
-          outTimeStatus: isOutEarly ? "Early" : isOutLate ? "OnTime" : "OnTime",
+          outTimeStatus: isOutEarly ? "Late" : isOutLate ? "Early" : "OnTime",
 
         },
       });
