@@ -93,7 +93,7 @@ const createAttendanceOnLeave = async () => {
   }
 };
 
-cron.schedule('* * * * *', createAttendanceOnLeave);
+// cron.schedule('* * * * *', createAttendanceOnLeave);
 
 
 
