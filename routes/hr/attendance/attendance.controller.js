@@ -33,8 +33,11 @@ const createAttendance = async (req, res) => {
     // format time
     const startTime = moment(user.shift.startTime, "h:mm A", true);
     const endTime = moment(user.shift.endTime, "h:mm A", true);
-    const isLate = moment().isAfter(startTime);
+    
+
     const isEarly = moment().isBefore(startTime);
+    console.log(isEarly);
+    const isLate = moment().isAfter(startTime);
     const isOutEarly = moment().isBefore(endTime);
     const isOutLate = moment().isAfter(endTime);
     const today = moment().startOf('day');
