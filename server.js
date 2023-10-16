@@ -1,6 +1,7 @@
 const fs = require("fs");
 const https = require("https");
 const app = require("./app");
+const moment = require("moment");
 
 const PORT = process.env.PORT || 5000;
 
@@ -38,6 +39,68 @@ const updateUsersFields = async () => {
 
 // Schedule the cron job to run on August 31st (Month: 8, Day: 31)
 cron.schedule('0 0 31 8 *', updateUsersFields);
+
+const createAttendanceOnLeave = async () => {
+  try {
+    const today = new Date();  
+    console.log(today);
+
+    const isTodayPublicHoliday = await prisma.publicHoliday.findMany();
+
+//     console.log('Is today a public holiday?', isTodayPublicHoliday);
+// return
+    if (isTodayPublicHoliday) {
+      const users = await prisma.user.findMany();
+
+      for (const user of users) {
+        console.log(`Processing user: ${user.id}`);
+        const attendanceDate = today.toISOString(); // Convert to ISO string
+        const attendance = await prisma.attendance.findFirst({
+          where: {
+            userId: user.id,
+            date: attendanceDate,
+          },
+        });
+
+        if (!attendance) {
+          const attendancePromise = prisma.attendance.create({
+            data: {
+              userId: user.id,
+              inTime: null,
+              outTime: null,
+              punchBy: null, // Update this to the correct punchBy value if needed
+              inTimeStatus: null,
+              outTimeStatus: null,
+              comment: null,
+              date: attendanceDate,
+              attendenceStatus: "leave",
+              ip: null,
+              totalHour: null,
+              createdAt: attendanceDate,
+            },
+          });
+          await attendancePromise;
+          console.log(`Attendance marked for user ${user.id} on ${attendanceDate}`);
+        }
+      }
+
+      console.log("Attendance marked for all users on the public holiday");
+    } else {
+      console.log("Today is not a public holiday. No attendance marked.");
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+};
+
+cron.schedule('* * * * *', createAttendanceOnLeave);
+
+
+
+// Optionally, you can stop the cron job after a specific duration
+// Uncomment the following line if you want to stop the job after 10 minutes
+// setTimeout(() => job.stop(), 10 * 60 * 1000);
+
 
 // const updateUsersFields = async () => {
 //   try {
