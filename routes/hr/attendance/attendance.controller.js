@@ -1,7 +1,7 @@
 const { getPagination } = require("../../../utils/query");
 const moment = require("moment");
 const prisma = require("../../../utils/prisma");
-const Sequelize  = require("sequelize"); // Assuming you're using Sequelize for PostgreSQL
+const Sequelize = require("sequelize"); // Assuming you're using Sequelize for PostgreSQL
 const Op = Sequelize.Op;
 const operatorsAliases = {
   $between: Op.between, //create an alias for Op.between
@@ -29,37 +29,36 @@ const createAttendance = async (req, res) => {
         shift: true,
       },
     });
-      const startTime = moment(new Date()).format('HH:mm'); // Example start time
-      const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
-      const startTimeParts = startTime.split(':');
-      const endTimeParts = endTime.split(':');
-      const startHour = parseInt(startTimeParts[0], 10);
-      const startMinute = parseInt(startTimeParts[1], 10);
+    const startTime = moment(new Date()).format('HH:mm'); // Example start time
+    const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
+    const startTimeParts = startTime.split(':');
+    const endTimeParts = endTime.split(':');
+    const startHour = parseInt(startTimeParts[0], 10);
+    const startMinute = parseInt(startTimeParts[1], 10);
 
-      const endHour = parseInt(endTimeParts[0], 10);
-      const endMinute = parseInt(endTimeParts[1], 10);
+    const endHour = parseInt(endTimeParts[0], 10);
+    const endMinute = parseInt(endTimeParts[1], 10);
 
-      const totalMinutesStart = startHour * 60 + startMinute;
-      const totalMinutesEnd = endHour * 60 + endMinute;
+    const totalMinutesStart = startHour * 60 + startMinute;
+    const totalMinutesEnd = endHour * 60 + endMinute;
 
-      const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
-let inTimeStatus
-      if (timeDifferenceMinutes >= 0) {
-        inTimeStatus="OnTime"
-      }
-      else{
-        inTimeStatus="Late"
-      }
+    const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
+    let inTimeStatus
+    if (timeDifferenceMinutes >= 0) {
+      inTimeStatus = "OnTime"
+    }
+    else {
+      inTimeStatus = "Late"
+    }
     const endTimes = moment(user.shift.endTime, "HH:mm");
     let outTimeStatus
     if (timeDifferenceMinutes >= 0) {
-      outTimeStatus="OnTime"
+      outTimeStatus = "OnTime"
     }
-    else if(timeDifferenceMinutes <= 0)
-    {
-      outTimeStatus="Early"
+    else if (timeDifferenceMinutes <= 0) {
+      outTimeStatus = "Early"
     }
-   
+
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
     const attendance = await prisma.attendance.findFirst({
@@ -71,17 +70,17 @@ let inTimeStatus
         },
       },
     });
-    
-  const existingCheckOut = await prisma.attendance.findFirst({
-    where: {
-      userId: id,
-      outTime: {
-        gte: today.toDate(),
-        lt: tomorrow.toDate(),
+
+    const existingCheckOut = await prisma.attendance.findFirst({
+      where: {
+        userId: id,
+        outTime: {
+          gte: today.toDate(),
+          lt: tomorrow.toDate(),
+        },
       },
-    },
-  });
-    if (attendance&&existingCheckOut) {
+    });
+    if (attendance && existingCheckOut) {
       return res.status(400).json({
         message: "Clock in has already been marked for today.",
       });
@@ -104,14 +103,14 @@ let inTimeStatus
           outTimeStatus: req.body.outTimeStatus ? req.body.outTimeStatus : null,
           comment: req.body.comment ? req.body.comment : null,
           date: req.body.date ? req.body.date : new Date(),
-          attendenceStatus:req.body.attendenceStatus ? req.body.attendenceStatus:"present",
+          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : "present",
           ip: req.body.ip ? req.body.ip : null,
           totalHour: parseFloat(totalHours.toFixed(3)),
         },
       });
       return res.status(200).json({
         newAttendance,
-        message:"Clock in Successfully"
+        message: "Clock in Successfully"
       });
     } else if (attendance === null) {
       const inTime = new Date(moment.now());
@@ -123,8 +122,8 @@ let inTimeStatus
           punchBy: req.auth.sub,
           comment: req.body.comment ? req.body.comment : null,
           ip: req.body.ip ? req.body.ip : null,
-          date: req.body.date ? req.body.date :new Date(),
-          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"present",
+          date: req.body.date ? req.body.date : new Date(),
+          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : "present",
           inTimeStatus,
           outTimeStatus: null,
         },
@@ -144,11 +143,11 @@ let inTimeStatus
       // }
       return res.status(200).json({
         newAttendance,
-        message:"Clock in Successfully"
+        message: "Clock in Successfully"
       });
-    } else  {
+    } else {
       const totalHours = Math.abs(outTime - inTime) / 36e5
-   
+
       const newAttendance = await prisma.attendance.update({
         where: {
           id: attendance.id,
@@ -162,7 +161,7 @@ let inTimeStatus
       });
       return res.status(200).json({
         newAttendance,
-        message:"Clock out Successfully"
+        message: "Clock out Successfully"
       });
     }
   } catch (error) {
@@ -189,7 +188,7 @@ const createadminAttendance = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found with the provided employeeId." });
     }
-    
+
 
     const today = moment(date).startOf('day');
     const tomorrow = moment(today).add(1, 'days');
@@ -221,7 +220,7 @@ const createadminAttendance = async (req, res) => {
           attendenceStatus: attendenceStatus,
           ip: null,
           totalHour: null,
-          createdAt:date,
+          createdAt: date,
         },
       });
 
@@ -270,7 +269,8 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json({
         // result,
-      message:"Attendence created successfully"});
+        message: "Attendence created successfully"
+      });
     } else if (!attendance) {
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -285,7 +285,7 @@ const createadminAttendance = async (req, res) => {
           attendenceStatus: attendenceStatus,
           ip: null,
           totalHour: null,
-          createdAt:date,
+          createdAt: date,
 
         },
       });
@@ -333,9 +333,20 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
+      if (attendenceStatus) {
+        const Title = 'Attendance Marked';
+        const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
+        const Desc = 'Attendance marked notification';
+        const Token = user.firebaseToken;
+        // const Device = user.device;
+        console.log(Title, Body, Desc, Token);
+        sendnotifiy(Title, Body, Desc, Token);
+      }
+
       return res.status(200).json({
         // result,
-        message:"Attendence created successfully"});
+        message: "Attendence created successfully"
+      });
     } else {
       const newAttendance = await prisma.attendance.update({
         where: {
@@ -394,9 +405,20 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
+      if (attendenceStatus) {
+        const Title = 'Attendance Marked';
+        const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
+        const Desc = 'Attendance marked notification';
+        const Token = user.firebaseToken;
+        // const Device = user.device;
+        console.log(Title, Body, Desc, Token);
+        sendnotifiy(Title, Body, Desc, Token);
+      }
+
       return res.status(200).json({
         // result,
-        message:"Attendence created successfully"});
+        message: "Attendence created successfully"
+      });
     }
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -422,7 +444,7 @@ const getAllAttendance = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
-          employeeId:true,
+            employeeId: true,
 
           },
         },
@@ -437,7 +459,7 @@ const getAllAttendance = async (req, res) => {
         id: true,
         firstName: true,
         lastName: true,
-        employeeId:true,
+        employeeId: true,
 
       },
     });
@@ -472,7 +494,7 @@ const getAllAttendance = async (req, res) => {
             select: {
               firstName: true,
               lastName: true,
-          employeeId:true,
+              employeeId: true,
 
             },
           },
@@ -486,7 +508,7 @@ const getAllAttendance = async (req, res) => {
           id: true,
           firstName: true,
           lastName: true,
-          employeeId:true,
+          employeeId: true,
         },
       });
       const result = allAttendance.map((attendance) => {
@@ -629,7 +651,7 @@ const getAttendanceByUserId = async (req, res) => {
     if (createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
-      endDate.setHours(23,59,59);
+      endDate.setHours(23, 59, 59);
 
 
       // Validate startDate and endDate
@@ -645,9 +667,9 @@ const getAttendanceByUserId = async (req, res) => {
     else {
       const today = new Date();
       const todayStartDate = new Date(today);
-      todayStartDate.setHours(0, 0, 0, 0); 
+      todayStartDate.setHours(0, 0, 0, 0);
       const todayEndDate = new Date(today);
-      todayEndDate.setHours(23, 59, 59, 999); 
+      todayEndDate.setHours(23, 59, 59, 999);
 
       attendanceQuery.where.createdAt = {
         gte: todayStartDate,
@@ -727,7 +749,7 @@ const getAttendanceByUserId = async (req, res) => {
 //           },
 //         },
 //       },
-      
+
 //     });
 
 //     const punchBy = await prisma.user.findMany({
@@ -867,7 +889,7 @@ const getLastAttendanceByUserId = async (req, res) => {
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
     const today = new Date();
-    console.log(today,"fdhsj");
+    console.log(today, "fdhsj");
     // return
     today.setHours(0, 0, 0, 0);
 
@@ -904,14 +926,14 @@ const getTodayAttendanceByUserId = async (req, res) => {
       ],
     });
     console.log(todayAttendance);
-let isadmin = null;
+    let isadmin = null;
 
-if (todayAttendance) {
-  isadmin = todayAttendance.punchBy === todayAttendance.userId ? 'user' : 'admin';
-}
+    if (todayAttendance) {
+      isadmin = todayAttendance.punchBy === todayAttendance.userId ? 'user' : 'admin';
+    }
     const response = {
       inTime: null,
-      isadmin:isadmin,
+      isadmin: isadmin,
       outTime: null,
       totalHours: null,
       totalMinutes: null,
@@ -922,9 +944,9 @@ if (todayAttendance) {
     };
 
     if (!todayAttendance) {
-      
+
       response.attendenceStatus = null;
-      response.isadmin=null;
+      response.isadmin = null;
       return res.status(200).json(response);
     }
 
@@ -949,13 +971,13 @@ if (todayAttendance) {
         response.totalSeconds = totalSeconds.toString().padStart(2, '0');
         response.attendenceStatus = todayAttendance.attendenceStatus;
       } else {
-        response.attendenceStatus = todayAttendance.attendenceStatus; 
+        response.attendenceStatus = todayAttendance.attendenceStatus;
       }
 
       return res.status(200).json(response);
     }
 
-    response.attendenceStatus =todayAttendance.attendenceStatus;
+    response.attendenceStatus = todayAttendance.attendenceStatus;
     return res.status(200).json(response);
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -998,7 +1020,7 @@ const search = async (req, res) => {
       const currentMonthStart = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth(), 1);
       const previousMonthStart = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth() - 1, 1);
       const previousMonthEnd = new Date(todayStartDate.getFullYear(), todayStartDate.getMonth(), 0);
-      
+
       attendanceQuery.where = {
         createdAt: {
           gte: todayStartDate,
@@ -1024,14 +1046,14 @@ const search = async (req, res) => {
       // Count present and absent records
       let presentCount = 0;
       let absentCount = 0;
-      let leaveCount=0;
-      let holidayCount=0
-      const totalUsers =await prisma.user.count({
+      let leaveCount = 0;
+      let holidayCount = 0
+      const totalUsers = await prisma.user.count({
         where: {
           status: true,
         },
       });
-      
+
 
       allAttendance.forEach((attendance) => {
         if (attendance.attendenceStatus === "present") {
@@ -1045,7 +1067,7 @@ const search = async (req, res) => {
         else if (attendance.attendenceStatus === "holiday") {
           holidayCount++;
         }
-        
+
       });
       const currentMonthCount = await prisma.user.count({
         where: {
@@ -1069,30 +1091,30 @@ const search = async (req, res) => {
       const today = new Date();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth();
-      
+
       // Calculate the start and end dates for this month
       const thisMonthStart = new Date(currentYear, currentMonth, 1);
       const thisMonthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
-      
+
       // Calculate the start and end dates for last month
       const lastMonthStart = new Date(currentYear, currentMonth - 1, 1);
       const lastMonthEnd = new Date(currentYear, currentMonth, 0, 23, 59, 59);
-      
+
       // Count users for this month and last month
       const thisMonthUserCount = await prisma.user.count({
         where: {
           createdAt: { gte: thisMonthStart, lte: thisMonthEnd },
         },
       });
-      console.log(thisMonthUserCount,"newmonth");
+      console.log(thisMonthUserCount, "newmonth");
       const lastMonthUserCount = await prisma.user.count({
         where: {
           createdAt: { gte: lastMonthStart, lte: lastMonthEnd },
         },
       });
-      console.log(lastMonthUserCount,"oldmonth");
+      console.log(lastMonthUserCount, "oldmonth");
 
-      
+
       // Calculate the percentage change
       let percentageChange = 0;
       if (lastMonthUserCount !== 0) {
@@ -1101,20 +1123,20 @@ const search = async (req, res) => {
       } else if (thisMonthUserCount !== 0) {
         percentageChange = 100;
       }
-      
+
       // Count users with different statuses
       const pendingUserCount = await prisma.user.count({
         where: {
           applicationStatus: 'PENDING',
         },
       });
-      
+
       const approvedUserCount = await prisma.user.count({
         where: {
           applicationStatus: 'APPROVED',
         },
       });
-      
+
       const rejectedUserCount = await prisma.user.count({
         where: {
           applicationStatus: 'REJECTED',
@@ -1160,18 +1182,18 @@ const search = async (req, res) => {
       const result = {
         totalPresent: presentCount,
         totalAbsent: absentCount,
-        totalLeaves:leaveCount,
-        totalHoliday:holidayCount,
+        totalLeaves: leaveCount,
+        totalHoliday: holidayCount,
         currentMonthUserCount: currentMonthCount,
         previousMonthUserCount: previousMonthCount,
-        totalUsers:totalUsers,
-        thisMonthUserCount:thisMonthUserCount,
-        lastMonthUserCount:lastMonthUserCount,
-        percentageChange:percentageChange,
-        pendingUserCount:pendingUserCount,
-        approvedUserCount:approvedUserCount,
-        rejectedUserCount:rejectedUserCount,
-        attendanceData:allAttendance.map((attendance) => {
+        totalUsers: totalUsers,
+        thisMonthUserCount: thisMonthUserCount,
+        lastMonthUserCount: lastMonthUserCount,
+        percentageChange: percentageChange,
+        pendingUserCount: pendingUserCount,
+        approvedUserCount: approvedUserCount,
+        rejectedUserCount: rejectedUserCount,
+        attendanceData: allAttendance.map((attendance) => {
           return {
             ...attendance,
             punchBy: punchBy,
@@ -1179,26 +1201,26 @@ const search = async (req, res) => {
         })
       };
       return res.status(200).json(result);
-    }else if (employeeId && createdAtFrom && createdAtTo) {
+    } else if (employeeId && createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
       endDate.setHours(23, 59, 59);
-    
+
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
       }
-      
+
       // Find user by employeeId
       const user = await prisma.user.findUnique({
         where: {
           employeeId: employeeId,
         },
       });
-    
+
       if (!user) {
         return res.status(404).json({ message: "User not found with the provided employeeId." });
       }
-    
+
       attendanceQuery.where = {
         createdAt: {
           gte: startDate,
@@ -1206,23 +1228,23 @@ const search = async (req, res) => {
         },
         userId: user.id,
       };
-    
+
       const userAttendance = await prisma.attendance.findMany({
         ...attendanceQuery,
       });
-    
+
       // Calculate total present leaves and absent records
       let presentCount = 0;
       let absentCount = 0;
-      let leaveCount=0;
-      let holidayCount=0
+      let leaveCount = 0;
+      let holidayCount = 0
       const totalUsers = await prisma.user.count({
         where: {
           status: true,
         },
       });
-      
-    
+
+
       userAttendance.forEach((attendance) => {
         if (attendance.attendenceStatus === "present") {
           presentCount++;
@@ -1236,7 +1258,7 @@ const search = async (req, res) => {
           holidayCount++;
         }
       });
-    
+
       const punchBy = await prisma.user.findMany({
         where: {
           id: { in: userAttendance.map((item) => item.punchBy) },
@@ -1248,15 +1270,15 @@ const search = async (req, res) => {
           employeeId: true,
         },
       });
-      
-    
+
+
       const result = {
         totalPresent: presentCount,
         totalAbsent: absentCount,
-        totalLeaves:leaveCount,
-        totalHoliday:holidayCount,
-        totalUsers:totalUsers,
-        
+        totalLeaves: leaveCount,
+        totalHoliday: holidayCount,
+        totalUsers: totalUsers,
+
         attendanceData: userAttendance.map((attendance) => {
           return {
             ...attendance,
@@ -1264,29 +1286,29 @@ const search = async (req, res) => {
           };
         }),
       };
-    
+
       return res.status(200).json(result);
     }
     else if (createdAtFrom && createdAtTo) {
       const startDate = new Date(createdAtFrom);
       const endDate = new Date(createdAtTo);
       endDate.setHours(23, 59, 59);
-    
+
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
       }
-      
+
       // Find user by employeeId
       // const user = await prisma.user.findUnique({
       //   where: {
       //     employeeId: employeeId,
       //   },
       // });
-    
+
       // if (!user) {
       //   return res.status(404).json({ message: "User not found with the provided employeeId." });
       // }
-    
+
       attendanceQuery.where = {
         createdAt: {
           gte: startDate,
@@ -1294,23 +1316,23 @@ const search = async (req, res) => {
         },
         // userId: user.id,
       };
-    
+
       const userAttendance = await prisma.attendance.findMany({
         ...attendanceQuery,
       });
-    
+
       // Calculate total present leaves and absent records
       let presentCount = 0;
       let absentCount = 0;
-      let leaveCount=0;
-      let holidayCount=0
+      let leaveCount = 0;
+      let holidayCount = 0
       const totalUsers = await prisma.user.count({
         where: {
           status: true,
         },
       });
-      
-    
+
+
       userAttendance.forEach((attendance) => {
         if (attendance.attendenceStatus === "present") {
           presentCount++;
@@ -1324,7 +1346,7 @@ const search = async (req, res) => {
           holidayCount++;
         }
       });
-    
+
       const punchBy = await prisma.user.findMany({
         where: {
           id: { in: userAttendance.map((item) => item.punchBy) },
@@ -1336,15 +1358,15 @@ const search = async (req, res) => {
           employeeId: true,
         },
       });
-      
-    
+
+
       const result = {
         totalPresent: presentCount,
         totalAbsent: absentCount,
-        totalLeaves:leaveCount,
-        totalHoliday:holidayCount,
-        totalUsers:totalUsers,
-        
+        totalLeaves: leaveCount,
+        totalHoliday: holidayCount,
+        totalUsers: totalUsers,
+
         attendanceData: userAttendance.map((attendance) => {
           return {
             ...attendance,
@@ -1352,10 +1374,10 @@ const search = async (req, res) => {
           };
         }),
       };
-    
+
       return res.status(200).json(result);
     }
-     else {
+    else {
       return res.status(400).json({ message: "Invalid query parameters." });
     }
   } catch (error) {
@@ -1402,7 +1424,7 @@ const updateSingleAttendence = async (req, res) => {
 
     return res.status(200).json({
       updatedAttendence,
-      message:"Attendence updated successfully"
+      message: "Attendence updated successfully"
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -1411,17 +1433,17 @@ const updateSingleAttendence = async (req, res) => {
 
 const deleteSingleAttendence = async (req, res) => {
   try {
-      const deletedattendence= await prisma.attendance.delete({
-        where: {
-          id: Number(req.params.id),
-        },
-      });
-      return res.status(200).json({
-        message:"Attendence deleted Successfully"
-      });
-    } catch (error) {
-      return res.status(400).json(error.message);
-    }
+    const deletedattendence = await prisma.attendance.delete({
+      where: {
+        id: Number(req.params.id),
+      },
+    });
+    return res.status(200).json({
+      message: "Attendence deleted Successfully"
+    });
+  } catch (error) {
+    return res.status(400).json(error.message);
+  }
 };
 
 const createAttendanceonleave = async (req, res) => {
@@ -1483,7 +1505,7 @@ const createAttendanceonleave = async (req, res) => {
               : "leave",
             ip: null,
             totalHour: null,
-            createdAt:attendanceDate,
+            createdAt: attendanceDate,
             // updatedAt:attendanceDate,
 
           },
@@ -1509,7 +1531,29 @@ const createAttendanceonleave = async (req, res) => {
   }
 };
 
- 
+function sendnotifiy(Title, Body, Desc, Token) {
+  try {
+    const message = {
+      notification: {
+        title: Title,
+        body: Body,
+      },
+      token: Token,
+    };
+    admin
+      .messaging()
+      .send(message)
+      .then((response) => {console.log("Notification Send ....") })
+      .catch((error) => {
+        console.log("Error sending notification:", error);
+      });
+
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
+
+
 
 module.exports = {
   createAttendance,

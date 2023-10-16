@@ -664,6 +664,8 @@ const updateSingleUser = async (req, res) => {
             leavePolicy:true,
       }
     });
+    // console.log(existingUser);
+    // return
     const leavs = await prisma.leavePolicy.findUnique({
       where: {
         id: req.body.leavePolicyId,
@@ -761,15 +763,15 @@ const updateSingleUser = async (req, res) => {
       const Title = req.body.applicationStatus;
       const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your leave request has been ' + req.body.applicationStatus;
       const Token = existingUser.firebaseToken;
-      // const Device = existingLeave.user.device;
-      sendnotifiy(Title, Body, Desc, Token);
+      const Desc = 'Application notification';
+      sendnotifiy(Title, Body,Desc, Token);
     }
     return res.status(200).json({
       userWithoutPassword,
       message: "User profile updated successfully",
     });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     return res.status(500).json({ message: error.message });
   }
 };
