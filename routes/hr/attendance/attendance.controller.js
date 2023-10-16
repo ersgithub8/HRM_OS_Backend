@@ -30,16 +30,45 @@ const createAttendance = async (req, res) => {
       },
     });
 
-    // format time
-    const startTime = moment(user.shift.startTime, "h:mm A", true);
-    const endTime = moment(user.shift.endTime, "h:mm A", true);
-    
+//     // format time
+//     const startTime = moment(user.shift.startTime, "HH:mm");
 
-    const isEarly = moment().isBefore(startTime);
-    console.log(isEarly);
-    const isLate = moment().isAfter(startTime);
+//     const endTime = moment(user.shift.endTime, "HH:mm");
+
+//     console.log(startTime);
+//     const curTime = moment(new Date()).format("HH:mm") ;
+// console.log(curTime);
+//     const isLate = moment().isAfter(startTime);
+//     const isEarly = moment().isBefore(startTime);
+//     console.log(isLate, "late");
+//     console.log(isEarly, "early");
+
+      const startTime = moment(new Date()).format('HH:mm'); // Example start time
+      const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
+      console.log("..............................", startTime, endTime)
+      const startTimeParts = startTime.split(':');
+      const endTimeParts = endTime.split(':');
+let isEarly
+let isLate
+      const startHour = parseInt(startTimeParts[0], 10);
+      const startMinute = parseInt(startTimeParts[1], 10);
+
+      const endHour = parseInt(endTimeParts[0], 10);
+      const endMinute = parseInt(endTimeParts[1], 10);
+
+      const totalMinutesStart = startHour * 60 + startMinute;
+      const totalMinutesEnd = endHour * 60 + endMinute;
+
+      const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
+let inTimeStatus
+      console.log("Time difference .....", timeDifferenceMinutes);
+      if (timeDifferenceMinutes >= 0) {
+        inTimeStatus="OnTime"
+      }
+      else{
+        inTimeStatus="Late"
+      }
     const isOutEarly = moment().isBefore(endTime);
-    console.log(isOutEarly,"out");
     const isOutLate = moment().isAfter(endTime);
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
@@ -106,7 +135,7 @@ const createAttendance = async (req, res) => {
           ip: req.body.ip ? req.body.ip : null,
           date: req.body.date ? req.body.date :new Date(),
           attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus:"present",
-          inTimeStatus: isEarly ? "Late" : (isLate ? "OnTime" : "OnTime"),
+          inTimeStatus,
           outTimeStatus: null,
         },
       });
