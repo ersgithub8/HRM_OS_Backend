@@ -78,11 +78,11 @@ const login = async (req, res) => {
           device: req.body.device || "Android",
         },
       });
+      updatedUser();
       const { password, ...userWithoutPassword } = user;
       return res.status(200).json({
         ...userWithoutPassword,
         token,
-        // updatedUser,
       });
     }
 
