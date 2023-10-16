@@ -7,7 +7,8 @@ const hirarchy=require("../hr/hirarchy/hirarchy.controller")
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const _ = require("lodash");
-
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
 const jwt = require("jsonwebtoken");
 const { isNullOrUndefined } = require("util");
 const secret = process.env.JWT_SECRET;
