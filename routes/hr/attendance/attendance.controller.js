@@ -80,7 +80,7 @@ let inTimeStatus
     //   outTimeStatus="Early"
     // }
     else{
-      outTimeStatus="OnTime"
+      outTimeStatus="Early"
     }
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
