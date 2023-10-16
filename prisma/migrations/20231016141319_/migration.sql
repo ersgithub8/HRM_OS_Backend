@@ -201,6 +201,7 @@ CREATE TABLE "attendance" (
     "comment" TEXT,
     "punchBy" INTEGER,
     "totalHour" DOUBLE PRECISION,
+    "overtime" DOUBLE PRECISION,
     "inTimeStatus" TEXT,
     "outTimeStatus" TEXT,
     "attendenceStatus" TEXT,

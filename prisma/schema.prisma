@@ -222,6 +222,7 @@ model attendance {
   comment       String?
   punchBy       Int?
   totalHour     Float?
+  overtime      Float?
   inTimeStatus  String?
   outTimeStatus String?
   attendenceStatus  String?    
