@@ -947,7 +947,58 @@ const updateSingleUserphone = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+const updateSingleStatus = async (req, res) => {
+  const id = parseInt(req.params.id);
 
+  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+    return res.status(401).json({
+      message: "Unauthorized. You can only edit your own record.",
+    });
+  }
+
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+    let updateData = {
+      status: req.body.status,
+    };
+
+    if (req.auth.permissions.includes("update-user")) {
+      updateData = {
+        ...updateData,
+        status: req.body.status,
+      };
+    } else {
+      // owner can change only password
+      updateData.password = req.body.password;
+    }
+
+    const updateUser = await prisma.user.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: updateData,
+    });
+
+    const { password, ...userWithoutPassword } = updateUser;
+    return res.status(200).json({
+      userWithoutPassword,
+      message: "Phonenumber updated successfully"
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
 
 // const deleteSingleUser = async (req, res) => {
 //   const id = parseInt(req.params.id);
@@ -1267,4 +1318,5 @@ module.exports = {
   updateSingleUserprofile,
   updateSingleUserphone,
   validate,
+  updateSingleStatus,
 };

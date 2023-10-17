@@ -13,7 +13,8 @@ const {
   users_resetpassword,
   updateSingleUserprofile,
   updateSingleUserphone,
-  validate
+  validate,
+  updateSingleStatus
 } = require("./user.controller.js");
 const userRoutes = express.Router();
 
@@ -33,6 +34,7 @@ userRoutes.post("/changepassword",authorize(""),changepassword);
 userRoutes.post("/forgot", users_forgot_password); // public route
 userRoutes.post("/otp", users_otpmatch); // public route
 userRoutes.post("/restpassword", users_resetpassword); // public route
+userRoutes.put("/status/:id", authorize("update-user"), updateSingleStatus);
 
 
 
