@@ -12,6 +12,8 @@ var FCM = require("fcm-node");
 //create a new employee
 const createAttendance = async (req, res) => {
   try {
+    let inTimeStatus;
+    let outTimeStatus;
     const id = parseInt(req.body.userId);
     if (
       !(id === req.auth.sub) &&
@@ -30,35 +32,6 @@ const createAttendance = async (req, res) => {
         shift: true,
       },
     });
-    const startTime = moment(new Date()).format('HH:mm'); // Example start time
-    const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
-    const startTimeParts = startTime.split(':');
-    const endTimeParts = endTime.split(':');
-    const startHour = parseInt(startTimeParts[0], 10);
-    const startMinute = parseInt(startTimeParts[1], 10);
-
-    const endHour = parseInt(endTimeParts[0], 10);
-    const endMinute = parseInt(endTimeParts[1], 10);
-
-    const totalMinutesStart = startHour * 60 + startMinute;
-    const totalMinutesEnd = endHour * 60 + endMinute;
-
-    const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
-    let inTimeStatus
-    if (timeDifferenceMinutes >= 0) {
-      inTimeStatus = "OnTime"
-    }
-    else {
-      inTimeStatus = "Late"
-    }
-    const endTimes = moment(user.shift.endTime, "HH:mm");
-    let outTimeStatus
-    if (timeDifferenceMinutes >= 0) {
-      outTimeStatus = "OnTime"
-    }
-    else if (timeDifferenceMinutes <= 0) {
-      outTimeStatus = "Early"
-    }
 
     const today = moment().startOf('day');
     const tomorrow = moment(today).add(1, 'days');
@@ -71,6 +44,65 @@ const createAttendance = async (req, res) => {
         },
       },
     });
+
+    if (attendance === null) {
+      const startTime = moment(new Date()).format('HH:mm'); // Example start time
+      const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
+      const startTimeParts = startTime.split(':');
+      const endTimeParts = endTime.split(':');
+      const startHour = parseInt(startTimeParts[0], 10);
+      const startMinute = parseInt(startTimeParts[1], 10);
+
+      const endHour = parseInt(endTimeParts[0], 10);
+      const endMinute = parseInt(endTimeParts[1], 10);
+
+      const totalMinutesStart = startHour * 60 + startMinute;
+      const totalMinutesEnd = endHour * 60 + endMinute;
+
+      const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
+      if (timeDifferenceMinutes >= 0) {
+        inTimeStatus = "OnTime"
+      }
+      else {
+        inTimeStatus = "Late"
+      }
+    }
+
+    else {
+      const startTime = moment(new Date()).format('HH:mm'); // Example start time
+      const endTime = moment(user?.shift?.endTime).format('HH:mm');   // Example end time
+      const startTimeParts = startTime.split(':');
+      const endTimeParts = endTime.split(':');
+      const startHour = parseInt(startTimeParts[0], 10);
+      const startMinute = parseInt(startTimeParts[1], 10);
+
+      const endHour = parseInt(endTimeParts[0], 10);
+      const endMinute = parseInt(endTimeParts[1], 10);
+
+      const totalMinutesStart = startHour * 60 + startMinute;
+      const totalMinutesEnd = endHour * 60 + endMinute;
+
+      const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
+      if (timeDifferenceMinutes <= 0) {
+        outTimeStatus = "OnTime"
+      }
+      else {
+        outTimeStatus = "Early"
+      }
+    }
+
+
+   
+
+
+    // let overtimeMinutes = 0;
+
+    // if (outTime.isAfter(endTime) && outTime.diff(endTime, 'minutes') > 30) {
+    //   overtimeMinutes = outTime.diff(endTime, 'minutes') - 30;
+    // }
+
+
+    
 
     const existingCheckOut = await prisma.attendance.findFirst({
       where: {
@@ -132,33 +164,22 @@ const createAttendance = async (req, res) => {
         },
       });
 
-      // if (req.body.fromleave){
-      //   return res.status(200).json({
-      //     newAttendance: newAttendance,
-      //     grantedLeave : req.body.grantedLeave,
-      //     message: 'Application status is updated',
-      //   });
-      // }else{
-      //   return res.status(200).json({
-      //     newAttendance,
-      //     message:"Clock in Successfully"
-      //   });
-      // }
       return res.status(200).json({
         newAttendance,
         message: "Clock in Successfully"
       });
     } else {
       const outTime = new Date(moment.now()); // Initialize outTime here
-      const totalHours = Math.abs(outTime - attendance.inTime) / 36e5;;
-
+      // const totalHours = Math.abs(outTime - attendance.inTime) / 36e5;;
+      const millisecondsDiff = Math.abs(outTime - attendance.inTime);
+      const totalHours = millisecondsDiff / (1000 * 60 * 60);
       const newAttendance = await prisma.attendance.update({
         where: {
           id: attendance.id,
         },
         data: {
           outTime: outTime,
-          totalHour: parseFloat(totalHours.toFixed(3)),
+          totalHour: parseFloat(totalHours.toFixed(2)),
           outTimeStatus: outTimeStatus,
 
         },
@@ -1478,7 +1499,7 @@ function sendnotifiy(Title, Body, Desc, Token) {
     admin
       .messaging()
       .send(message)
-      .then((response) => {console.log("Notification Send ....") })
+      .then((response) => { console.log("Notification Send ....") })
       .catch((error) => {
         console.log("Error sending notification:", error);
       });
