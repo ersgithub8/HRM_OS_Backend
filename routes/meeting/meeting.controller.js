@@ -565,7 +565,7 @@ const getMeetingByuserId = async (req, res) => {
       });
   
       if (meetings.length === 0)
-        return res.status(400).json([]);
+        return res.status(200).json([]);
   
       const tasksWithAssignedBy = await Promise.all(
         meetings.map(async (meeting) => {
