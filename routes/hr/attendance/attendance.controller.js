@@ -844,10 +844,11 @@ const getLastAttendanceByUserId = async (req, res) => {
 };
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
-    const today = new Date();
-    console.log(today, "fdhsj");
-    // return
-    today.setHours(0, 0, 0, 0);
+    const today = new Date();  
+    const databaseRecordDate = new Date("2023-10-18T14:09:29.017Z");
+    today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
+    
+    console.log(today);
 
     const userId = parseInt(req.params.id);
 
@@ -872,7 +873,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
       where: {
         userId: userId,
         date: {
-          gte: today,
+          equals: today,
         },
       },
       orderBy: [
@@ -939,6 +940,78 @@ const getTodayAttendanceByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
+// const getTodayAttendanceByUserId = async (req, res) => {
+//   try {
+//     const today = new Date();  
+//     const databaseRecordDate = new Date("2023-10-18T14:09:29.017Z");
+//     today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
+    
+//     console.log(today);
+//     const userId = parseInt(req.params.id);
+//     // const today = new Date();
+//     // // today.setHours(0, 0, 0, 0);
+//     const user = await prisma.user.findUnique({
+//       where: {
+//         id: userId,
+//       },
+//       select: {
+//         leavePolicy: true,
+//         weeklyHoliday: true,
+//       },
+//     });
+
+//     const todayAttendance = await prisma.attendance.findFirst({
+//       where: {
+//         userId: userId,
+//         date: {
+//           equals: today,
+//         },
+//       },
+//       orderBy: [
+//         {
+//           id: 'desc',
+//         },
+//       ],
+//     });
+
+//     const response = {
+//       inTime: null,
+//       isadmin: null,
+//       outTime: null,
+//       totalHours: null,
+//       totalMinutes: null,
+//       totalSeconds: null,
+//       attendenceStatus: null,
+//       leavePolicy: user?.leavePolicy || null,
+//       weeklyHolidays: user?.weeklyHoliday || [], // Include weekly holidays in the response
+//     };
+
+//     if (todayAttendance) {
+//       response.inTime = todayAttendance.inTime;
+//       response.isadmin = todayAttendance.punchBy === todayAttendance.userId ? 'user' : 'admin';
+//       response.attendenceStatus = todayAttendance.attendenceStatus;
+
+//       if (todayAttendance.outTime) {
+//         const checkInTime = new Date(todayAttendance.inTime);
+//         const checkOutTime = new Date(todayAttendance.outTime);
+//         const timeDiff = checkOutTime - checkInTime;
+
+//         response.outTime = todayAttendance.outTime;
+//         response.totalHours = Math.floor(timeDiff / (1000 * 60 * 60));
+//         response.totalMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+//         response.totalSeconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+//       }
+//     }
+
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
 
 const search = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
