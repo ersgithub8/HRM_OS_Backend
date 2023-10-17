@@ -1,5 +1,7 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
 //create tasks controller
 // const createTask = async (req, res) => {
 //   try {
@@ -74,7 +76,29 @@ const createTask = async (req, res) => {
         }
       },
     });
+    const userIds = userId.map(id => id); // Extract user IDs from userId array
 
+    const userTokens = await prisma.user.findMany({
+      where: {
+        id: {
+          in: userIds,
+        },
+      },
+      select: {
+        firebaseToken: true,
+      },
+    });
+    
+    const tokens = userTokens
+      .filter((user) => user.firebaseToken)
+      .map((user) => user.firebaseToken);
+    
+    const Title = req.body.name;
+    const Body = req.body.description;
+    const Desc = 'Task notification';
+    
+    console.log(Title, Body, Desc, tokens);
+    await sendNotify(Title, Body, Desc, tokens);
     return res.status(200).json({
       newTask,
       message: "Task created Successfully"
@@ -480,7 +504,36 @@ const getAlluserHirarchy = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+async function sendNotify(title, body, desc, tokens) {
+  try {
+    const messages = tokens.map((token) => ({
+      notification: {
+        title: title,
+        body: body,
+      },
+      token: token,
+    }));
 
+    const sendPromises = messages.map((message) =>
+      admin.messaging().send(message)
+    );
+
+    const results = await Promise.allSettled(sendPromises);
+
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        console.log(`Notification sent to token ${tokens[index]}`);
+      } else {
+        console.log(
+          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+        );
+      }
+    });
+
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+  }
+}
 module.exports = {
   createTask,
   getAllTasks,

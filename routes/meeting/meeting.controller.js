@@ -186,16 +186,29 @@ const createmeeting = async (req, res) => {
         },
       },
     });
-    const user = await prisma.user.findMany()
-    const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
-    const newTokens = tokenArray.filter(item => item !== null)
+    const userIds = userId.map(id => id); // Extract user IDs from userId array
 
-    const Title = req.body.meetingType;
+    const userTokens = await prisma.user.findMany({
+      where: {
+        id: {
+          in: userIds,
+        },
+      },
+      select: {
+        firebaseToken: true,
+      },
+    });
+    
+    const tokens = userTokens
+      .filter((user) => user.firebaseToken)
+      .map((user) => user.firebaseToken);
+    
+    const Title = 'Meeting notification';
     const Body = req.body.meetingdate;
     const Desc = 'Meeting notification';
-    // const Device = user.device;
-    console.log(Title, Body, Desc, newTokens);
-    sendNotify(Title, Body, Desc, newTokens);
+    
+    console.log(Title, Body, Desc, tokens);
+    await sendNotify(Title, Body, Desc, tokens);
     return res.status(200).json({
       newMeeting,
       message: 'Meeting created successfully',
