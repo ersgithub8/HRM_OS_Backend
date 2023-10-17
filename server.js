@@ -7,7 +7,21 @@ const PORT = process.env.PORT || 5000;
 
 const prisma = require("./utils/prisma");
 const cron = require('node-cron');
+const bodyParser = require("body-parser");
+const compression = require("compression");
+const express = require("express");
 
+/* variables */
+// express app instance
+// const app = express();
+const fileUpload = require('express-fileupload');
+app.use(fileUpload({
+  limit: { fileSize: 50 * 1024 * 1024 ,extended: true},
+}));
+app.use(compression());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(express.json());
 const updateUsersFields = async () => {
   try {
     // Fetch all users
