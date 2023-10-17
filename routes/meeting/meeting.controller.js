@@ -1,7 +1,8 @@
 const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
 const moment = require("moment");
-
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
 
 // const createmeeting = async (req, res) => {
 //     try {
@@ -185,7 +186,16 @@ const createmeeting = async (req, res) => {
         },
       },
     });
+    const user = await prisma.user.findMany()
+    const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
+    const newTokens = tokenArray.filter(item => item !== null)
 
+    const Title = req.body.meetingType;
+    const Body = req.body.meetingdate;
+    const Desc = 'Meeting notification';
+    // const Device = user.device;
+    console.log(Title, Body, Desc, newTokens);
+    sendNotify(Title, Body, Desc, newTokens);
     return res.status(200).json({
       newMeeting,
       message: 'Meeting created successfully',
@@ -645,7 +655,36 @@ const deleteMeeting = async (req, res) => {
   }
 };
 
+async function sendNotify(title, body, desc, tokens) {
+  try {
+    const messages = tokens.map((token) => ({
+      notification: {
+        title: title,
+        body: body,
+      },
+      token: token,
+    }));
 
+    const sendPromises = messages.map((message) =>
+      admin.messaging().send(message)
+    );
+
+    const results = await Promise.allSettled(sendPromises);
+
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        console.log(`Notification sent to token ${tokens[index]}`);
+      } else {
+        console.log(
+          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+        );
+      }
+    });
+
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+  }
+}
 module.exports = {
     createmeeting,
   getAllMeeting,

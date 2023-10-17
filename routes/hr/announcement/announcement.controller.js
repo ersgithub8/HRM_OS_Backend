@@ -1,6 +1,7 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
-
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
 //create a new employee
 const createSingleAnnouncement = async (req, res) => {
   if (req.query.query === "deletemany") {
@@ -19,6 +20,7 @@ const createSingleAnnouncement = async (req, res) => {
     }
   } else {
     try {
+      
       // create single designation from an object
       const createdAnnouncement = await prisma.announcement.create({
         data: {
@@ -26,6 +28,18 @@ const createSingleAnnouncement = async (req, res) => {
           description: req.body.description,
         },
       });
+
+      const user = await prisma.user.findMany()
+      // console.log(user);
+      const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
+      const newTokens = tokenArray.filter(item => item !== null)
+
+      const Title = req.body.title;
+      const Body = req.body.description;
+      const Desc = 'Announcment notification';
+      // const Device = user.device;
+      console.log(Title, Body, Desc, newTokens);
+      sendNotify(Title, Body, Desc, newTokens);
 
       return res.status(201).json(createdAnnouncement);
     } catch (error) {
@@ -131,6 +145,37 @@ const deletedAnnouncement = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+async function sendNotify(title, body, desc, tokens) {
+  try {
+    const messages = tokens.map((token) => ({
+      notification: {
+        title: title,
+        body: body,
+      },
+      token: token,
+    }));
+
+    const sendPromises = messages.map((message) =>
+      admin.messaging().send(message)
+    );
+
+    const results = await Promise.allSettled(sendPromises);
+
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        console.log(`Notification sent to token ${tokens[index]}`);
+      } else {
+        console.log(
+          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+        );
+      }
+    });
+
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+  }
+}
+
 
 module.exports = {
   createSingleAnnouncement,

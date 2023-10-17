@@ -665,13 +665,23 @@ const updateSingleUser = async (req, res) => {
       }
     });
     // console.log(existingUser);
-    // return
-    const leavs = await prisma.leavePolicy.findUnique({
-      where: {
-        id: req.body.leavePolicyId,
-      },
-      
-    });
+    const leavs = req.body.leavePolicyId
+    ? await prisma.leavePolicy.findUnique({
+        where: {
+          id: req.body.leavePolicyId,
+        },
+      })
+    : null;
+  
+  let remainingannualallowedleave;
+  
+  if (req.body.manualleave) {
+    remainingannualallowedleave = req.body.manualleave.toString();
+  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
+    remainingannualallowedleave = "0";
+  } else {
+    remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+  }
 
     // return
     if (!existingUser) {
