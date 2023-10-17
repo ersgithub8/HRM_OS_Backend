@@ -516,6 +516,7 @@ const getSingleUser = async (req, res) => {
         shift: true,
         leavePolicy: true,
         weeklyHoliday: true,
+        employmentStatus:true,
         awardHistory: {
           include: {
             award: true,
