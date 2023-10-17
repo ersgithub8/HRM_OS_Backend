@@ -25,14 +25,14 @@ const leaveApplicationRoutes = express.Router();
 
 // leaveApplicationRoutes.get("/getAllLeaveCTO", authorize(""), getAllLeaveCTO);
 
-leaveApplicationRoutes.post("/", authorize(""), createSingleLeave);
-leaveApplicationRoutes.post("/create", authorize(""), adminSingleLeave);
-leaveApplicationRoutes.get("/", authorize(""), getAllLeave);
+leaveApplicationRoutes.post("/", authorize("create-leaveApplication"), createSingleLeave);
+leaveApplicationRoutes.post("/create", authorize("create-leaveApplication"), adminSingleLeave);
+leaveApplicationRoutes.get("/", authorize("readAll-leaveApplication"), getAllLeave);
 leaveApplicationRoutes.get("/approve", authorize(""), getapprovedAllLeave);
 leaveApplicationRoutes.get("/todayLeaveState", authorize(""), todayLeaveState);
 leaveApplicationRoutes.get("/yearlyLeaveState", authorize(""), yearlyLeaveState);
 leaveApplicationRoutes.get("/monthlyapprove", authorize(""), MonthlyApprovedLeaves);
-leaveApplicationRoutes.get("/:id", authorize(""), getSingleLeave);
+leaveApplicationRoutes.get("/:id", authorize("readSingle-leaveApplication"), getSingleLeave);
 // leaveApplicationRoutes.get("/leave/:id", authorize(""), leavewithroll);
 leaveApplicationRoutes.put(
   "/:id",
