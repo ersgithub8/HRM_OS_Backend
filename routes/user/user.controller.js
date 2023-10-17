@@ -982,6 +982,7 @@ const updateSingleStatus = async (req, res) => {
       updateData.password = req.body.password;
     }
 
+    
     const updateUser = await prisma.user.update({
       where: {
         id: Number(req.params.id),
