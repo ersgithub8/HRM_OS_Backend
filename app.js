@@ -10,7 +10,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const fileUpload = require('express-fileupload');
 app.use(fileUpload({
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limit: { fileSize: 50 * 1024 * 1024 ,extended: true},
 }));
 // holds all the allowed origins for cors access
 let allowedOrigins = [
@@ -37,10 +37,10 @@ const limiter = rateLimit({
 
 /* Middleware */
 // for compressing the response body
-app.use(compression());
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-app.use(express.json());
+// app.use(compression());
+// app.use(bodyParser.json({limit: '50mb'}));
+// app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+// app.use(express.json());
 // helmet: secure express app by setting various HTTP headers. And serve cross origin resources.
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 // morgan: log requests to console in dev environment
