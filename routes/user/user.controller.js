@@ -756,8 +756,8 @@ let annualallowedleave;
         reference_contact:req.body.reference_contact || existingUser.reference_contact,
         bankallowedleave:req.body.bankallowedleave || existingUser.bankallowedleave,
         remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
-        // annualallowedleave:leavs.paidLeaveCount.toString(),
-        // remainingannualallowedleave:leavs.paidLeaveCount.toString(),
+        annualallowedleave:annualallowedleave,
+        remainingannualallowedleave:remainingannualallowedleave,
 
 
 
@@ -982,7 +982,7 @@ const updateSingleStatus = async (req, res) => {
       updateData.password = req.body.password;
     }
 
-    
+
     const updateUser = await prisma.user.update({
       where: {
         id: Number(req.params.id),
