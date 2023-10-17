@@ -6,7 +6,8 @@ const Op = Sequelize.Op;
 const operatorsAliases = {
   $between: Op.between, //create an alias for Op.between
 }
-
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
 
 //create a new employee
 const createAttendance = async (req, res) => {
@@ -272,7 +273,7 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json({
         // result,
-        message: "Attendence created successfully"
+        message: "Attendence hgjhjcreated successfully"
       });
     } else if (!attendance) {
       const newAttendance = await prisma.attendance.create({
