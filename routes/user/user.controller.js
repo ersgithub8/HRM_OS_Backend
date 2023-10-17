@@ -682,6 +682,14 @@ const updateSingleUser = async (req, res) => {
   } else {
     remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
   }
+let annualallowedleave;
+  if (req.body.manualleave) {
+    annualallowedleave = req.body.manualleave.toString();
+  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
+    annualallowedleave = "0";
+  } else {
+    annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+  }
 
     // return
     if (!existingUser) {
@@ -708,7 +716,8 @@ const updateSingleUser = async (req, res) => {
       locationId: req.body.locationId,
       leavePolicyId: req.body.leavePolicyId,
       weeklyHolidayId: req.body.weeklyHolidayId,
-      remainingannualallowedleave:leavs.paidLeaveCount.toString(),
+      remainingannualallowedleave:remainingannualallowedleave,
+      annualallowedleave:annualallowedleave,
       contractAttachment: req.body.contractAttachment||null,
 
     };
@@ -746,8 +755,8 @@ const updateSingleUser = async (req, res) => {
         reference_contact:req.body.reference_contact || existingUser.reference_contact,
         bankallowedleave:req.body.bankallowedleave || existingUser.bankallowedleave,
         remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
-        annualallowedleave:req.body.annualallowedleave || existingUser.annualallowedleave,
-        remainingannualallowedleave:leavs.paidLeaveCount.toString(),
+        // annualallowedleave:leavs.paidLeaveCount.toString(),
+        // remainingannualallowedleave:leavs.paidLeaveCount.toString(),
 
 
 
