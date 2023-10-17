@@ -85,13 +85,15 @@ const createAttendance = async (req, res) => {
         message: "Clock in has already been marked for today.",
       });
     }
+    const outTime = new Date(moment.now());
 
     if (req.query.query === "manualPunch") {
       const inTime = new Date();
       const date = new Date();
       const outTime = new Date();
 
-      const totalHours = Math.abs(outTime - inTime) / (1000 * 60 * 60);
+      const totalHours = Math.abs(outTime - inTime) / 36e5
+
 
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -146,7 +148,8 @@ const createAttendance = async (req, res) => {
         message: "Clock in Successfully"
       });
     } else {
-      const totalHours = Math.abs(outTime - inTime) / 36e5
+      const outTime = new Date(moment.now()); // Initialize outTime here
+      const totalHours = Math.abs(outTime - attendance.inTime) / 36e5;;
 
       const newAttendance = await prisma.attendance.update({
         where: {
