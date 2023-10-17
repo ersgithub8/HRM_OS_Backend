@@ -4,6 +4,7 @@ const express = require("express");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 /* variables */
 // express app instance
 const app = express();
@@ -35,7 +36,9 @@ const limiter = rateLimit({
 /* Middleware */
 // for compressing the response body
 app.use(compression());
-
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(express.json());
 // helmet: secure express app by setting various HTTP headers. And serve cross origin resources.
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 // morgan: log requests to console in dev environment
