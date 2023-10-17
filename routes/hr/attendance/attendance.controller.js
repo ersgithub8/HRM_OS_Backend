@@ -844,11 +844,10 @@ const getLastAttendanceByUserId = async (req, res) => {
 };
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
-    const today = new Date();  
-    const databaseRecordDate = new Date("2023-10-18T14:14:35.565Z");
-    today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
-    
-    console.log(today);
+    const today = new Date();
+    console.log(today, "fdhsj");
+    // return
+    today.setHours(0, 0, 0, 0);
 
     const userId = parseInt(req.params.id);
 
@@ -873,7 +872,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
       where: {
         userId: userId,
         date: {
-          equals: today,
+          gte: today,
         },
       },
       orderBy: [
