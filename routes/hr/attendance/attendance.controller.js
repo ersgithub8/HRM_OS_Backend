@@ -844,11 +844,15 @@ const getLastAttendanceByUserId = async (req, res) => {
 };
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
-    const today = new Date();
-    console.log(today, "fdhsj");
-    // return
-    today.setHours(0, 0, 0, 0);
-
+    // const today = new Date();
+    // console.log(today, "fdhsj");
+    // // return
+    // today.setHours(0, 0, 0, 0);
+    const today = new Date();  
+    const databaseRecordDate = new Date("2023-10-17T15:36:32.049Z");
+    today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
+    
+    console.log(today);
     const userId = parseInt(req.params.id);
 
     const userLeavePolicy = await prisma.user.findUnique({
@@ -872,7 +876,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
       where: {
         userId: userId,
         date: {
-          gte: today,
+          lte: today,
         },
       },
       orderBy: [
