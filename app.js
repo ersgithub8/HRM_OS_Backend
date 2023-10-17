@@ -9,7 +9,9 @@ const bodyParser = require("body-parser");
 // express app instance
 const app = express();
 const fileUpload = require('express-fileupload');
-app.use(fileUpload());
+app.use(fileUpload({
+  limits: { fileSize: 50 * 1024 * 1024 },
+}));
 // holds all the allowed origins for cors access
 let allowedOrigins = [
   "http://localhost:3000",
