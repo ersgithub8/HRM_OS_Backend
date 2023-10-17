@@ -7,6 +7,7 @@ require("dotenv").config();
 
 //connection with aws
 const AWS = require("aws-sdk");
+const { error } = require("console");
 const s3 = new AWS.S3({
   accessKeyId: process.env.aws_access_key_id,
   secretAccessKey: process.env.aws_secret_access_key,
@@ -197,12 +198,14 @@ const uploadimages = async (req, res) => {
         error: false,
       });
     } catch (err) {
+      console.log(err);
       return res.status(404).json({
         message: "File Upload Failed",
         error: true,
       });
     }
   } else {
+    console.log(res);
     return res.status(404).json({
       message: "File Upload Failed",
       error: true,
