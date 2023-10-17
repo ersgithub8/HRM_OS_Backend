@@ -849,7 +849,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
     // // return
     // today.setHours(0, 0, 0, 0);
     const today = new Date();  
-    const databaseRecordDate = new Date("2023-10-17T15:36:32.049Z");
+    const databaseRecordDate = new Date("2023-10-18T11:05:01.890Z");
     today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
     
     console.log(today);
@@ -876,7 +876,8 @@ const getTodayAttendanceByUserId = async (req, res) => {
       where: {
         userId: userId,
         date: {
-          lte: today,
+          gte: today, // Greater than or equal to the start of the day
+      lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
         },
       },
       orderBy: [
