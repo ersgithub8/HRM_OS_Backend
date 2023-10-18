@@ -804,7 +804,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
     // // return
     // today.setHours(0, 0, 0, 0);
     const today = new Date();  
-    const databaseRecordDate = new Date("2023-10-18T11:05:01.890Z");
+    const databaseRecordDate = new Date("2023-10-19T06:27:21.582Z");
     today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
     
     console.log(today);
