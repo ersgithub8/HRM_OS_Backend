@@ -553,32 +553,21 @@ const getSingleUser = async (req, res) => {
         },
       },
     });
-
-    // const paidLeaveDays = leaveDays
-    //   .filter((l) => l.leaveType === "PAID")
-    //   .reduce((acc, item) => acc + item.leaveDuration, 0);
-
-    // const unpaidLeaveDays = leaveDays
-    //   .filter((l) => l.leaveType === "UNPAID")
-    //   .reduce((acc, item) => acc + item.leaveDuration, 0);
-
-    // // Calculate remaining leave days
-    // singleUser.paidLeaveDays = paidLeaveDays;
-    // singleUser.unpaidLeaveDays = unpaidLeaveDays;
-    // singleUser.leftPaidLeaveDays = singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
-    // singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
     const paidLeaveDays = leaveDays
   .filter((l) => l.leavecategory === "paid")
   .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-const unpaidLeaveDays = leaveDays
-  .filter((l) => l.leavecategory === "unpaid")
-  .reduce((acc, item) => acc + item.leaveDuration, 0);
+const unpaidLeaveDays = 0;
+// leaveDays
+//   .filter((l) => l.leavecategory === "unpaid")
+//   .reduce((acc, item) => acc + item.leaveDuration, 0);
 // Calculate remaining leave days
+console.log(unpaidLeaveDays);
+
 singleUser.paidLeaveDays = paidLeaveDays;
 singleUser.unpaidLeaveDays = unpaidLeaveDays;
-singleUser.leftPaidLeaveDays = singleUser.leavePolicy?.paidLeaveCount - paidLeaveDays;
-singleUser.leftUnpaidLeaveDays = singleUser.leavePolicy?.unpaidLeaveCount - unpaidLeaveDays;
+singleUser.leftPaidLeaveDays = singleUser.remainingannualallowedleave - paidLeaveDays;
+singleUser.leftUnpaidLeaveDays = singleUser.remaingbankallowedleave- unpaidLeaveDays;
 
 // Set to null if leavePolicy or respective leave counts are null
 if (!singleUser.leavePolicy) {
