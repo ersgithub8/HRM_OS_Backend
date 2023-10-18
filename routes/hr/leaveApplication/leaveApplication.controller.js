@@ -584,6 +584,7 @@ const getapprovedAllLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 const getSingleLeave = async (req, res) => {
   try {
     const singleLeave = await prisma.leaveApplication.findUnique({
@@ -761,7 +762,14 @@ const grantedLeave = async (req, res, next) => {
       req.body.grantedLeave = grantedLeave;
       req.body.fromleave = true;
       next();
-    } else {
+    }
+    else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
+      req.body.userId = existingLeave.user.id;
+      req.body.grantedLeave = grantedLeave;
+      req.body.fromleave = true;
+      next();
+    }
+     else {
       return res.status(200).json({
         grantedLeave,
         message: 'Application status is updated',
@@ -795,10 +803,6 @@ const getLeaveByUserId = async (req, res) => {
         },
       },
     });
-    
-
-    // if (singleLeave.length === 0)
-    //   return res.status(200).json({ message: "No leave found for this user" });
     const singleLeave = await Promise.all(
       getLeaveTo.map(async (leave) => {
         let approvedByUser = null;
@@ -816,20 +820,18 @@ const getLeaveByUserId = async (req, res) => {
         };
       })
     )
-    // Initialize counts for paid, unpaid, and pending leaves
     let  AcqiredpaidLeave = 0;
     let  AcqiredunpaidLeave = 0;
     let  paidLeavePending = 0;
     let  unpaidLeavePending= 0;
-
-    // Iterate through leave applications to calculate counts
     singleLeave.forEach((leave) => {
       if (leave.leavecategory === "paid") {
         if (leave.leaveType.includes("deductible")) {
           if (leave.status === "PENDING") {
             paidLeavePending++;
           } else if (leave.status === "APPROVED") {
-            AcqiredpaidLeave++;
+            // AcqiredpaidLeave++;
+            AcqiredpaidLeave+= leave.leaveDuration; 
           }
         }
       } else if (leave.leavecategory === "unpaid") {
@@ -837,13 +839,12 @@ const getLeaveByUserId = async (req, res) => {
           if (leave.status === "PENDING") {
             unpaidLeavePending++;
           } else if (leave.status === "APPROVED") {
-            AcqiredunpaidLeave++;
+            // AcqiredunpaidLeave++;
+            AcqiredunpaidLeave+= leave.leaveDuration; 
           }
         }
       }
     });
-    
-    // Calculate total accepted, rejected, and pending leaves
     const totalAcceptedLeaves = singleLeave.filter(
       (leave) => leave.status === "APPROVED"
     ).length;
@@ -1246,7 +1247,7 @@ const MonthlyApprovedLeaves = async (req, res) => {
 // };
 const getAllLeave = async (req, res) => {
   const userId = parseInt(req.query.userId); 
-  const { skip, limit, status } = req.query;
+ 
 
   let users = [];
 
@@ -1255,22 +1256,13 @@ const getAllLeave = async (req, res) => {
       return res.status(400).json({ message: 'Invalid userId provided' });
     }
     const fetchUsers = async (referenceId, userIdToExclude) => {
-      const { skip, limit, status } = req.query;
       const users = await prisma.user.findMany({
         where: {
           OR: [
             { reference_id: referenceId },
             { referenceid_two: referenceId }
           ],
-        },
-        // include: {
-        //     leaveApplication: {
-        //     where: {
-        //       status: status,
-        //     },
-        //   },
-        // },
-        
+        }, 
       });
     
       const linkedUsers = await Promise.all(
@@ -1296,7 +1288,7 @@ const getAllLeave = async (req, res) => {
       
       where: {
         userId: { in: array },
-        status: status, // Filter by status
+        status: status, 
       },
       orderBy: [
         {
