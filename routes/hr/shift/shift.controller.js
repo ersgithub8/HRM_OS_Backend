@@ -34,9 +34,9 @@ const createShift = async (req, res) => {
         moment(req.body.startTime),
         "hours"
       );
-      // if (workHour < 0) {
-      //   workHour = 24 + workHour;
-      // }
+      if (workHour < 0) {
+        workHour = 24 + workHour;
+      }
       const createShift = await prisma.shift.create({
         data: {
           name: req.body.name,
