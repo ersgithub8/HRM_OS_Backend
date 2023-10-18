@@ -2,55 +2,6 @@ const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
 const admin = require("firebase-admin");
 var FCM = require("fcm-node");
-//create tasks controller
-// const createTask = async (req, res) => {
-//   try {
-//     const newTask = await prisma.task.create({
-//       data: {
-//         project: {
-//           connect: {
-//             id: req.body.projectId,
-//           },
-//         },
-//         milestone: {
-//           connect: {
-//             id: req.body.milestoneId,
-//           },
-//         },
-//         name: req.body.name,
-//         startDate: new Date(req.body.startDate),
-//         endDate: new Date(req.body.endDate),
-//         description: req.body.description,
-//         completionTime: parseFloat(req.body.completionTime),
-//         priority: {
-//           connect: {
-//             id: req.body.priorityId,
-//           },
-//         },
-//         taskStatus: {
-//           connect: {
-//             id: req.body.taskStatusId,
-//           },
-//         },
-//         assignedTask: {
-//           create: req.body.assignedTask
-//             ? req.body.assignedTask.map((projectTeamId) => ({
-//                 projectTeam: {
-//                   connect: {
-//                     id: Number(projectTeamId),
-//                   },
-//                 },
-//               }))
-//             : undefined,
-//         },
-//       },
-//     });
-
-//     return res.status(201).json(newTask);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
 
 const createTask = async (req, res) => {
   try {
@@ -107,97 +58,6 @@ const createTask = async (req, res) => {
     return res.status(400).json({ message: "Failed to create task" });
   }
 };
-
-
-
-//get all tasks controller
-// const getAllTasks = async (req, res) => {
-//   if (req.query.query === "all") {
-//     try {
-//       const allTasks = await prisma.task.findMany({
-//         orderBy: [
-//           {
-//             id: "desc",
-//           },
-//         ],
-//        include: {
-//         priority: {
-//           select: {
-//             id: true,
-//             name: true,
-//           },
-//         },
-        
-//       }
-
-      
-      
-      
-//       });
-//       return res.status(200).json(allTasks);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   } else if (req.query.status === "true") {
-//     try {
-//       const allTasks = await prisma.task.findMany({
-//         orderBy: [
-//           {
-//             id: "desc",
-//           },
-//         ],
-//        include: {
-//         user: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             userName: true,
-//             employeeId: true,
-        
-//           },
-//         },
-        
-//       },
-//         where: {
-//           status: true,
-//         },
-//       });
-//       return res.status(200).json(allTasks);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   } else if (req.query.status === "false") {
-//     try {
-//       const allTasks = await prisma.task.findMany({
-//         orderBy: [
-//           {
-//             id: "desc",
-//           },
-//         ],
-//        include: {
-//         user: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             userName: true,
-//             employeeId: true,
-//             priority:true
-
-//           },
-//         },
-//       },
-//         where: {
-//           status: false,
-//         },
-//       });
-//       return res.status(200).json(allTasks);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   }
-// };
 
 const getAllTasks = async (req, res) => {
   if (req.query.query === 'all') {
@@ -347,14 +207,10 @@ const getTaskByuserId = async (req, res) => {
 
     if (tasks.length === 0)
       return res.status(200).json([]);
-
-    // Filter tasks to only include the user with the specified ID in the array
     const tasksFilteredByUserId = tasks.map((task) => ({
       ...task,
       user: task.user.filter((user) => user.id === userId),
     }));
-
-    // Fetch assignedBy information and embed tasksFilteredByUserId
     const tasksWithAssignedBy = await Promise.all(
       tasksFilteredByUserId.map(async (task) => {
         let assignedByUser = null;
@@ -364,8 +220,14 @@ const getTaskByuserId = async (req, res) => {
             select: { id: true, firstName: true, lastName: true, userName: true },
           });
         }
+        const startDate = new Date(task.startDate);
+        const endDate = new Date(task.endDate);
+        const timeDiff = endDate - startDate;
+        const durationInDays = timeDiff / (1000 * 60 * 60 * 24);
 
-        return { ...task, assignedBy: assignedByUser };
+        return { ...task, assignedBy: assignedByUser, durationInDays: durationInDays };
+
+        // return { ...task, assignedBy: assignedByUser };
       })
     );
 

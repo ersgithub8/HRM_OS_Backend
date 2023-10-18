@@ -556,14 +556,12 @@ const getSingleUser = async (req, res) => {
     const paidLeaveDays = leaveDays
   .filter((l) => l.leavecategory === "paid")
   .reduce((acc, item) => acc + item.leaveDuration, 0);
-
+console.log(paidLeaveDays,"days");
 const unpaidLeaveDays = 0;
 // leaveDays
 //   .filter((l) => l.leavecategory === "unpaid")
 //   .reduce((acc, item) => acc + item.leaveDuration, 0);
 // Calculate remaining leave days
-console.log(unpaidLeaveDays);
-
 singleUser.paidLeaveDays = paidLeaveDays;
 singleUser.unpaidLeaveDays = unpaidLeaveDays;
 singleUser.leftPaidLeaveDays = singleUser.remainingannualallowedleave - paidLeaveDays;
