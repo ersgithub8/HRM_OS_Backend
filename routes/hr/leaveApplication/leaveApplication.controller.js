@@ -585,11 +585,72 @@ const getapprovedAllLeave = async (req, res) => {
   }
 };
 
+
+
+// const getSingleLeave = async (req, res) => {
+//   try {
+//     const singleLeave = await prisma.leaveApplication.findUnique({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             userName: true,
+//             employeeId: true,
+//             department: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (!singleLeave) {
+//       return res.status(404).json({ message: "Leave not found" });
+//     }
+
+//     let acceptLeaveBy = null;
+//     if (singleLeave.acceptLeaveBy) {
+//       acceptLeaveBy = await prisma.user.findUnique({
+//         where: {
+//           id: singleLeave.acceptLeaveBy,
+//         },
+//         select: {
+//           firstName: true,
+//           lastName: true,
+//         },
+//       });
+//     }
+
+//     if (
+//       (req.auth.sub !== singleLeave.userId &&
+//         !req.auth.permissions.includes("readAll-leaveApplication")) ||
+//       !req.auth.permissions.includes("readSingle-leaveApplication")
+//     ) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const result = {
+//       ...singleLeave,
+//       acceptLeaveBy: acceptLeaveBy,
+//     };
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
 const getSingleLeave = async (req, res) => {
   try {
+    const singleLeaveId = Number(req.params.id);
+
     const singleLeave = await prisma.leaveApplication.findUnique({
       where: {
-        id: Number(req.params.id),
+        id: singleLeaveId,
       },
       include: {
         user: {
@@ -622,17 +683,58 @@ const getSingleLeave = async (req, res) => {
       });
     }
 
-    if (
-      (req.auth.sub !== singleLeave.userId &&
-        !req.auth.permissions.includes("readAll-leaveApplication")) ||
-      !req.auth.permissions.includes("readSingle-leaveApplication")
-    ) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    // Fetch all approved leave applications within the same date range
+    const todayApproved = await prisma.leaveApplication.findMany({
+      where: {
+        status: 'APPROVED',
+        OR: [
+          {
+            leaveFrom: {
+              gte: singleLeave.leaveFrom,
+              lte: singleLeave.leaveTo,
+            },
+          },
+          {
+            leaveTo: {
+              gte: singleLeave.leaveFrom,
+              lte: singleLeave.leaveTo,
+            },
+          },
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            userName: true,
+            employeeId: true,
+            department: true,
+          },
+        },
+      },
+    });
+
+    const approvedLeaveCount = todayApproved.length;
+
+    const approvedLeaveApplications = await Promise.all(
+      todayApproved.map(async (item) => {
+        const acceptLeaveBy = item.acceptLeaveBy
+          ? await prisma.user.findUnique({ where: { id: item.acceptLeaveBy } })
+          : null;
+
+        return {
+          ...item,
+          acceptLeaveBy: acceptLeaveBy,
+        };
+      })
+    );
 
     const result = {
       ...singleLeave,
       acceptLeaveBy: acceptLeaveBy,
+      approvedLeaveCount: approvedLeaveCount,
+      approvedLeaveApplications: approvedLeaveApplications,
     };
 
     return res.status(200).json(result);
@@ -640,6 +742,10 @@ const getSingleLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+
+
 const grantedLeave = async (req, res, next) => {
   try {
     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
@@ -769,6 +875,13 @@ const grantedLeave = async (req, res, next) => {
       req.body.fromleave = true;
       next();
     }
+    // else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
+    //   req.body.status = 'REJECTED';
+    //   req.body.userId = existingLeave.user.id;
+    //   req.body.grantedLeave = grantedLeave;
+    //   req.body.fromleave = true;
+    //   next();
+    // }
      else {
       return res.status(200).json({
         grantedLeave,
