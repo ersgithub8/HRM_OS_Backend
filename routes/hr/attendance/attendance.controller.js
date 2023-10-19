@@ -1442,7 +1442,8 @@ const createAttendanceonleave = async (req, res) => {
 
     if (req.body.fromleave) {
       return res.status(200).json({
-        attendanceCreationPromises
+        attendanceCreationPromises,
+        message:"Leave status updated successfully"
       });
     } else {
       return res.status(200).json({

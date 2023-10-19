@@ -587,63 +587,6 @@ const getapprovedAllLeave = async (req, res) => {
 
 
 
-// const getSingleLeave = async (req, res) => {
-//   try {
-//     const singleLeave = await prisma.leaveApplication.findUnique({
-//       where: {
-//         id: Number(req.params.id),
-//       },
-//       include: {
-//         user: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             userName: true,
-//             employeeId: true,
-//             department: true,
-//           },
-//         },
-//       },
-//     });
-
-//     if (!singleLeave) {
-//       return res.status(404).json({ message: "Leave not found" });
-//     }
-
-//     let acceptLeaveBy = null;
-//     if (singleLeave.acceptLeaveBy) {
-//       acceptLeaveBy = await prisma.user.findUnique({
-//         where: {
-//           id: singleLeave.acceptLeaveBy,
-//         },
-//         select: {
-//           firstName: true,
-//           lastName: true,
-//         },
-//       });
-//     }
-
-//     if (
-//       (req.auth.sub !== singleLeave.userId &&
-//         !req.auth.permissions.includes("readAll-leaveApplication")) ||
-//       !req.auth.permissions.includes("readSingle-leaveApplication")
-//     ) {
-//       return res.status(401).json({ message: "Unauthorized" });
-//     }
-
-//     const result = {
-//       ...singleLeave,
-//       acceptLeaveBy: acceptLeaveBy,
-//     };
-
-//     return res.status(200).json(result);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
-
 const getSingleLeave = async (req, res) => {
   try {
     const singleLeaveId = Number(req.params.id);
@@ -679,6 +622,7 @@ const getSingleLeave = async (req, res) => {
         select: {
           firstName: true,
           lastName: true,
+
         },
       });
     }
@@ -703,6 +647,8 @@ const getSingleLeave = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
+            employeeId:true,
+            department:true
           },
         },
       },
@@ -1203,158 +1149,7 @@ const MonthlyApprovedLeaves = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-// const getAllLeave = async (req, res) => {
-//   const userId = parseInt(req.query.userId); // Parse userId from query params
-//   const { skip, limit, status } = req.query;
 
-//   let whereClause = {}; // Initialize an empty object for the where clause
-
-//   if (status && status !== "all") {
-//     whereClause.status = status;
-//   }
-
-//   try {
-//     // Check if userId is a valid number
-//     if (isNaN(userId) || userId <= 0) {
-//       return res.status(400).json({ message: 'Invalid userId provided' });
-//     }
-
-//     // Get the user's reference_id based on the provided userId
-//     const user = await prisma.user.findUnique({
-//       where: {
-//         id: userId,
-//       },
-//       select: {
-//         reference_id: true,
-//       },
-//     });
-
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     const referenceId = user.reference_id;
-
-//     let leaveApplications;
-
-//     if (req.query.query === "all") {
-//       leaveApplications = await prisma.leaveApplication.findMany({
-//         orderBy: [{ id: "desc" }],
-//         where: {
-//           status: whereClause.status,
-//           user: {
-//             reference_id: referenceId,
-//           },
-//         },
-        // include: {
-        //   user: {
-        //     select: {
-        //       firstName: true,
-        //       lastName: true,
-        //       userName: true,
-        //       employeeId: true,
-        //       reference_id: true,
-        //     },
-        //   },
-        // },
-//       });
-//     }
-//      else  {
-//       const { skip, limit } = getPagination(req.query);
-
-//       leaveApplications = await prisma.leaveApplication.findMany({
-//         orderBy: [{ id: "desc" }],
-//         skip: Number(skip),
-//         take: Number(limit),
-//         where: {
-//           status: whereClause.status,
-//           user: {
-//             reference_id: referenceId,
-//           },
-//         },
-//         include: {
-//           user: {
-//             select: {
-//               firstName: true,
-//               lastName: true,
-//               userName: true,
-//               employeeId: true,
-//               reference_id: true,
-//             },
-//           },
-//         },
-//       });
-//     }
-
-//     return res.status(200).json(leaveApplications);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
-// const getAllLeave = async (req, res) => {
-//   const userId = parseInt(req.query.userId); 
-//   const { skip, limit, status } = req.query;
-
-//   try {
-//     if (isNaN(userId) || userId <= 0) {
-//       return res.status(400).json({ message: 'Invalid userId provided' });
-//     }
-
-//     const fetchUsers = async (referenceId, userIdToExclude) => {
-//       const users = await prisma.user.findMany({
-//         where: {
-//           reference_id: referenceId,
-//           NOT: {
-//             id: userIdToExclude,
-//           },
-//         },
-      //   include: {
-      //     leaveApplication: {
-      //       where: {
-      //         status: status,
-      //       },
-      //     },
-      //   },
-        
-      // });
-    
-//       const linkedUsers = await Promise.all(
-//         users.map(async (user) => {
-//           return {
-//             user: user,
-//             linkedUsers: await fetchUsers(user.id)
-//           };
-//         })
-//       );
-    
-//       return linkedUsers.flat();
-//     };
-    
-    
-
-//     const user = await prisma.user.findUnique({
-//       where: {
-//         id: userId,
-//       },
-//       select: {
-//         reference_id: true,
-//       },
-//     });
-
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     const referenceId = user.reference_id;
-
-//     const usersData = await fetchUsers(referenceId);
-
-//     return res.status(200).json(usersData);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
 const getAllLeave = async (req, res) => {
   const userId = parseInt(req.query.userId); 
  
