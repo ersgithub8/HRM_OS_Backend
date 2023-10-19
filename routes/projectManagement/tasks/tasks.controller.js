@@ -221,9 +221,17 @@ const getTaskByuserId = async (req, res) => {
           });
         }
         const startDate = new Date(task.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        
         const endDate = new Date(task.endDate);
-        const timeDiff = endDate - startDate;
-        const durationInDays = timeDiff / (1000 * 60 * 60 * 24);
+        endDate.setHours(0, 0, 0, 0);
+        
+        // Add one day to endDate to include it in the count
+        endDate.setDate(endDate.getDate() + 1);
+        
+        // Calculate the difference in days
+        const durationInDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+        
 
         return { ...task, assignedBy: assignedByUser, durationInDays: durationInDays };
 
