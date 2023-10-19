@@ -231,7 +231,7 @@ const getTaskByuserId = async (req, res) => {
         
         // Calculate the difference in days
         const durationInDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
-        
+        console.log(durationInDays);
 
         return { ...task, assignedBy: assignedByUser, durationInDays: durationInDays };
 
