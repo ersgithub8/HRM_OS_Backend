@@ -956,7 +956,10 @@ const search = async (req, res) => {
       });
       const punchBy = await prisma.user.findMany({
         where: {
-          id: { in: allAttendance.map((item) => item.punchBy) },
+          OR: [
+            { id: { in: allAttendance.map((item) => item.punchBy) } },
+            { id: null }, // Include records where punchBy is null
+          ],
         },
         select: {
           id: true,
