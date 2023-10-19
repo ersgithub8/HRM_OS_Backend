@@ -666,16 +666,38 @@ const getAttendanceByUserId = async (req, res) => {
 
     const allAttendance = await prisma.attendance.findMany(attendanceQuery);
 
-    const punchBy = await prisma.user.findMany({
-      where: {
-        id: { in: allAttendance.map((item) => item.punchBy) },
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
+    // const punchBy = await prisma.user.findMany({
+    //   where: {
+    //     id: { in: allAttendance.map((item) => item.punchBy) },
+    //   },
+    //   select: {
+    //     id: true,
+    //     firstName: true,
+    //     lastName: true,
+    //   },
+    // });
+    const punchByIds = allAttendance
+    .map((item) => item.punchBy) // Get an array of punchBy values
+    .filter((id) => id !== null && id !== undefined);
+    let punchBy;
+  
+    if (punchByIds.length > 0) {
+      // If there are non-null and non-undefined punchByIds, fetch corresponding users
+      punchBy = await prisma.user.findMany({
+        where: {
+          id: { in: punchByIds },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeId: true,
+        },
+      });
+    } else {
+      // If all punchByIds are null or undefined, set punchBy to an empty array
+      punchBy = [];
+    }
 
     // Construct the result object
     const result = {
