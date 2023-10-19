@@ -690,14 +690,10 @@ const getSingleLeave = async (req, res) => {
         OR: [
           {
             leaveFrom: {
-              gte: singleLeave.leaveFrom,
-              lte: singleLeave.leaveTo,
+              lte: singleLeave.leaveTo, // Leave starts before or on singleLeave.leaveTo
             },
-          },
-          {
             leaveTo: {
-              gte: singleLeave.leaveFrom,
-              lte: singleLeave.leaveTo,
+              gte: singleLeave.leaveFrom, // Leave ends after or on singleLeave.leaveFrom
             },
           },
         ],
@@ -707,37 +703,38 @@ const getSingleLeave = async (req, res) => {
           select: {
             firstName: true,
             lastName: true,
-            userName: true,
-            employeeId: true,
-            department: true,
           },
         },
       },
     });
-
-    const approvedLeaveCount = todayApproved.length;
-
+    
     const approvedLeaveApplications = await Promise.all(
       todayApproved.map(async (item) => {
         const acceptLeaveBy = item.acceptLeaveBy
           ? await prisma.user.findUnique({ where: { id: item.acceptLeaveBy } })
           : null;
-
+    
         return {
           ...item,
           acceptLeaveBy: acceptLeaveBy,
         };
       })
     );
+    const approvedLeaveCount = approvedLeaveApplications.length;
 
+        approvedLeaveApplications.push(singleLeave.leaveFrom);
+    
+  
+    
     const result = {
       ...singleLeave,
-      acceptLeaveBy: acceptLeaveBy,
       approvedLeaveCount: approvedLeaveCount,
       approvedLeaveApplications: approvedLeaveApplications,
     };
-
+    
     return res.status(200).json(result);
+    
+    
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
