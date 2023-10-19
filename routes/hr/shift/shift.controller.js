@@ -30,10 +30,16 @@ const createShift = async (req, res) => {
     }
   } else {
     try {
-      let workHour = moment(req.body.endTime).diff(
-        moment(req.body.startTime),
-        "hours"
-      );
+      // let workHour = moment(req.body.endTime).diff(
+      //   moment(req.body.startTime),
+      //   "hours"
+      // );
+      
+      const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
+      const totalMinutes = timeDiff / (1000 * 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
       if (workHour < 0) {
         workHour = 24 + workHour;
       }
@@ -42,7 +48,6 @@ const createShift = async (req, res) => {
           name: req.body.name,
           startTime: new Date(req.body.startTime),
           endTime: new Date(req.body.endTime),
-          // calculate time difference using moment in hours
           workHour: workHour,
         },
       });
