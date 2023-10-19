@@ -716,20 +716,20 @@ const getSingleLeave = async (req, res) => {
     
         return {
           ...item,
+          date:singleLeave.leaveFrom,
           acceptLeaveBy: acceptLeaveBy,
         };
       })
     );
-    const approvedLeaveCount = approvedLeaveApplications.length;
-
-        approvedLeaveApplications.push(singleLeave.leaveFrom);
+    const approvedLeaveCount = approvedLeaveApplications.length
+      
     
   
-    
     const result = {
       ...singleLeave,
       approvedLeaveCount: approvedLeaveCount,
       approvedLeaveApplications: approvedLeaveApplications,
+  
     };
     
     return res.status(200).json(result);
