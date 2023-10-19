@@ -136,6 +136,39 @@ const createrooms = async (req, res) => {
       return res.status(400).json({ message: "Failed to update room"});
     }
   };
+  const getroomById = async (req, res) => {
+    try {
+      const singroom = await prisma.room.findUnique({
+        where: {
+          id: Number(req.params.id),
+        },
+        select: {
+          id: true,
+          roomName: true,
+          status:true,
+          location: {
+            select: {
+              id: true,
+              locationName: true,
+            },
+          },
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+  
+  
+      return res.status(200).json(singroom);
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  };
   
   const deleteroom = async (req, res) => {
     try {
@@ -162,6 +195,7 @@ module.exports = {
     createrooms,
     getAllrooms,
     updaterooms,
-    deleteroom
+    deleteroom,
+    getroomById
 
 };

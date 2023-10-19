@@ -3,7 +3,7 @@ const roomsRoutes = express.Router();
 const {
     createrooms,
     getAllrooms,
-//   getMeetingById,
+  getroomById,
     updaterooms,
     deleteroom,
 } = require("./rooms.controller");
@@ -11,7 +11,7 @@ const authorize = require("../../utils/authorize");
 
 roomsRoutes.post("/", authorize("create-room"), createrooms);
 roomsRoutes.get("/", authorize("readAll-room"), getAllrooms);
-// meetingRoutes.get("/:id", authorize("readSingle-meeting"), getMeetingById);
+roomsRoutes.get("/:id", authorize("readSingle-room"), getroomById);
 roomsRoutes.put("/update/:id", authorize("update-room"), updaterooms);
 roomsRoutes.delete("/delete/:id", authorize("delete-room"), deleteroom);
 
