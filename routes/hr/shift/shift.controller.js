@@ -196,10 +196,11 @@ const getSingleShift = async (req, res) => {
 
 const updateSingleShift = async (req, res) => {
   try {
-    let workHour = moment(req.body.endTime).diff(
-      moment(req.body.startTime),
-      "hours"
-    );
+    const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
+    const totalMinutes = timeDiff / (1000 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
     if (workHour < 0) {
       workHour = 24 + workHour;
     }
