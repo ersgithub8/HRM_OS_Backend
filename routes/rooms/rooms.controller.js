@@ -113,6 +113,8 @@ const createrooms = async (req, res) => {
     }
   };
 
+
+  
   const updaterooms = async (req, res) => {
     try {
         const {locationId, roomName,status } = req.body;
