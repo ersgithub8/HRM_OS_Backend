@@ -826,17 +826,33 @@ const getLastAttendanceByUserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+function setDateTimeFromString(dateString) {
+  const today = new Date();
+  const databaseRecordDate = new Date(dateString);
+
+  today.setHours(
+    databaseRecordDate.getUTCHours(),
+    databaseRecordDate.getUTCMinutes(),
+    databaseRecordDate.getUTCSeconds(),
+    databaseRecordDate.getUTCMilliseconds()
+  );
+
+  return today;
+}
+
+
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
     // const today = new Date();
     // console.log(today, "fdhsj");
     // // return
     // today.setHours(0, 0, 0, 0);
-    const today = new Date();  
-    const databaseRecordDate = new Date("2023-10-20T05:48:06.155Z");
-    today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
-    
-    console.log(today);
+    const databaseRecordDateString = "2023-10-25T05:48:06.155Z";
+const matchedDate = setDateTimeFromString(databaseRecordDateString);
+    const today = matchedDate; 
+    // console.log(today); 
+    // const databaseRecordDate = new Date("2023-10-20T05:48:06.155Z");
+    // today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
     const userId = parseInt(req.params.id);
 
     const userLeavePolicy = await prisma.user.findUnique({
@@ -860,7 +876,7 @@ const getTodayAttendanceByUserId = async (req, res) => {
       where: {
         userId: userId,
         date: {
-          gte: today, // Greater than or equal to the start of the day
+          gte: today,
       lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
         },
       },
@@ -870,7 +886,6 @@ const getTodayAttendanceByUserId = async (req, res) => {
         },
       ],
     });
-    console.log(todayAttendance);
     let isadmin = null;
 
     if (todayAttendance) {
@@ -894,8 +909,6 @@ const getTodayAttendanceByUserId = async (req, res) => {
       response.isadmin = null;
       return res.status(200).json(response);
     }
-
-    // Get today's day of the week (0 = Sunday, 1 = Monday, ...)
     const todayDayOfWeek = today.getDay();
 
     if (todayAttendance.inTime) {
