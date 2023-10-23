@@ -44,7 +44,8 @@ const endpoints = [
   "location",
   "training",
   "meeting",
-  "room"
+  "room",
+  "shifts"
 ];
 
 const permissionTypes = ["create", "readAll", "readSingle", "update", "delete"];
@@ -57,7 +58,7 @@ const permissions = endpoints.reduce((acc, cur) => {
   return [...acc, ...permission];
 }, []);
 
-const roles = ["admin", "staff" ,"CEO","DOO","NSC","NDC","ASC","AdminAssistant"];
+const roles = ["admin", "staff" ,"CEO","DOO","NC","NAC","ASC"];
 
 const account = [
   { name: "Asset", type: "Asset" },

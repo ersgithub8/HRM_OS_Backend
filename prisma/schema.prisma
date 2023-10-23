@@ -30,7 +30,7 @@ model user {
   safeguarding          String?
   safeguardingtext      String?
   bankallowedleave String @default("8")
- remaingbankallowedleave String @default("20")
+ remaingbankallowedleave String @default("8")
  annualallowedleave String @default("20")
  remainingannualallowedleave String @default("20")
   companyname           String?
@@ -40,7 +40,8 @@ model user {
   address               String?
   manualleave           Float?
   contractAttachment          String?
-  reference_contact     String?
+  referencecontact     String?
+  referencecontacttwo  String?
   resetPasswordToken   String?
   resetPasswordExpires  DateTime @default(now())
   // address
@@ -76,6 +77,7 @@ model user {
   task   task[]
   meeting    meeting[]
   room    room[]
+  shifts  shifts[]
   payslip            payslip[]
   educations         education[]
   salaryHistory      salaryHistory[]
@@ -108,9 +110,10 @@ model education {
 //manage location
 model location {
   id           Int       @id @default(autoincrement())
-   user      user[]
-   meeting    meeting[]
-   room    room[]
+  user      user[]
+  meeting    meeting[]
+  room    room[]
+  shifts  shifts[]
   latitude     String?
   longitude    String?
   locationName String?
@@ -537,8 +540,39 @@ model room {
   locationId            Int?
     user            user      @relation(fields: [userId], references: [id]) 
   userId          Int
+  shifts  shifts[]
   roomName     String?
   status       Boolean  @default(true)
  createdAt     DateTime  @default(now())
  updatedAt     DateTime  @updatedAt
+}
+
+model shifts {
+      id        Int      @id @default(autoincrement())
+      shiftFrom DateTime?
+      shiftTo   DateTime?
+      weekNumber  Int?
+       location              location?            @relation(fields: [locationId], references: [id])
+       locationId            Int?
+       user            user      @relation(fields: [userId], references: [id])  
+       userId          Int
+      weekDays    String?
+      room    room[  shiftFrom DateTime?
+      shiftTo   DateTime?
+      weekNumber  Int?
+       location              location?            @relation(fields: [locationId], references: [id])
+       locationId            Int?
+       user            user      @relation(fields: [userId], references: [id])  
+       userId          Int
+      weekDays    String?]
+      startTime  DateTime?
+      endTime    DateTime?
+      breakTime DateTime?
+      superVisorId  Boolean?
+      folderTime    DateTime?
+      generalInfo   String?
+      workHour  Float?
+      status    Boolean  @default(true)
+     createdAt DateTime @default(now())
+     updatedAt DateTime @updatedAt
 }

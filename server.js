@@ -7,21 +7,7 @@ const PORT = process.env.PORT || 5000;
 
 const prisma = require("./utils/prisma");
 const cron = require('node-cron');
-const bodyParser = require("body-parser");
-const compression = require("compression");
-const express = require("express");
 
-/* variables */
-// express app instance
-// const app = express();
-const fileUpload = require('express-fileupload');
-app.use(fileUpload({
-  limit: { fileSize: 50 * 1024 * 1024 ,extended: true},
-}));
-app.use(compression());
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-app.use(express.json());
 const updateUsersFields = async () => {
   try {
     // Fetch all users
@@ -57,43 +43,50 @@ cron.schedule('0 0 31 8 *', updateUsersFields);
 const createAttendanceOnLeave = async () => {
   try {
     const today = new Date();  
+    const databaseRecordDate = new Date("2023-10-18T11:05:01.890Z");
+    today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
+    
     console.log(today);
-
     const isTodayPublicHoliday = await prisma.publicHoliday.findFirst({
       where: {
         date: {
-          equals: today.toISOString().split('T')[0],
+          equals: today,
         },
       },
     });
-
-//     console.log('Is today a public holiday?', isTodayPublicHoliday);
-// return
     if (isTodayPublicHoliday) {
       const users = await prisma.user.findMany();
-
       for (const user of users) {
         console.log(`Processing user: ${user.id}`);
-        const attendanceDate = today.toISOString(); // Convert to ISO string
+        const attendanceDate = today; 
         const attendance = await prisma.attendance.findFirst({
           where: {
             userId: user.id,
             date: attendanceDate,
           },
         });
-
+        const currentRemainingLeaves = parseFloat(user.remaingbankallowedleave);
+        const updatedRemainingLeaves = Math.max(currentRemainingLeaves -1, 0);
+        await prisma.user.update({
+          where: {
+            id: user.id, 
+          },
+          data: {
+            remaingbankallowedleave: updatedRemainingLeaves.toString(),
+          },
+        });
         if (!attendance) {
           const attendancePromise = prisma.attendance.create({
             data: {
               userId: user.id,
               inTime: null,
               outTime: null,
-              punchBy: null, // Update this to the correct punchBy value if needed
+              punchBy: null, 
               inTimeStatus: null,
               outTimeStatus: null,
               comment: null,
               date: attendanceDate,
-              attendenceStatus: "leave",
+              attendenceStatus: "holiday",
               ip: null,
               totalHour: null,
               createdAt: attendanceDate,
@@ -113,9 +106,13 @@ const createAttendanceOnLeave = async () => {
   }
 };
 
-
-
-// cron.schedule('* * * * *', createAttendanceOnLeave);
+cron.schedule('1 0 * * *', async () => {
+  await createAttendanceOnLeave();
+  console.log('Cron job ran at 12:01 AM.');
+}, {
+  scheduled: true,
+  timezone: 'America/New_York', 
+});
 
 
 

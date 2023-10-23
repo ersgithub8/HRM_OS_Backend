@@ -22,7 +22,7 @@ CREATE TABLE "user" (
     "safeguarding" TEXT,
     "safeguardingtext" TEXT,
     "bankallowedleave" TEXT NOT NULL DEFAULT '8',
-    "remaingbankallowedleave" TEXT NOT NULL DEFAULT '20',
+    "remaingbankallowedleave" TEXT NOT NULL DEFAULT '8',
     "annualallowedleave" TEXT NOT NULL DEFAULT '20',
     "remainingannualallowedleave" TEXT NOT NULL DEFAULT '20',
     "companyname" TEXT,
@@ -550,6 +550,29 @@ CREATE TABLE "room" (
 );
 
 -- CreateTable
+CREATE TABLE "shifts" (
+    "id" SERIAL NOT NULL,
+    "shiftFrom" TIMESTAMP(3),
+    "shiftTo" TIMESTAMP(3),
+    "weekNumber" INTEGER,
+    "locationId" INTEGER,
+    "userId" INTEGER NOT NULL,
+    "weekDays" TEXT,
+    "startTime" TIMESTAMP(3),
+    "endTime" TIMESTAMP(3),
+    "breakTime" TIMESTAMP(3),
+    "superVisorId" BOOLEAN,
+    "folderTime" TIMESTAMP(3),
+    "generalInfo" TEXT,
+    "workHour" DOUBLE PRECISION,
+    "status" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "shifts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_taskTouser" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
@@ -557,6 +580,12 @@ CREATE TABLE "_taskTouser" (
 
 -- CreateTable
 CREATE TABLE "_meetingTouser" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_roomToshifts" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -623,6 +652,12 @@ CREATE UNIQUE INDEX "_meetingTouser_AB_unique" ON "_meetingTouser"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_meetingTouser_B_index" ON "_meetingTouser"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_roomToshifts_AB_unique" ON "_roomToshifts"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_roomToshifts_B_index" ON "_roomToshifts"("B");
 
 -- AddForeignKey
 ALTER TABLE "user" ADD CONSTRAINT "user_employmentStatusId_fkey" FOREIGN KEY ("employmentStatusId") REFERENCES "employmentStatus"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -724,6 +759,12 @@ ALTER TABLE "room" ADD CONSTRAINT "room_locationId_fkey" FOREIGN KEY ("locationI
 ALTER TABLE "room" ADD CONSTRAINT "room_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "shifts" ADD CONSTRAINT "shifts_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "location"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shifts" ADD CONSTRAINT "shifts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "_taskTouser" ADD CONSTRAINT "_taskTouser_A_fkey" FOREIGN KEY ("A") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -734,3 +775,9 @@ ALTER TABLE "_meetingTouser" ADD CONSTRAINT "_meetingTouser_A_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "_meetingTouser" ADD CONSTRAINT "_meetingTouser_B_fkey" FOREIGN KEY ("B") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_roomToshifts" ADD CONSTRAINT "_roomToshifts_A_fkey" FOREIGN KEY ("A") REFERENCES "room"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_roomToshifts" ADD CONSTRAINT "_roomToshifts_B_fkey" FOREIGN KEY ("B") REFERENCES "shifts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
