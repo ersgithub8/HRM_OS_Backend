@@ -26,19 +26,25 @@ const createShift = async (req, res) => {
               weekNumber: req.body.weekNumber,
               userId: req.body.userId,
               locationId: req.body.locationId,
+              assignedBy:req.auth.sub,
               status: true,
               schedule: req.body.schedule ? {
-                create: {
-                  day: req.body.day,
-                  startTime: new Date(req.body.salarystartTime),
-                  endTime:new Date(req.body.salaryendTime),
-                  breakTime:req.body.breakTime,
-                  generalInfo:req.body.generalInfo,
-                  roomId:req.body.roomId,
-                  workHour:req.body.workHour
-                //   folderTime:req.body.folderTime,
-
-                },
+                create: req.body.schedule.map((e) => {
+                  const timeDiff = moment(e.endTime).diff(moment(e.startTime));
+        const totalMinutes = timeDiff / (1000 * 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+                  return {
+                    day: e.day,
+                    startTime: new Date(e.startTime),
+                    endTime: new Date(e.endTime),
+                    breakTime:e.breakTime,
+                    generalInfo:e.generalInfo,
+                    roomId:e.roomId,
+                    workHour:workHour
+                  };
+                }),
               } : {},
             },
           });
@@ -51,116 +57,45 @@ const createShift = async (req, res) => {
   
 };
 
-// const getAllShift = async (req, res) => {
-//   if (req.body.query === "all") {
-//     try {
-//       const getAllShift = await prisma.shift.findMany({
-//         orderBy: {
-//           id: "desc",
-//         },
-//       });
-
-//       return res.status(200).json(getAllShift);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   } else {
-//     const { skip, limit } = getPagination(req.query);
-//     try {
-//       // get all designation paginated
-//       const allShift = await prisma.shift.findMany({
-//         orderBy: {
-//           id: "desc",
-//         },
-//         skip: parseInt(skip),
-//         take: parseInt(limit),
-//       });
-//       return res.status(200).json(allShift);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   }
-// };
-
-
-
 const getAllShift = async (req, res) => {
-  if (req.body.query === "all") {
-    try {
-      const getAllShift = await prisma.shift.findMany({
-        orderBy: {
-          id: "desc",
+  try {
+    const allShifts = await prisma.shifts.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            userName: true,
+          },
         },
-      });
+        location: true,
+        schedule: true,
+      },
+    });
 
-      // Modify each shift to display time in minutes or hours
-      const modifiedShifts = getAllShift.map(shift => {
-        const timeDiff = moment(shift.endTime).diff(moment(shift.startTime));
-        const totalMinutes = timeDiff / (1000 * 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-        let displayValue;
+    // If you want to map the results to include assignedBy user information for each shift, you can do that here.
+    const shiftsWithAssignedBy = await Promise.all(allShifts.map(async (shift) => {
+      if (shift.assignedBy) {
+        const assignedByUser = await prisma.user.findUnique({
+          where: { id: shift.assignedBy },
+          select: { id: true, firstName: true, lastName: true, userName: true },
+        });
+        return { ...shift, assignedBy: assignedByUser };
+      }
+      return shift;
+    }));
 
-        if (workHour < 1) {
-          displayValue = `${minutes} min`;
-        } else {
-          displayValue = `${workHour} hr`;
-        }
-
-        return {
-          ...shift,
-          workHour: displayValue,
-        };
-      });
-
-      return res.status(200).json(modifiedShifts);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  } else {
-    const { skip, limit } = getPagination(req.query);
-    try {
-      // Get all designation paginated
-      const allShift = await prisma.shift.findMany({
-        orderBy: {
-          id: "desc",
-        },
-        skip: parseInt(skip),
-        take: parseInt(limit),
-      });
-
-      // Modify each shift to display time in minutes or hours
-      const modifiedShifts = allShift.map(shift => {
-        const timeDiff = moment(shift.endTime).diff(moment(shift.startTime));
-        const totalMinutes = timeDiff / (1000 * 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-        let displayValue;
-
-        if (workHour < 1) {
-          displayValue = `${minutes.toFixed(0)} min`;
-        } else {
-          displayValue = `${workHour} hr`;
-        }
-
-        return {
-          ...shift,
-          workHour: displayValue,
-        };
-      });
-
-      return res.status(200).json(modifiedShifts);
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
+    return res.status(200).json(shiftsWithAssignedBy);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
 };
 
+
 const getSingleShift = async (req, res) => {
   try {
-    const singleShift = await prisma.shift.findUnique({
+    const singleShift = await prisma.shifts.findUnique({
       where: {
         id: parseInt(req.params.id),
       },
@@ -173,10 +108,25 @@ const getSingleShift = async (req, res) => {
             userName: true,
           },
         },
+        // assignedBy:true,
+        location:true,
+        schedule: true,
+
       },
     });
+    if (singleShift && singleShift.assignedBy) {
+      const assignedByUser = await prisma.user.findUnique({
+        where: { id: singleShift.assignedBy },
+        select: { id: true, firstName: true, lastName: true, userName: true },
+      });
+      const shiftWithAssignedBy = {
+        ...singleShift,
+        assignedBy: assignedByUser,
+      };
+    
 
-    return res.status(200).json(singleShift);
+    return res.status(200).json(shiftWithAssignedBy);
+  }
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -184,35 +134,58 @@ const getSingleShift = async (req, res) => {
 
 const updateSingleShift = async (req, res) => {
   try {
-    const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
-    const totalMinutes = timeDiff / (1000 * 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-    if (workHour < 0) {
-      workHour = 24 + workHour;
-    }
-    const updateShift = await prisma.shift.update({
+    const shiftId = Number(req.params.id); 
+    const updatedShift = await prisma.shifts.update({
       where: {
-        id: parseInt(req.params.id),
+        id: shiftId,
       },
       data: {
         name: req.body.name,
-        startTime: new Date(req.body.startTime),
-        endTime: new Date(req.body.endTime),
-        workHour: workHour,
+        shiftFrom: new Date(req.body.shiftFrom),
+        shiftTo: new Date(req.body.shiftTo),
+        weekNumber: req.body.weekNumber,
+        userId: req.body.userId,
+        locationId: req.body.locationId,
+        assignedBy: req.auth.sub,
+        status: true,
       },
     });
 
-    return res.status(200).json(updateShift);
+    if (req.body.schedule) {
+      for (const scheduleItem of req.body.schedule) {
+        const timeDiff = moment(scheduleItem.endTime).diff(moment(scheduleItem.startTime));
+        const totalMinutes = timeDiff / (1000 * 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+        await prisma.schedule.update({
+          where: {
+            id: scheduleItem.id, 
+          },
+          data: {
+            day: scheduleItem.day,
+            startTime: new Date(scheduleItem.startTime),
+            endTime: new Date(scheduleItem.endTime),
+            breakTime: scheduleItem.breakTime,
+            generalInfo: scheduleItem.generalInfo,
+            roomId: scheduleItem.roomId,
+            workHour: workHour,
+          },
+        });
+      }
+    }
+
+    return res.status(200).json(updatedShift);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error(error);
+    return res.status(400).json({ error: 'Internal Server Error' });
   }
 };
 
+
 const deleteSingleShift = async (req, res) => {
   try {
-    const deleteShift = await prisma.shift.delete({
+    const deleteShift = await prisma.shifts.delete({
       where: {
         id: parseInt(req.params.id),
       },
