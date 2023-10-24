@@ -702,6 +702,7 @@ let annualallowedleave;
       documents: req.body.documents ? req.body.documents : null,
       applicationStatus: req.body.applicationStatus,
       zipCode: req.body.zipCode,
+      
       country: req.body.country,
       departmentId: req.body.departmentId,
       roleId: req.body.roleId,
