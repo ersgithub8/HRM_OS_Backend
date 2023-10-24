@@ -5,13 +5,20 @@ var FCM = require("fcm-node");
 
 const createTask = async (req, res) => {
   try {
-    const { userId, name, startDate, endDate, description, completionTime, adminattachment, userAttachment, priorityId } = req.body;
+    const { userId, name, startDate, endDate, description, completionTime, adminattachment, userAttachment, priorityId,departmentId } = req.body;
 
     const newTask = await prisma.task.create({
       data: {
         name,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
+        department: departmentId !== 0
+      ? {
+          connect: {
+            id: departmentId,
+          }
+        }
+      : undefined,
         description,
         completionTime: parseFloat(completionTime),
         adminattachment,
@@ -55,6 +62,7 @@ const createTask = async (req, res) => {
       message: "Task created Successfully"
     });
   } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: "Failed to create task" });
   }
 };
