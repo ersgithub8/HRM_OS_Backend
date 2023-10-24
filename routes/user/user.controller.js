@@ -302,6 +302,7 @@ const getAllUser = async (req, res) => {
           department: true,
           role: true,
           shift: true,
+          room:true,
           leavePolicy: true,
           weeklyHoliday: true,
           awardHistory: true,
@@ -523,6 +524,12 @@ const getSingleUser = async (req, res) => {
           },
         },
         leaveApplication: {
+          orderBy: {
+            id: "desc",
+          },
+          take: 5,
+        },
+        room: {
           orderBy: {
             id: "desc",
           },
