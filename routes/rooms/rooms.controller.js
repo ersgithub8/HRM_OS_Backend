@@ -171,6 +171,41 @@ const createrooms = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
   };
+
+  const getroomBylocationId = async (req, res) => {
+    try {
+      const locationId = Number(req.params.id);
+      const rooms = await prisma.room.findMany({
+        where: {
+          locationId: locationId,
+        },
+        select: {
+          id: true,
+          roomName: true,
+          status: true,
+          location: {
+            select: {
+              id: true,
+              locationName: true,
+            },
+          },
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+  
+      return res.status(200).json(rooms);
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  };
+  ;
   
   const deleteroom = async (req, res) => {
     try {
@@ -198,6 +233,7 @@ module.exports = {
     getAllrooms,
     updaterooms,
     deleteroom,
-    getroomById
+    getroomById,
+    getroomBylocationId
 
 };
