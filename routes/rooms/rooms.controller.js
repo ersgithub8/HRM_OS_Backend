@@ -111,10 +111,7 @@ const createrooms = async (req, res) => {
         return res.status(400).json({ message: "Failed to get all room" });
       }
     }
-  };
-
-
-  
+  };  
   const updaterooms = async (req, res) => {
     try {
         const {locationId, roomName,status } = req.body;
@@ -172,12 +169,68 @@ const createrooms = async (req, res) => {
     }
   };
 
+  // const getroomBylocationId = async (req, res) => {
+  //   try {
+  //     const locationId = Number(req.params.id);
+  //     if (req.query.status === "true"){
+  //     const rooms = await prisma.room.findMany({
+  //       where: {
+  //         locationId: locationId,
+  //       },
+  //       select: {
+  //         id: true,
+  //         roomName: true,
+  //         status: true,
+  //         location: {
+  //           select: {
+  //             id: true,
+  //             locationName: true,
+  //           },
+  //         },
+  //         createdAt: true,
+  //         updatedAt: true,
+  //       },
+  //     });
+  
+  //     return res.status(200).json(rooms);
+  //   }
+  //   const allRooms = await prisma.room.findMany({
+  //     orderBy: [{ id: 'desc' }],
+  //     select: {
+  //       id: true,
+  //       roomName: true,
+  //       status:true,
+  //       location: {
+  //         select: {
+  //           id: true,
+  //           locationName: true,
+  //         },
+  //       },
+  //       user: {
+  //         select: {
+  //           firstName: true,
+  //           lastName: true,
+  //         },
+  //       },
+  //       createdAt: true,
+  //       updatedAt: true,
+  //     },
+  //   });
+  //     return res.status(200).json(allRooms);
+  // } catch (error) {
+  //     return res.status(400).json({ message: error.message });
+  //   }
+  // };
+  
   const getroomBylocationId = async (req, res) => {
     try {
       const locationId = Number(req.params.id);
+      const statusFilter = req.query.status === "true";
+  
       const rooms = await prisma.room.findMany({
         where: {
           locationId: locationId,
+          status: statusFilter, 
         },
         select: {
           id: true,
@@ -194,12 +247,15 @@ const createrooms = async (req, res) => {
         },
       });
   
+      if (rooms.length === 0) {
+        return res.status(400).json({ message: "No rooms found with the specified status." });
+      }
+  
       return res.status(200).json(rooms);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
   };
-  ;
   
   const deleteroom = async (req, res) => {
     try {
