@@ -189,12 +189,6 @@ const createrooms = async (req, res) => {
               locationName: true,
             },
           },
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
           createdAt: true,
           updatedAt: true,
         },
