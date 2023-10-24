@@ -26,6 +26,7 @@ const createShift = async (req, res) => {
               locationId: req.body.locationId,
               assignedBy:req.auth.sub,
               status:req.body.status,
+              generalInfo:req.body.generalInfo,
               schedule: req.body.schedule ? {
                 create: req.body.schedule.map((e) => {
                   const timeDiff = moment(e.endTime).diff(moment(e.startTime));
@@ -38,7 +39,6 @@ const createShift = async (req, res) => {
                     startTime: new Date(e.startTime),
                     endTime: new Date(e.endTime),
                     breakTime:e.breakTime,
-                    generalInfo:e.generalInfo,
                     roomId:e.roomId,
                     workHour:workHour
                   };
@@ -75,7 +75,6 @@ const getAllShift = async (req, res) => {
           },
         },
         location: true,
-        // schedule: true,
         schedule: {
           select: {
             id: true,
@@ -90,9 +89,11 @@ const getAllShift = async (req, res) => {
                 roomName: true,   
               },
             },
+            // roomId:true,
             workHour:true,
             status:true,
             shiftsId:true,
+            generalInfo:true,
             createdAt:true,
             updatedAt:true,
 
