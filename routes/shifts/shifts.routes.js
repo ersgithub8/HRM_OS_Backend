@@ -5,14 +5,16 @@ const {
   getSingleShift,
   updateSingleShift,
   deleteSingleShift,
+  getSingleShiftbyuserId
 } = require("./shifts.controller");
 const authorize = require("../../utils/authorize"); // authentication middleware
 
 const shiftsRoutes = express.Router();
 
-shiftsRoutes.post("/", authorize("create-shift"), createShift);
-shiftsRoutes.get("/", authorize("readAll-shift"), getAllShift);
-shiftsRoutes.get("/:id", authorize("readSingle-shift"), getSingleShift);
-shiftsRoutes.put("/update/:id", authorize("update-shift"), updateSingleShift);
-shiftsRoutes.delete("/:id", authorize("delete-shift"), deleteSingleShift);
+shiftsRoutes.post("/", authorize("create-shifts"), createShift);
+shiftsRoutes.get("/", authorize("readAll-shifts"), getAllShift);
+shiftsRoutes.get("/:id", authorize("readSingle-shifts"), getSingleShift);
+shiftsRoutes.get("/user/:id", authorize("readSingle-shifts"), getSingleShiftbyuserId);
+shiftsRoutes.put("/update/:id", authorize("update-shifts"), updateSingleShift);
+shiftsRoutes.delete("/:id", authorize("delete-shifts"), deleteSingleShift);
 module.exports = shiftsRoutes;
