@@ -40,7 +40,7 @@ model user {
   address               String?
   manualleave           Float?
   contractAttachment          String?
-  referencecontact     String?
+  reference_contact     String?
   referencecontacttwo  String?
   resetPasswordToken   String?
   resetPasswordExpires  DateTime @default(now())
@@ -152,6 +152,7 @@ model department {
   status Boolean @default(true)
   user   user[]
   meeting    meeting[]
+  task        task[]
 }
 
 model employmentStatus {
@@ -363,6 +364,8 @@ model milestone {
 
 model task {
   id             Int            @id @default(autoincrement())
+  department         department?       @relation(fields: [departmentId], references: [id])
+  departmentId       Int?
  user           user[]
   name           String
   startDate      DateTime
@@ -540,7 +543,7 @@ model room {
   locationId            Int?
     user            user      @relation(fields: [userId], references: [id]) 
   userId          Int
-  shifts  shifts[]
+  schedule           Schedule[]
   roomName     String?
   status       Boolean  @default(true)
  createdAt     DateTime  @default(now())
@@ -548,31 +551,37 @@ model room {
 }
 
 model shifts {
-      id        Int      @id @default(autoincrement())
-      shiftFrom DateTime?
-      shiftTo   DateTime?
-      weekNumber  Int?
-       location              location?            @relation(fields: [locationId], references: [id])
-       locationId            Int?
-       user            user      @relation(fields: [userId], references: [id])  
-       userId          Int
-      weekDays    String?
-      room    room[  shiftFrom DateTime?
-      shiftTo   DateTime?
-      weekNumber  Int?
-       location              location?            @relation(fields: [locationId], references: [id])
-       locationId            Int?
-       user            user      @relation(fields: [userId], references: [id])  
-       userId          Int
-      weekDays    String?]
-      startTime  DateTime?
-      endTime    DateTime?
-      breakTime DateTime?
-      superVisorId  Boolean?
-      folderTime    DateTime?
-      generalInfo   String?
-      workHour  Float?
-      status    Boolean  @default(true)
-     createdAt DateTime @default(now())
-     updatedAt DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  name                String?
+   location              location?            @relation(fields: [locationId], references: [id])
+  locationId            Int?
+  shiftFrom           DateTime?
+  shiftTo             DateTime?
+  weekNumber          Int?
+  user                user?     @relation(fields: [userId], references: [id])  
+  userId              Int?
+  schedule           Schedule[]
+  status              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
+
+model Schedule {
+  id                   Int      @id @default(autoincrement())
+  day                  String?
+  startTime            DateTime?
+  endTime              DateTime?
+  breakTime            Int?
+  folderTime           Int?
+  generalInfo          String?
+  room                 room?    @relation(fields: [roomId], references: [id])
+  roomId               Int?
+  workHour             Float?
+  status               Boolean  @default(true)
+  shifts                shifts?    @relation(fields: [shiftsId], references: [id])
+  shiftsId              Int?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+

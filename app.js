@@ -168,4 +168,6 @@ app.use(
   "/rooms",
   require("./routes/rooms/rooms.routes")
 );
+app.use("/shifts", require("./routes/shifts/shifts.routes"));
+
 module.exports = app;
