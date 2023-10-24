@@ -143,6 +143,7 @@ const getAllLocation = async (req, res) => {
   }
 };
 
+
 const getSingleLocation = async (req, res) => {
   try {
     const singleLocation = await prisma.location.findUnique({
