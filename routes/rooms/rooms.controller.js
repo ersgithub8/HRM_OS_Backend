@@ -248,7 +248,7 @@ const createrooms = async (req, res) => {
       });
   
       if (rooms.length === 0) {
-        return res.status(400).json({ message: "No rooms found with the specified status." });
+        return res.status(400).json({ message: "No rooms found with the specified location." });
       }
   
       return res.status(200).json(rooms);
