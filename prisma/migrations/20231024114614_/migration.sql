@@ -560,6 +560,7 @@ CREATE TABLE "shifts" (
     "shiftTo" TIMESTAMP(3),
     "weekNumber" INTEGER,
     "userId" INTEGER,
+    "assignedBy" INTEGER,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

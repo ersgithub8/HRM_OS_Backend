@@ -560,6 +560,7 @@ model shifts {
   weekNumber          Int?
   user                user?     @relation(fields: [userId], references: [id])  
   userId              Int?
+  assignedBy   Int?
   schedule           Schedule[]
   status              Boolean  @default(true)
   createdAt           DateTime @default(now())
