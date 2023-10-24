@@ -25,7 +25,7 @@ const createShift = async (req, res) => {
               userId: req.body.userId,
               locationId: req.body.locationId,
               assignedBy:req.auth.sub,
-              status: true,
+              status:req.body.status,
               schedule: req.body.schedule ? {
                 create: req.body.schedule.map((e) => {
                   const timeDiff = moment(e.endTime).diff(moment(e.startTime));
@@ -46,10 +46,11 @@ const createShift = async (req, res) => {
               } : {},
             },
           });
-          return res.status(200).json(createShift);
+          return res.status(200).json({createShift,
+          message:"Shift created succssfully"});
       } catch (error) {
         console.error(error);
-        return res.status(400).json({ error: 'Internal Server Error' });
+        return res.status(400).json({ message: 'Failed to create shift' });
       }
       
   
@@ -266,26 +267,37 @@ const updateSingleShift = async (req, res) => {
       }
     }
 
-    return res.status(200).json(updatedShift);
+    return res.status(200).json({updatedShift,
+      message:"Shift updated succssfully"});
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ error: 'Internal Server Error' });
+    return res.status(400).json({ message: 'Failed to update shift' });
   }
 };
 
 
 const deleteSingleShift = async (req, res) => {
   try {
-    const deleteShift = await prisma.shifts.delete({
-      where: {
-        id: parseInt(req.params.id),
-      },
+    const shiftId = parseInt(req.params.id);
+    const existingShift = await prisma.shifts.findUnique({
+      where: { id: shiftId },
     });
-    return res.status(200).json(deleteShift);
+
+    if (!existingShift) {
+      return res.status(404).json({ message: "Shift not found" });
+    }
+
+    const deleteShift = await prisma.shifts.delete({
+      where: { id: shiftId },
+    });
+
+    return res.status(200).json({deleteShift,
+      message:"Shift deleted succssfully"});
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message: "Failed to delete shift" });
   }
 };
+
 
 module.exports = {
   createShift,

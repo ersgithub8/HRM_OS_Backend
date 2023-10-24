@@ -16,5 +16,5 @@ shiftsRoutes.get("/", authorize("readAll-shifts"), getAllShift);
 shiftsRoutes.get("/:id", authorize("readSingle-shifts"), getSingleShift);
 shiftsRoutes.get("/user/:id", authorize("readSingle-shifts"), getSingleShiftbyuserId);
 shiftsRoutes.put("/update/:id", authorize("update-shifts"), updateSingleShift);
-shiftsRoutes.delete("/:id", authorize("delete-shifts"), deleteSingleShift);
+shiftsRoutes.delete("/delete/:id", authorize("delete-shifts"), deleteSingleShift);
 module.exports = shiftsRoutes;

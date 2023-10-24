@@ -561,6 +561,7 @@ model shifts {
   user                user?     @relation(fields: [userId], references: [id])  
   userId              Int?
   assignedBy   Int?
+   generalInfo          String?
   schedule           Schedule[]
   status              Boolean  @default(true)
   createdAt           DateTime @default(now())
@@ -574,7 +575,6 @@ model Schedule {
   endTime              DateTime?
   breakTime            Int?
   folderTime           Int?
-  generalInfo          String?
   room                 room?    @relation(fields: [roomId], references: [id])
   roomId               Int?
   workHour             Float?
