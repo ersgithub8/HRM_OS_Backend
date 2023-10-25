@@ -90,6 +90,7 @@ const createShift = async (req, res) => {
             endTime: e.endTime ? new Date(e.endTime) : null,
             breakTime: e.breakTime ? e.breakTime : null,
             roomId: e.roomId ? e.roomId : null,
+            folderTime:e.folderTime?e.folderTime:null
           };
           
           if (e.startTime && e.endTime) {
