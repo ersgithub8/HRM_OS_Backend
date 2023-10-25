@@ -91,7 +91,7 @@ const createShift = async (req, res) => {
             breakTime: e.breakTime ? e.breakTime : null,
             roomId: e.roomId ? e.roomId : null,
             folderTime:e.folderTime?e.folderTime:null,
-            status:e.status?e.status:true
+            status:e.status
 
           };
           
