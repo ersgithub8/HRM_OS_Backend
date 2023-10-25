@@ -224,6 +224,7 @@ const register = async (req, res) => {
         end_date:req.body.end_date,
         address:req.body.address,
         reference_contact:req.body.reference_contact,
+        referencecontacttwo:req.body.referencecontacttwo,
         street: req.body.street ? req.body.street:null,
         city: req.body.city ? req.body.city : null,
         state: req.body.state ? req.body.state : null,

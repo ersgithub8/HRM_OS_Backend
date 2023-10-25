@@ -38,9 +38,10 @@ const createSingleLocation = async (req, res) => {
         },
       });
 
-      return res.status(201).json(createdLocation);
+      return res.status(201).json({createdLocation,
+      message:"Location created successfully"});
     } catch (error) {
-      return res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: "Failed to create location" });
     }
   }
 };
@@ -253,9 +254,10 @@ const updateSingleLocation = async (req, res) => {
         longitude: req.body.longitude
       },
     });
-    return res.status(200).json(updatedLocation);
+    return res.status(200).json({updatedLocation,
+      message:"Location updated successfully"});
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({  message:"Failed to update location" });
   }
 };
 
