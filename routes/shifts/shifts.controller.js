@@ -201,6 +201,8 @@ const getSingleShift = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
+            employeeId:true,
+            designation:true,
           },
         },
         location:true,
@@ -308,7 +310,6 @@ const getSingleShiftbyuserId = async (req, res) => {
   }
 };
 
-
 const updateSingleShift = async (req, res) => {
   try {
     const shiftId = Number(req.params.id); 
@@ -342,11 +343,12 @@ const updateSingleShift = async (req, res) => {
           },
           data: {
             day: scheduleItem.day,
-            startTime: new Date(scheduleItem.startTime),
-            endTime: new Date(scheduleItem.endTime),
-            breakTime: scheduleItem.breakTime,
-            roomId: scheduleItem.roomId,
-            workHour: workHour,
+            startTime: scheduleItem.startTime ? new Date(scheduleItem.startTime) : null,
+            endTime: scheduleItem.endTime ? new Date(scheduleItem.endTime) : null,
+            breakTime: scheduleItem.breakTime ? scheduleItem.breakTime : null,
+            roomId: scheduleItem.roomId ? scheduleItem.roomId : null,
+            folderTime:scheduleItem.folderTime?scheduleItem.folderTime:null,
+            status:scheduleItem.status
           },
         });
       }
