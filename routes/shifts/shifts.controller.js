@@ -3,57 +3,120 @@ const prisma = require("../../utils/prisma");
 const moment = require("moment");
 const { schedule } = require("node-cron");
 
-const createShift = async (req, res) => {
+// const createShift = async (req, res) => {
   
-    try {
-        const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
-        const totalMinutes = timeDiff / (1000 * 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-        if (workHour < 1) {
-          displayValue = `${minutes} min`;
-        } else {
-          displayValue = `${workHour} hr`;
-        }
-        const createShift = await prisma.shifts.create({
-            data: {
-              name: req.body.name,
-              shiftFrom: new Date(req.body.shiftFrom),
-              shiftTo: new Date(req.body.shiftTo),
-              weekNumber: req.body.weekNumber,
-              userId: req.body.userId,
-              locationId: req.body.locationId,
-              assignedBy:req.auth.sub,
-              status:req.body.status,
-              generalInfo:req.body.generalInfo,
-              schedule: req.body.schedule ? {
-                create: req.body.schedule.map((e) => {
-                  const timeDiff = moment(e.endTime).diff(moment(e.startTime));
-        const totalMinutes = timeDiff / (1000 * 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-                  return {
-                    day: e.day,
-                    startTime: new Date(e.startTime),
-                    endTime: new Date(e.endTime),
-                    breakTime:e.breakTime,
-                    roomId:e.roomId,
-                    workHour:workHour
-                  };
-                }),
-              } : {},
-            },
-          });
-          return res.status(200).json({createShift,
-          message:"Shift created succssfully"});
-      } catch (error) {
-        console.error(error);
-        return res.status(400).json({ message: 'Failed to create shift' });
-      }
+//     try {
+//         const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
+//         const totalMinutes = timeDiff / (1000 * 60);
+//         const hours = Math.floor(totalMinutes / 60);
+//         const minutes = totalMinutes % 60;
+//         const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+//         if (workHour < 1) {
+//           displayValue = `${minutes} min`;
+//         } else {
+//           displayValue = `${workHour} hr`;
+//         }
+//         const createShift = await prisma.shifts.create({
+//             data: {
+//               name: req.body.name,
+//               shiftFrom: new Date(req.body.shiftFrom),
+//               shiftTo: new Date(req.body.shiftTo),
+//               weekNumber: req.body.weekNumber,
+//               userId: req.body.userId,
+//               locationId: req.body.locationId,
+//               assignedBy:req.auth.sub,
+//               status:req.body.status,
+//               generalInfo:req.body.generalInfo,
+//               schedule: req.body.schedule ? {
+//                 create: req.body.schedule.map((e) => {
+//                   const timeDiff = moment(e.endTime).diff(moment(e.startTime));
+//         const totalMinutes = timeDiff / (1000 * 60);
+//         const hours = Math.floor(totalMinutes / 60);
+//         const minutes = totalMinutes % 60;
+//         const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+//                   return {
+//                     day: e.day,
+//                     startTime: new Date(e.startTime),
+//                     endTime: new Date(e.endTime),
+//                     breakTime:e.breakTime,
+//                     roomId:e.roomId,
+//                     workHour:workHour
+//                   };
+//                 }),
+//               } : {},
+//             },
+//           });
+//           return res.status(200).json({createShift,
+//           message:"Shift created succssfully"});
+//       } catch (error) {
+//         console.error(error);
+//         return res.status(400).json({ message: 'Failed to create shift' });
+//       }
       
   
+// };
+
+
+const createShift = async (req, res) => {
+  try {
+    const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
+    const totalMinutes = timeDiff / (1000 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+    
+    let displayValue;
+    if (workHour < 1) {
+      displayValue = `${minutes} min`;
+    } else {
+      displayValue = `${workHour} hr`;
+    }
+    
+    const createShiftData = {
+      name: req.body.name,
+      shiftFrom: new Date(req.body.shiftFrom),
+      shiftTo: new Date(req.body.shiftTo),
+      weekNumber: req.body.weekNumber,
+      userId: req.body.userId,
+      locationId: req.body.locationId,
+      assignedBy: req.auth.sub,
+      status: req.body.status,
+      generalInfo: req.body.generalInfo,
+      schedule: req.body.schedule ? {
+        create: req.body.schedule.map((e) => {
+          const scheduleData = {
+            day: e.day,
+            startTime: e.startTime ? new Date(e.startTime) : null,
+            endTime: e.endTime ? new Date(e.endTime) : null,
+            breakTime: e.breakTime ? e.breakTime : null,
+            roomId: e.roomId ? e.roomId : null,
+          };
+          
+          if (e.startTime && e.endTime) {
+            const timeDiff = moment(e.endTime).diff(moment(e.startTime));
+            const totalMinutes = timeDiff / (1000 * 60);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+            scheduleData.workHour = workHour;
+          } else {
+            scheduleData.workHour = null;
+          }
+          
+          return scheduleData;
+        }),
+      } : {},
+    };
+
+    const createShiftResult = await prisma.shifts.create({
+      data: createShiftData,
+    });
+
+    return res.status(200).json({ createShift: createShiftResult, message: "Shift created successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ message: 'Failed to create shift' });
+  }
 };
 
 const getAllShift = async (req, res) => {
