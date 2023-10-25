@@ -83,7 +83,6 @@ const getAllShift = async (req, res) => {
             endTime: true,
             breakTime: true,
             folderTime:true,
-            generalInfo:true,
             room: {    
               select: {
                 roomName: true,   
@@ -93,7 +92,7 @@ const getAllShift = async (req, res) => {
             workHour:true,
             status:true,
             shiftsId:true,
-            generalInfo:true,
+            // generalInfo:true,
             createdAt:true,
             updatedAt:true,
 
@@ -139,7 +138,6 @@ const getSingleShift = async (req, res) => {
             userName: true,
           },
         },
-        // assignedBy:true,
         location:true,
         schedule: {
           select: {
@@ -149,7 +147,6 @@ const getSingleShift = async (req, res) => {
             endTime: true,
             breakTime: true,
             folderTime:true,
-            generalInfo:true,
             room: {    
               select: {
                 roomName: true,   
@@ -158,6 +155,7 @@ const getSingleShift = async (req, res) => {
             workHour:true,
             status:true,
             shiftsId:true,
+            // generalInfo:true,
             createdAt:true,
             updatedAt:true,
 
@@ -237,6 +235,7 @@ const updateSingleShift = async (req, res) => {
         shiftFrom: new Date(req.body.shiftFrom),
         shiftTo: new Date(req.body.shiftTo),
         weekNumber: req.body.weekNumber,
+        generalInfo:req.body.generalInfo,
         userId: req.body.userId,
         locationId: req.body.locationId,
         assignedBy: req.auth.sub,
@@ -260,7 +259,6 @@ const updateSingleShift = async (req, res) => {
             startTime: new Date(scheduleItem.startTime),
             endTime: new Date(scheduleItem.endTime),
             breakTime: scheduleItem.breakTime,
-            generalInfo: scheduleItem.generalInfo,
             roomId: scheduleItem.roomId,
             workHour: workHour,
           },
