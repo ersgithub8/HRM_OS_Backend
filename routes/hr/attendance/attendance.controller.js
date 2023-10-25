@@ -1287,18 +1287,6 @@ const search = async (req, res) => {
       if (isNaN(startDate) || isNaN(endDate)) {
         return res.status(400).json({ message: "Invalid date parameters." });
       }
-
-      // Find user by employeeId
-      // const user = await prisma.user.findUnique({
-      //   where: {
-      //     employeeId: employeeId,
-      //   },
-      // });
-
-      // if (!user) {
-      //   return res.status(404).json({ message: "User not found with the provided employeeId." });
-      // }
-
       attendanceQuery.where = {
         createdAt: {
           gte: startDate,
