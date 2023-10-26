@@ -765,7 +765,7 @@ let annualallowedleave;
     });
 
     const { password, ...userWithoutPassword } = updateUser;
-    if(existingUser.status===true){
+    if(existingUser.status==true){
       if(req.body.applicationStatus)
       {
         const Title = req.body.applicationStatus;
