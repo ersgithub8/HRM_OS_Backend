@@ -765,16 +765,14 @@ let annualallowedleave;
     });
 
     const { password, ...userWithoutPassword } = updateUser;
-    if(existingUser.status==true){
-      if(req.body.applicationStatus)
-      {
-        const Title = req.body.applicationStatus;
-        const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your application request has been ' + req.body.applicationStatus;
-        const Token = existingUser.firebaseToken;
-        const Desc = 'Application notification';
-        sendnotifiy(Title, Body,Desc, Token);
-      }
+    if (existingUser.status && req.body.applicationStatus) {
+      const Title = req.body.applicationStatus;
+      const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your application request has been ' + req.body.applicationStatus;
+      const Token = existingUser.firebaseToken;
+      const Desc = 'Application notification';
+      sendnotifiy(Title, Body, Desc, Token);
     }
+    
     
     return res.status(200).json({
       userWithoutPassword,
