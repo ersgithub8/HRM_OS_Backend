@@ -977,13 +977,12 @@ const deleteSingleLeave=async(req, res)=>{
         id: parseInt(req.params.id),
       },
     });
-
     return res.status(200).json({
       deletedLeaveApplication,
       message:"Leave application deleted successfully"
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({ message: "leave not found" });
   }
 }
 const todayLeaveState = async (req, res) => {
