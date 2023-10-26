@@ -12,7 +12,6 @@ const {
   todayLeaveState,
   yearlyLeaveState,
   MonthlyApprovedLeaves,
-  // leavewithroll,
   // getAllLeaveCTO,
 } = require("./leaveApplication.controller");
 const {
@@ -33,7 +32,6 @@ leaveApplicationRoutes.get("/todayLeaveState", authorize(""), todayLeaveState);
 leaveApplicationRoutes.get("/yearlyLeaveState", authorize(""), yearlyLeaveState);
 leaveApplicationRoutes.get("/monthlyapprove", authorize(""), MonthlyApprovedLeaves);
 leaveApplicationRoutes.get("/:id", authorize("readSingle-leaveApplication"), getSingleLeave);
-// leaveApplicationRoutes.get("/leave/:id", authorize(""), leavewithroll);
 leaveApplicationRoutes.put(
   "/:id",
   authorize("update-leaveApplication"),
