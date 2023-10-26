@@ -160,23 +160,36 @@ const allDesignationWiseEmployee = async (req, res) => {
       },
     });
 console.log(designationWiseEmployee);
-const data = designationWiseEmployee.map((item) => {
-  if (item.designationHistory && item.designationHistory[0] && item.designationHistory[0].designation) {
-    return {
-      designationId: item.designationHistory[0].designation.id,
-      designationName: item.designationHistory[0].designation.name,
-      employee: [
-        {
-          id: item.id,
-          firstName: item.firstName,
-          lastName: item.lastName,
-        },
-      ],
-    };
-  }
-  return null; // Or handle the case when 'designation' is not found.
-}).filter(Boolean); // Remove null values from the result.
-
+    // const data = designationWiseEmployee.map((item) => {
+    //   return {
+    //     designationId: item.designationHistory[0].designation.id,
+    //     designationName: item.designationHistory[0].designation.name,
+    //     employee: [
+    //       {
+    //         id: item.id,
+    //         firstName: item.firstName,
+    //         lastName: item.lastName,
+    //       },
+    //     ],
+    //   };
+    // });
+    const data = designationWiseEmployee.map((item) => {
+      if (item.designationHistory && item.designationHistory[0] && item.designationHistory[0].designation) {
+        return {
+          designationId: item.designationHistory[0].designation.id,
+          designationName: item.designationHistory[0].designation.name,
+          employee: [
+            {
+              id: item.id,
+              firstName: item.firstName,
+              lastName: item.lastName,
+            },
+          ],
+        };
+      }
+      return null; 
+    }).filter(Boolean); 
+    
 
     const result = data.reduce((acc, current) => {
       const x = acc.find(

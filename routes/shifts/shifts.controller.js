@@ -231,6 +231,9 @@ const getSingleShift = async (req, res) => {
 
       },
     });
+    if(!singleShift){
+      return res.status(400).json({message:"Shift not found" })
+    }
     if (singleShift && singleShift.assignedBy) {
       const assignedByUser = await prisma.user.findUnique({
         where: { id: singleShift.assignedBy },
