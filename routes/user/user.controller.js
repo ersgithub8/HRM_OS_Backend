@@ -765,15 +765,15 @@ let annualallowedleave;
     });
 
     const { password, ...userWithoutPassword } = updateUser;
-    if (existingUser.status && req.body.applicationStatus) {
+    
+    if(req.body.applicationStatus)
+    {
       const Title = req.body.applicationStatus;
       const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your application request has been ' + req.body.applicationStatus;
       const Token = existingUser.firebaseToken;
       const Desc = 'Application notification';
-      sendnotifiy(Title, Body, Desc, Token);
+      sendnotifiy(Title, Body,Desc, Token);
     }
-    
-    
     return res.status(200).json({
       userWithoutPassword,
       message: "User profile updated successfully",
