@@ -732,8 +732,8 @@ const grantedLeave = async (req, res, next) => {
       sendnotifiy(Title, Body, Desc, Token);
     }
     else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
-      // If status was changed from 'PENDING' to 'REJECTED', add the leave duration back to remaining leaves
       if (existingLeave.leaveDuration) {
+        if(existingLeave.leavecategory==='paid'){
         const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
         const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.leaveDuration, 0);
         await prisma.user.update({
@@ -744,15 +744,28 @@ const grantedLeave = async (req, res, next) => {
             remainingannualallowedleave: updatedRemainingLeaves.toString(),
           },
         });
+      }
+      else{
+        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+        const updatedRemainingLeaves = Math.max(currentRemainingLeaves, 0);
+        await prisma.user.update({
+          where: {
+            id: existingLeave.user.id,
+          },
+          data: {
+            remainingannualallowedleave: updatedRemainingLeaves.toString(),
+          
+          },
+        });
+      }
         const Title = 'Leave Rejected';
       const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been rejected.';
       const Desc = 'Leave rejection notification';
       const Token = existingLeave.user.firebaseToken;
-      // const Device = existingLeave.user.device;
       sendnotifiy(Title, Body, Desc, Token);
       }
     } else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
-      // If status was changed from 'APPROVED' to 'REJECTED', add the leave duration back to remaining leaves
+      if(existingLeave.leavecategory==='paid'){
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
       const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.leaveDuration, 0);
 
@@ -764,17 +777,10 @@ const grantedLeave = async (req, res, next) => {
           remainingannualallowedleave: updatedRemainingLeaves.toString(),
         },
       });
-      const Title = 'Leave Rejected';
-      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been rejected.';
-      const Desc = 'Leave rejection notification';
-      const Token = existingLeave.user.firebaseToken;
-      // const Device = existingLeave.user.device;
-      sendnotifiy(Title, Body, Desc, Token);
-    } else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
-      // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
+    }
+    else{
       const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-      const updatedRemainingLeaves = Math.max(currentRemainingLeaves - existingLeave.leaveDuration, 0);
-
+      const updatedRemainingLeaves = Math.max(currentRemainingLeaves, 0);
 
       await prisma.user.update({
         where: {
@@ -784,6 +790,42 @@ const grantedLeave = async (req, res, next) => {
           remainingannualallowedleave: updatedRemainingLeaves.toString(),
         },
       });
+    }
+      const Title = 'Leave Rejected';
+      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been rejected.';
+      const Desc = 'Leave rejection notification';
+      const Token = existingLeave.user.firebaseToken;
+      sendnotifiy(Title, Body, Desc, Token);
+    } else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
+      if(existingLeave.leavecategory==='paid'){
+        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+        const updatedRemainingLeaves = Math.max(currentRemainingLeaves - existingLeave.leaveDuration, 0);
+  
+  
+        await prisma.user.update({
+          where: {
+            id: existingLeave.user.id,
+          },
+          data: {
+            remainingannualallowedleave: updatedRemainingLeaves.toString(),
+          },
+        });
+      }
+      else{
+        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+        const updatedRemainingLeaves = Math.max(currentRemainingLeaves, 0);
+  
+  
+        await prisma.user.update({
+          where: {
+            id: existingLeave.user.id,
+          },
+          data: {
+            remainingannualallowedleave: updatedRemainingLeaves.toString(),
+          },
+        });
+      }
+     
       const Title = 'Leave Approved';
       const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been approved.';
       const Desc = 'Leave approval notification';
