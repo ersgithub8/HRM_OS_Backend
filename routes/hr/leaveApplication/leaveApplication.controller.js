@@ -1072,18 +1072,23 @@ const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), y
     const yesterdayTotalCount = yesterdayLeaves.length;
     const todayLeavesCounts = todayLeaves.length;
     
-    let percentageChange = 0;
-    
+    let percentageChange = 0; // Initialize as null
+        
     if (yesterdayTotalCount !== 0) {
       percentageChange = ((todayLeavesCounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
-      percentageChange = Math.abs(percentageChange);
-      
-      // Round the percentage to 2 decimal places
-      percentageChange = parseFloat(percentageChange.toFixed(2));
-    } else if (todayLeavesCounts === 0) {
-      percentageChange = 0;
+      percentageChange = parseFloat(percentageChange.toFixed(1)); // Round to one decimal place
+      percentageChange = Math.min(percentageChange, 100); // Ensure it's capped at 100%
+      percentageChange = Math.max(percentageChange, -100); // Ensure it's capped at -100%
     }
-
+     else {
+      if (todayLeavesCounts !== 0) {
+        percentageChange = ((yesterdayTotalCount - todayLeavesCounts) / todayLeavesCounts) * 100;
+        percentageChange = Math.abs(percentageChange);
+        percentageChange = parseFloat(percentageChange.toFixed(1));
+      }
+      // If both yesterdayTotalCount and todayLeavesCounts are 0, percentageChange remains 0.
+    }
+    
     return res.status(200).json({
       weekCounts: dayCounts,
       totalLeaves: totalLeaveCount,
