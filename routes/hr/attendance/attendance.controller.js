@@ -214,9 +214,9 @@ const createadminAttendance = async (req, res) => {
       },
       include: {
         shift: true,
+        // status:true,
       },
     });
-
     if (!user) {
       return res.status(400).json({ message: "User not found with the provided employeeId." });
     }
@@ -275,6 +275,7 @@ const createadminAttendance = async (req, res) => {
               firstName: true,
               lastName: true,
               employeeId: true,
+              
             },
           },
         },
@@ -365,7 +366,7 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
-      if (attendenceStatus) {
+      if (attendenceStatus&&user.status===true) {
         const Title = 'Attendance Marked';
         const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
         const Desc = 'Attendance marked notification';
@@ -437,7 +438,7 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
-      if (attendenceStatus) {
+      if (attendenceStatus&&user.status===true) {
         const Title = 'Attendance Marked';
         const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
         const Desc = 'Attendance marked notification';

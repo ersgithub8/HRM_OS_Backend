@@ -29,7 +29,7 @@ const createSingleAnnouncement = async (req, res) => {
         },
       });
 
-      const user = await prisma.user.findMany()
+      const user = await prisma.user.findMany({ where: { status: true } })
       // console.log(user);
       const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
       const newTokens = tokenArray.filter(item => item !== null)

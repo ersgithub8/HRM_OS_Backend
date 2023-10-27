@@ -196,29 +196,20 @@ const createmeeting = async (req, res) => {
       },
       select: {
         firebaseToken: true,
+        status:true,
       },
     });
-
-    // const tokens = userTokens
-    //   .filter((user) => user.firebaseToken)
-    //   .map((user) => user.firebaseToken);
-
-    // const Title = 'Meeting notification';
-    // const Body = req.body.meetingdate;
-    // const Desc = 'Meeting notification';
-
-    // console.log(Title, Body, Desc, tokens);
-    // await sendNotify(Title, Body, Desc, tokens);
     const tokens = userTokens
-  .filter((user) => user.firebaseToken && user.status === true)
-  .map((user) => user.firebaseToken);
+      .filter((user) => user.firebaseToken&& user.status === true)
+      .map((user) => user.firebaseToken);
 
-const Title = 'Meeting notification';
-const Body = req.body.meetingdate;
-const Desc = 'Meeting notification';
+    const Title = 'Meeting notification';
+    const Body = req.body.meetingdate;
+    const Desc = 'Meeting notification';
 
-console.log(Title, Body, Desc, tokens);
-await sendNotify(Title, Body, Desc, tokens);
+    console.log(Title, Body, Desc, tokens);
+    await sendNotify(Title, Body, Desc, tokens);
+
 
     return res.status(200).json({
       newMeeting,

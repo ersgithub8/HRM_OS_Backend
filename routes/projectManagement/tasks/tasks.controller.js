@@ -44,11 +44,12 @@ const createTask = async (req, res) => {
       },
       select: {
         firebaseToken: true,
+        status:true,
       },
     });
     
     const tokens = userTokens
-      .filter((user) => user.firebaseToken)
+      .filter((user) => user.firebaseToken&& user.status === true)
       .map((user) => user.firebaseToken);
     
     const Title = req.body.name;
