@@ -52,8 +52,8 @@ const createTask = async (req, res) => {
       .filter((user) => user.firebaseToken&& user.status === true)
       .map((user) => user.firebaseToken);
     
-    const Title = req.body.name;
-    const Body = req.body.description;
+    const Title = 'Task:'+req.body.name;
+    const Body =req.body.description;
     const Desc = 'Task notification';
     
     console.log(Title, Body, Desc, tokens);
