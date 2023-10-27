@@ -213,10 +213,6 @@ const createmeeting = async (req, res) => {
   .filter((user) => user.firebaseToken && user.status === true)
   .map((user) => user.firebaseToken);
 
-if (tokens.length === 0) {
-  return res.status(400).json({ message: 'No eligible users for notification.' });
-}
-
 const Title = 'Meeting notification';
 const Body = req.body.meetingdate;
 const Desc = 'Meeting notification';
