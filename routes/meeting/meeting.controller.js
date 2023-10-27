@@ -199,16 +199,31 @@ const createmeeting = async (req, res) => {
       },
     });
 
+    // const tokens = userTokens
+    //   .filter((user) => user.firebaseToken)
+    //   .map((user) => user.firebaseToken);
+
+    // const Title = 'Meeting notification';
+    // const Body = req.body.meetingdate;
+    // const Desc = 'Meeting notification';
+
+    // console.log(Title, Body, Desc, tokens);
+    // await sendNotify(Title, Body, Desc, tokens);
     const tokens = userTokens
-      .filter((user) => user.firebaseToken)
-      .map((user) => user.firebaseToken);
+  .filter((user) => user.firebaseToken && user.status === true)
+  .map((user) => user.firebaseToken);
 
-    const Title = 'Meeting notification';
-    const Body = req.body.meetingdate;
-    const Desc = 'Meeting notification';
+if (tokens.length === 0) {
+  return res.status(400).json({ message: 'No eligible users for notification.' });
+}
 
-    console.log(Title, Body, Desc, tokens);
-    await sendNotify(Title, Body, Desc, tokens);
+const Title = 'Meeting notification';
+const Body = req.body.meetingdate;
+const Desc = 'Meeting notification';
+
+console.log(Title, Body, Desc, tokens);
+await sendNotify(Title, Body, Desc, tokens);
+
     return res.status(200).json({
       newMeeting,
       message: 'Meeting created successfully',
