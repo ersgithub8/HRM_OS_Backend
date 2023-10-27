@@ -169,24 +169,26 @@ const createAttendance = async (req, res) => {
         message: "Clock in Successfully"
       });
     } else {
-      const outTime = new Date(moment.now()); // Initialize outTime here
-      const millisecondsDiff = (outTime - attendance.inTime);
+      const inTime = new Date(attendance.inTime); // Assuming attendance.inTime is a valid date
 
+      const outTime = new Date(); // Initialize outTime with the current time
+      
+      const millisecondsDiff = outTime - inTime;
+      
       // Convert milliseconds to minutes
-      const totalMinutes = millisecondsDiff / (1000 * 60);
+      const totalMinutes = Math.floor(millisecondsDiff / (1000 * 60));
       
       // Calculate hours and minutes
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      const total=hours+minutes;
-      const hourss=total/60;
+      // const hours = Math.floor(totalMinutes / 60);
+      // const minutes = totalMinutes % 60;
+      const decimalHours = totalMinutes / 60;
       const newAttendance = await prisma.attendance.update({
         where: {
           id: attendance.id,
         },
         data: {
           outTime: outTime,
-          totalHour: parseFloat(hourss.toFixed(2)),
+          totalHour: parseFloat(decimalHours.toFixed(2)),
           outTimeStatus: outTimeStatus,
 
         },
