@@ -766,7 +766,7 @@ let annualallowedleave;
 
     const { password, ...userWithoutPassword } = updateUser;
     
-    if(req.body.applicationStatus)
+    if(req.body.applicationStatus&&req.body.status==true)
     {
       const Title = req.body.applicationStatus;
       const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your application request has been ' + req.body.applicationStatus;
@@ -869,7 +869,6 @@ const updateSingleUserprofile = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 const updateSingleUserphone = async (req, res) => {
   const id = parseInt(req.params.id);
 
