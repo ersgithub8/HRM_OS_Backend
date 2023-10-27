@@ -766,7 +766,7 @@ let annualallowedleave;
 
     const { password, ...userWithoutPassword } = updateUser;
     
-    if(req.body.applicationStatus&&req.body.status==true)
+    if(existingUser.status && req.body.applicationStatus)
     {
       const Title = req.body.applicationStatus;
       const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your application request has been ' + req.body.applicationStatus;
