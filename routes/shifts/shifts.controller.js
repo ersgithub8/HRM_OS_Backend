@@ -74,7 +74,6 @@ const getAllShift = async (req, res) => {
     const isDateRangeProvided = shiftFrom && shiftTo;
 
     let allShifts;
-
     if (isDateRangeProvided) {
       const startDateTime = new Date(shiftFrom);
       const endDateTime = new Date(shiftTo);
@@ -130,7 +129,25 @@ const getAllShift = async (req, res) => {
         },
       });
     } else {
+      const today = new Date();
+      startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+      endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 99)
       allShifts = await prisma.shifts.findMany({
+        where: {
+         
+          AND: [
+            {
+              shiftFrom: {
+                lte: endOfToday, 
+              },
+            },
+            {
+              shiftTo: {
+                gte: startOfToday,
+              },
+            },
+          ],
+        },
         orderBy: [
           {
             id: "desc",
