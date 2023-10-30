@@ -266,6 +266,8 @@ const getSingleShiftbyuserId = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
+            employeeId:true,
+            designation:true,
           },
         },
         location: true,
