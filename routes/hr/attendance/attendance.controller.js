@@ -182,6 +182,8 @@ const createAttendance = async (req, res) => {
       // const hours = Math.floor(totalMinutes / 60);
       // const minutes = totalMinutes % 60;
       const decimalHours = totalMinutes / 60;
+      console.log(decimalHours);
+      // return
       const newAttendance = await prisma.attendance.update({
         where: {
           id: attendance.id,
