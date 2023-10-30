@@ -387,6 +387,213 @@ const deleteSingleShift = async (req, res) => {
   }
 };
 
+// const swapSingleShift = async (req, res) => {
+//   try {
+//     const shiftId1 = Number(req.body.id1);
+//     const shiftId2 = Number(req.body.id2);
+
+//     // Find the first shift
+//     const shift1 = await prisma.shifts.findUnique({
+//       where: {
+//         id: shiftId1,
+//       },
+//       include: {
+//         schedule: true,
+//       },
+//     });
+
+//     // Find the second shift
+//     const shift2 = await prisma.shifts.findUnique({
+//       where: {
+//         id: shiftId2,
+//       },
+//       include: {
+//         schedule: true,
+//       },
+//     });
+
+//     // Check if shifts were found
+//     if (!shift1 || !shift2) {
+//       return res.status(400).json({ message: 'One or both shifts were not found.' });
+//     }
+
+//     // Update userId for the first shift
+//     await prisma.shifts.update({
+//       where: { id: shiftId1 },
+//       data: {
+//         userId: shift2.userId, // Swap userId values
+//       },
+//     });
+
+//     // Update userId for the second shift
+//     await prisma.shifts.update({
+//       where: { id: shiftId2 },
+//       data: {
+//         userId: shift1.userId, // Swap userId values
+//       },
+//     });
+
+//     // Update the Shift field for schedule items in the first shift
+//     for (const scheduleItem of shift1.schedule) {
+//       await prisma.schedule.update({
+//         where: { id: scheduleItem.id },
+//         data: {
+//           shiftsId: shiftId2, // Assign to the new shift
+//         },
+//       });
+//     }
+
+//     // Update the Shift field for schedule items in the second shift
+//     for (const scheduleItem of shift2.schedule) {
+//       await prisma.schedule.update({
+//         where: { id: scheduleItem.id },
+//         data: {
+//           shiftsId: shiftId1, // Assign to the new shift
+//         },
+//       });
+//     }
+
+//     return res.status(200).json({
+//       message: 'Shift schedules swapped successfully',
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(400).json({ message: 'Failed to update shift' });
+//   }
+// };
+
+
+
+// const swapSingleShift = async (req, res) => {
+//   try {
+//     const shiftId1 = Number(req.body.id1);
+//     const shiftId2 = Number(req.body.id2);
+
+//     const shift1 = await prisma.shifts.findUnique({
+//       where: {
+//         id: shiftId1,
+//       },
+//       include: {
+//         schedule: true,
+//       },
+//     });
+
+//     const shift2 = await prisma.shifts.findUnique({
+//       where: {
+//         id: shiftId2,
+//       },
+//       include: {
+//         schedule: true,
+//       },
+//     });
+
+//     if (!shift1 || !shift2) {
+//       return res.status(400).json({ message: 'One or both shifts were not found.' });
+//     }
+
+//     const schedulesShift1 = shift1.schedule;
+//     const schedulesShift2 = shift2.schedule;
+
+//     await prisma.shifts.update({
+//       where: { id: shiftId1 },
+//       data: {
+//         schedule: {
+//           deleteMany: { id: { in: schedulesShift1.map((s) => s.id) } },
+//           create: schedulesShift2.map((s) => ({
+//             day: s.day,
+//             startTime: s.startTime,
+//             endTime: s.endTime,
+//             breakTime: s.breakTime,
+//             folderTime: s.folderTime,
+//             roomId: s.roomId,
+//             workHour: s.workHour,
+//             status: s.status,
+//             createdAt: s.createdAt,
+//             updatedAt: s.updatedAt,
+//           })),
+//         },
+//       },
+//     });
+
+//     await prisma.shifts.update({
+//       where: { id: shiftId2 },
+//       data: {
+//         schedule: {
+//           deleteMany: { id: { in: schedulesShift2.map((s) => s.id) } },
+//           create: schedulesShift1.map((s) => ({
+//             day: s.day,
+//             startTime: s.startTime,
+//             endTime: s.endTime,
+//             breakTime: s.breakTime,
+//             folderTime: s.folderTime,
+//             roomId: s.roomId,
+//             workHour: s.workHour,
+//             status: s.status,
+//             createdAt: s.createdAt,
+//             updatedAt: s.updatedAt,
+//           })),
+//         },
+//       },
+//     });
+
+//     return res.status(200).json({
+//       message: 'Shift schedules swapped successfully',
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(400).json({ message: 'Failed to update shift' });
+//   }
+// };
+
+const swapSingleShift = async (req, res) => {
+  try {
+    const scheduleItemId1 = Number(req.body.scheduleItemId1);
+    const scheduleItemId2 = Number(req.body.scheduleItemId2);
+
+    const scheduleItem1 = await prisma.schedule.findUnique({
+      where: {
+        id: scheduleItemId1,
+      },
+    });
+
+    const scheduleItem2 = await prisma.schedule.findUnique({
+      where: {
+        id: scheduleItemId2,
+      },
+    });
+
+    if (!scheduleItem1 || !scheduleItem2) {
+      return res.status(400).json({ message: 'One or both schedule items were not found.' });
+    }
+
+    const shiftsId1 = scheduleItem1.shiftsId;
+    const shiftsId2 = scheduleItem2.shiftsId;
+
+    await prisma.schedule.update({
+      where: { id: scheduleItemId1 },
+      data: {
+        shiftsId: shiftsId2,
+      },
+    });
+
+    await prisma.schedule.update({
+      where: { id: scheduleItemId2 },
+      data: {
+        shiftsId: shiftsId1,
+      },
+    });
+
+    return res.status(200).json({
+      message: 'Rooms swapped successfully',
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ message: 'Failed to update schedule items' });
+  }
+};
+
+
+
 
 module.exports = {
   createShift,
@@ -395,4 +602,5 @@ module.exports = {
   updateSingleShift,
   deleteSingleShift,
   getSingleShiftbyuserId,
+  swapSingleShift,
 };
