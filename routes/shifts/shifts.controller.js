@@ -345,13 +345,117 @@ const getSingleShift = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+// const getSingleShiftbyuserId = async (req, res) => {
+//   let startOfToday, endOfToday;
+//   const { startDate, endDate } = req.query;
+
+//   if (startDate && endDate) {
+//     startOfToday = new Date(startDate);
+//     endOfToday = new Date(endDate);
+//     endOfToday.setHours(23, 59, 59, 999);
+//   } else {
+//     const today = new Date();
+//     startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+//     endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+//   }
+//   try {
+//     const userId = parseInt(req.params.id);
+
+//     const singleShift = await prisma.shifts.findMany({
+//       where: {
+//         userId: userId, 
+//          AND: [
+//           {
+//             shiftFrom: { lte: endOfToday },
+//           },
+//           {
+//             shiftTo: { gte: startOfToday },
+//           },
+//         ],
+//       },
+//       include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             userName: true,
+//             employeeId:true,
+//             designation:true,
+//           },
+//         },
+//         location: true,
+//         schedule: {
+//           select: {
+//             id: true,
+//             day: true,
+//             startTime: true,
+//             endTime: true,
+//             breakTime: true,
+//             folderTime:true,
+//             room: {    
+//               select: {
+//                 roomName: true,   
+//               },
+//             },
+//             workHour:true,
+//             status:true,
+//             shiftsId:true,
+//             createdAt:true,
+//             updatedAt:true,
+
+//           },
+//         }
+//       },
+//     });
+
+//     if (singleShift) {
+//       if (singleShift.assignedBy) {
+//         const assignedByUser = await prisma.user.findUnique({
+//           where: { id: singleShift.assignedBy },
+//           select: { id: true, firstName: true, lastName: true, userName: true },
+//         });
+//         singleShift.assignedBy = assignedByUser;
+//       }
+
+//       return res.status(200).json(singleShift);
+//     } else {
+//       return res.status(404).json({ message: 'Shift not found for the specified user ID.' });
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 const getSingleShiftbyuserId = async (req, res) => {
+  let startOfToday, endOfToday;
+  const { startDate, endDate } = req.query;
+
+  if (startDate && endDate) {
+    startOfToday = new Date(startDate);
+    endOfToday = new Date(endDate);
+    endOfToday.setHours(23, 59, 59, 999);
+  } else {
+    const today = new Date();
+    startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+    endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+  }
+
   try {
     const userId = parseInt(req.params.id);
 
     const singleShift = await prisma.shifts.findMany({
       where: {
-        userId: userId, 
+        userId: userId,
+        AND: [
+          {
+            shiftFrom: { lte: endOfToday },
+          },
+          {
+            shiftTo: { gte: startOfToday },
+          },
+        ],
       },
       include: {
         user: {
@@ -360,32 +464,37 @@ const getSingleShiftbyuserId = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
-            employeeId:true,
-            designation:true,
+            employeeId: true,
+            designation: true,
           },
         },
         location: true,
         schedule: {
+          where: {
+            startTime: {
+              gte: startOfToday,
+              lte: endOfToday,
+            },
+          },
           select: {
             id: true,
             day: true,
             startTime: true,
             endTime: true,
             breakTime: true,
-            folderTime:true,
-            room: {    
+            folderTime: true,
+            room: {
               select: {
-                roomName: true,   
+                roomName: true,
               },
             },
-            workHour:true,
-            status:true,
-            shiftsId:true,
-            createdAt:true,
-            updatedAt:true,
-
+            workHour: true,
+            status: true,
+            shiftsId: true,
+            createdAt: true,
+            updatedAt: true,
           },
-        }
+        },
       },
     });
 
@@ -407,6 +516,8 @@ const getSingleShiftbyuserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
 
 const updateSingleShift = async (req, res) => {
   try {
