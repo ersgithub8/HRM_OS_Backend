@@ -535,6 +535,41 @@ const getSingleUser = async (req, res) => {
           },
           take: 1,
         },
+        shifts: {  // Retrieve user's shifts with schedules
+          select: {
+            id: true,
+            name: true,
+            shiftFrom: true,
+            shiftTo: true,
+            weekNumber: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+            schedule: {
+              select: {
+                id: true,
+                day: true,
+                startTime: true,
+                endTime: true,
+                breakTime: true,
+                folderTime: true,
+                room: {
+                  select: {
+                    roomName: true,
+                  },
+                },
+                workHour: true,
+              },
+            },
+          },
+        },
+        
+        room: {
+          orderBy: {
+            id: "desc",
+          },
+          take: 1,
+        },
       },
     });
 
