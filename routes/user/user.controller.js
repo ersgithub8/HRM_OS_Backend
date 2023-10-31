@@ -543,6 +543,7 @@ const getSingleUser = async (req, res) => {
             shiftTo: true,
             weekNumber: true,
             status: true,
+            location:true,
             createdAt: true,
             updatedAt: true,
             schedule: {
@@ -558,6 +559,7 @@ const getSingleUser = async (req, res) => {
                     roomName: true,
                   },
                 },
+                
                 workHour: true,
               },
             },
