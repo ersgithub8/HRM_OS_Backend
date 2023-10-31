@@ -554,13 +554,14 @@ const getSingleUser = async (req, res) => {
                 endTime: true,
                 breakTime: true,
                 folderTime: true,
-                room: {
-                  select: {
-                    roomName: true,
-                  },
-                },
-                
                 workHour: true,
+                room:true,
+                //  {
+                //   select: {
+                //     roomName: true,
+                //   },
+                // },
+                
               },
             },
           },
