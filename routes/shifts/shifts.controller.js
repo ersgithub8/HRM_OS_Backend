@@ -214,11 +214,12 @@ const getAllShiftmobile = async (req, res) => {
       startOfToday = new Date(startDate);
       endOfToday = new Date(endDate);
       endOfToday.setHours(23, 59, 59, 999);
-    } else {
-      const today = new Date();
-      startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-      endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-    }
+    } 
+    // else {
+    //   const today = new Date();
+    //   startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+    //   endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+    // }
 
     const allShifts = await prisma.shifts.findMany({
       where: {
@@ -436,11 +437,12 @@ const getSingleShiftbyuserId = async (req, res) => {
     startOfToday = new Date(startDate);
     endOfToday = new Date(endDate);
     endOfToday.setHours(23, 59, 59, 999);
-  } else {
-    const today = new Date();
-    startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-    endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-  }
+  } 
+  // else {
+  //   const today = new Date();
+  //   startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+  //   endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+  // }
 
   try {
     const userId = parseInt(req.params.id);
