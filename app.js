@@ -169,5 +169,7 @@ app.use(
   require("./routes/rooms/rooms.routes")
 );
 app.use("/shifts", require("./routes/shifts/shifts.routes"));
+app.use("/request", require("./routes/request/request.routes"));
+
 
 module.exports = app;

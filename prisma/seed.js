@@ -45,7 +45,8 @@ const endpoints = [
   "training",
   "meeting",
   "room",
-  "shifts"
+  "shifts",
+  "request"
 ];
 
 const permissionTypes = ["create", "readAll", "readSingle", "update", "delete"];

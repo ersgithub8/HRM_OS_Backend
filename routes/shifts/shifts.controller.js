@@ -2,6 +2,7 @@ const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
 const moment = require("moment");
 const { schedule } = require("node-cron");
+const e = require("cors");
 
 const createShift = async (req, res) => {
   try {
@@ -849,6 +850,10 @@ const swapSingleShiftRequest = async (req, res) => {
 
 
 
+
+  
+
+
 module.exports = {
   createShift,
   getAllShift,
@@ -858,5 +863,5 @@ module.exports = {
   getSingleShiftbyuserId,
   swapSingleShift,
   swapSingleShiftRequest,
-  getAllShiftmobile
+  getAllShiftmobile,
 };

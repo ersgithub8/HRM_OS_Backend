@@ -588,6 +588,19 @@ CREATE TABLE "Schedule" (
 );
 
 -- CreateTable
+CREATE TABLE "request" (
+    "id" SERIAL NOT NULL,
+    "FromScheduleId" INTEGER,
+    "ToScheduleId" INTEGER,
+    "userId" INTEGER,
+    "requststatus" TEXT NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "request_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_taskTouser" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
@@ -775,6 +788,9 @@ ALTER TABLE "Schedule" ADD CONSTRAINT "Schedule_roomId_fkey" FOREIGN KEY ("roomI
 
 -- AddForeignKey
 ALTER TABLE "Schedule" ADD CONSTRAINT "Schedule_shiftsId_fkey" FOREIGN KEY ("shiftsId") REFERENCES "shifts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "request" ADD CONSTRAINT "request_FromScheduleId_fkey" FOREIGN KEY ("FromScheduleId") REFERENCES "Schedule"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_taskTouser" ADD CONSTRAINT "_taskTouser_A_fkey" FOREIGN KEY ("A") REFERENCES "task"("id") ON DELETE CASCADE ON UPDATE CASCADE;

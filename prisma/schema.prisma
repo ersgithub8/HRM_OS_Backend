@@ -561,7 +561,7 @@ model shifts {
   user                user?     @relation(fields: [userId], references: [id])  
   userId              Int?
   assignedBy   Int?
-   generalInfo          String?
+  generalInfo          String?
   schedule           Schedule[]
   status              Boolean  @default(true)
   createdAt           DateTime @default(now())
@@ -578,6 +578,7 @@ model Schedule {
   room                 room?    @relation(fields: [roomId], references: [id])
   roomId               Int?
   workHour             Float?
+  request             request[]
   status               Boolean  @default(true)
   shifts                shifts?    @relation(fields: [shiftsId], references: [id])
   shiftsId              Int?
@@ -585,4 +586,14 @@ model Schedule {
   updatedAt            DateTime @updatedAt
 }
 
+model request{
+  id                   Int      @id @default(autoincrement())
+  schedule                Schedule?     @relation(fields: [FromScheduleId], references: [id])  
+  FromScheduleId            Int?
+  ToScheduleId              Int?
+  userId                    Int?
+  requststatus               String  @default("PENDING")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
 

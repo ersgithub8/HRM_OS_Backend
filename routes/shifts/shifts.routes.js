@@ -7,8 +7,7 @@ const {
   deleteSingleShift,
   getSingleShiftbyuserId,
   swapSingleShift,
-  getAllShiftmobile
-  
+  getAllShiftmobile,  
 } = require("./shifts.controller");
 const authorize = require("../../utils/authorize"); // authentication middleware
 
@@ -22,4 +21,7 @@ shiftsRoutes.get("/:id", authorize("readSingle-shifts"), getSingleShift);
 shiftsRoutes.get("/user/:id", authorize("readSingle-shifts"), getSingleShiftbyuserId);
 shiftsRoutes.put("/update/:id", authorize("update-shifts"), updateSingleShift);
 shiftsRoutes.delete("/delete/:id", authorize("delete-shifts"), deleteSingleShift);
+
+
+
 module.exports = shiftsRoutes;
