@@ -42,6 +42,17 @@ const addrequest = async (req, res) => {
     const fromEndTime = `${fromEndDate.getHours()}:${fromEndDate.getMinutes()}:${fromEndDate.getSeconds()}`;
     const toStartTime = `${toStartDate.getHours()}:${toStartDate.getMinutes()}:${toStartDate.getSeconds()}`;
     const toEndTime = `${toEndDate.getHours()}:${toEndDate.getMinutes()}:${toEndDate.getSeconds()}`;
+    const existingRequest = await prisma.request.findFirst({
+      where: {
+        FromScheduleId,
+        ToScheduleId,
+        userId,
+      },
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({ message: "Request already exists for this shift" });
+    }
     if (
       fromSchedule.shiftDate === toSchedule.shiftDate &&
       (fromStartTime !== toStartTime || fromEndTime !== toEndTime)
