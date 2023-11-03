@@ -288,7 +288,16 @@ const addrequest = async (req, res) => {
         const scheduleFrom = await prisma.schedule.findUnique({
           where: { id: shift.FromScheduleId },
           include: {
-            room:true,
+            room: {
+              select: {
+                id: true,
+                location: true, // You can include more fields as needed
+                roomName: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
             shifts: {
               include: {
                 user: {
@@ -309,10 +318,20 @@ const addrequest = async (req, res) => {
         const scheduleTo = await prisma.schedule.findUnique({
           where: { id: shift.ToScheduleId },
           include: {
-            room:true,
-
+            room: {
+              select: {
+                id: true,
+                location: true, // You can include more fields as needed
+                roomName: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+        
+            
             shifts: {
-              
+             
               include: {
                 user: {
                   select: {
