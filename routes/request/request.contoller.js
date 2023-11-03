@@ -1,24 +1,78 @@
 const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
 
-const addrequest=async(req,res)=>{
-    try { 
-      const createrequestData = {
-        FromScheduleId: req.body.FromScheduleId,
-        ToScheduleId: req.body.ToScheduleId,
-        userId:req.body.userId,
-      };
+// const addrequest=async(req,res)=>{
+//     try { 
+//       const createrequestData = {
+//         FromScheduleId: req.body.FromScheduleId,
+//         ToScheduleId: req.body.ToScheduleId,
+//         userId:req.body.userId,
+//       };
   
+//       const createRequestResult = await prisma.request.create({
+//         data: createrequestData,
+//       });
+  
+//       return res.status(200).json({ createRequest: createRequestResult, message: "Request created successfully" });
+//     } catch (error) {
+//       console.error(error);
+//       return res.status(400).json({ message: 'Failed to create request' });
+//     }
+//   };
+
+
+const addrequest = async (req, res) => {
+  try {
+    const { FromScheduleId, ToScheduleId, userId } = req.body;
+
+    const fromSchedule = await prisma.schedule.findUnique({
+      where: { id: FromScheduleId },
+    });
+
+    const toSchedule = await prisma.schedule.findUnique({
+      where: { id: ToScheduleId },
+    });
+
+    const fromStartDate = new Date(fromSchedule.startTime);
+    const fromEndDate = new Date(fromSchedule.endTime);
+    const toStartDate = new Date(toSchedule.startTime);
+    const toEndDate = new Date(toSchedule.endTime);
+
+    const fromStartTime = `${fromStartDate.getHours()}:${fromStartDate.getMinutes()}:${fromStartDate.getSeconds()}`;
+    const fromEndTime = `${fromEndDate.getHours()}:${fromEndDate.getMinutes()}:${fromEndDate.getSeconds()}`;
+    const toStartTime = `${toStartDate.getHours()}:${toStartDate.getMinutes()}:${toStartDate.getSeconds()}`;
+    const toEndTime = `${toEndDate.getHours()}:${toEndDate.getMinutes()}:${toEndDate.getSeconds()}`;
+console.log(fromSchedule.shiftDate);
+console.log(toSchedule.shiftDate);
+// return
+    if (
+      fromSchedule.shiftDate === toSchedule.shiftDate &&
+      (fromStartTime !== toStartTime || fromEndTime !== toEndTime)
+    )
+
+     {
       const createRequestResult = await prisma.request.create({
-        data: createrequestData,
+        data: {
+          FromScheduleId,
+          ToScheduleId,
+          userId,
+        },
       });
-  
-      return res.status(200).json({ createRequest: createRequestResult, message: "Request created successfully" });
-    } catch (error) {
-      console.error(error);
-      return res.status(400).json({ message: 'Failed to create request' });
+
+      return res
+        .status(200)
+        .json({ createRequest: createRequestResult, message: "Request created successfully" });
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Failed to create request shift statrtime endtime are same" });
     }
-  };
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ message: "Failed to create a request" });
+  }
+};
+
 
   const getSinglerequest = async (req, res) => {
     try {
