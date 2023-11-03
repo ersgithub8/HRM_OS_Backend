@@ -571,6 +571,7 @@ model shifts {
 model Schedule {
   id                   Int      @id @default(autoincrement())
   day                  String?
+  shiftDate            String?
   startTime            DateTime?
   endTime              DateTime?
   breakTime            Int?

@@ -33,6 +33,7 @@ const createShift = async (req, res) => {
         create: req.body.schedule.map((e) => {
           const scheduleData = {
             day: e.day,
+            shiftDate:e.shiftDate,
             startTime: e.startTime ? new Date(e.startTime) : null,
             endTime: e.endTime ? new Date(e.endTime) : null,
             breakTime: e.breakTime ? e.breakTime : null,
@@ -115,6 +116,7 @@ const getAllShift = async (req, res) => {
               endTime: true,
               breakTime: true,
               folderTime: true,
+              shiftDate:true,
               room: {
                 select: {
                   roomName: true,
@@ -205,84 +207,152 @@ console.log(allShifts.schedule)
   }
 };
 
+// const getAllShiftmobile = async (req, res) => {
+//   try {
+//     let startOfToday, endOfToday;
+//     const { startDate, endDate } = req.query;
+
+//     if (startDate && endDate) {
+//       startOfToday = new Date(startDate);
+//       endOfToday = new Date(endDate);
+//       endOfToday.setHours(23, 59, 59, 999);
+//     } 
+//     // else {
+//     //   const today = new Date();
+//     //   startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+//     //   endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+//     // }
+
+//     const allShifts = await prisma.shifts.findMany({
+//       where: {
+//         AND: [
+//           {
+//             shiftFrom: { lte: endOfToday },
+//           },
+//           {
+//             shiftTo: { gte: startOfToday },
+//           },
+//         ],
+//       },
+//       include: {
+//         user: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             userName: true,
+//           },
+//         },
+//         location: true,
+//         schedule: {
+//           select: {
+//             id: true,
+//             day: true,
+//             startTime: true,
+//             endTime: true,
+//             breakTime: true,
+//             folderTime: true,
+//             shiftDate:true,
+//             room: {
+//               select: {
+//                 roomName: true,
+//               },
+//             },
+//             workHour: true,
+//             status: true,
+//             shiftsId: true,
+//             createdAt: true,
+//             updatedAt: true,
+//           },
+//         },
+//       },
+//     });
+
+//     const selectedSchedules = [];
+//     allShifts.forEach((shift) => {
+//       const selectedShifts = shift.schedule.filter((singleSchedule) => {
+//         const scheduleStartTime = new Date(singleSchedule.startTime);
+//         return scheduleStartTime >= startOfToday && scheduleStartTime <= endOfToday;
+//       });
+//       selectedSchedules.push({ ...shift, schedule: selectedShifts });
+//     });
+
+//     return res.status(200).json(selectedSchedules);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 
 const getAllShiftmobile = async (req, res) => {
   try {
-    let startOfToday, endOfToday;
     const { startDate, endDate } = req.query;
+    let startOfDate, endOfDate;
 
     if (startDate && endDate) {
-      startOfToday = new Date(startDate);
-      endOfToday = new Date(endDate);
-      endOfToday.setHours(23, 59, 59, 999);
-    } 
-    // else {
-    //   const today = new Date();
-    //   startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-    //   endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-    // }
+      startOfDate = new Date(startDate);
+      endOfDate = new Date(endDate);
+      endOfDate.setHours(23, 59, 59, 999);
 
-    const allShifts = await prisma.shifts.findMany({
-      where: {
-        AND: [
-          {
-            shiftFrom: { lte: endOfToday },
-          },
-          {
-            shiftTo: { gte: startOfToday },
-          },
-        ],
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-          },
+      const shiftsWithSchedules = await prisma.shifts.findMany({
+        where: {
+          schedule: {
+            some: {
+              shiftDate: {
+                gte: startOfDate.toISOString().slice(0, 10),
+                lte: endOfDate.toISOString().slice(0, 10)
+              }
+            }
+          }
         },
-        location: true,
-        schedule: {
-          select: {
-            id: true,
-            day: true,
-            startTime: true,
-            endTime: true,
-            breakTime: true,
-            folderTime: true,
-            room: {
-              select: {
-                roomName: true,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+            },
+          },
+          location: true,
+          schedule: {
+            where: {
+              shiftDate: {
+                gte: startOfDate.toISOString().slice(0, 10),
+                lte: endOfDate.toISOString().slice(0, 10)
               },
             },
-            workHour: true,
-            status: true,
-            shiftsId: true,
-            createdAt: true,
-            updatedAt: true,
+            select: {
+              id: true,
+              day: true,
+              startTime: true,
+              endTime: true,
+              breakTime: true,
+              folderTime: true,
+              shiftDate: true,
+              room: {
+                select: {
+                  roomName: true,
+                },
+              },
+              workHour: true,
+              status: true,
+              shiftsId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
           },
         },
-      },
-    });
-
-    const selectedSchedules = [];
-    allShifts.forEach((shift) => {
-      const selectedShifts = shift.schedule.filter((singleSchedule) => {
-        const scheduleStartTime = new Date(singleSchedule.startTime);
-        return scheduleStartTime >= startOfToday && scheduleStartTime <= endOfToday;
       });
-      selectedSchedules.push({ ...shift, schedule: selectedShifts });
-    });
 
-    return res.status(200).json(selectedSchedules);
+      return res.status(200).json(shiftsWithSchedules);
+    } else {
+      return res.status(400).json({ message: "Please provide valid startDate and endDate." });
+    }
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
-
-
-
 
 const getSingleShift = async (req, res) => {
   try {
@@ -310,6 +380,7 @@ const getSingleShift = async (req, res) => {
             endTime: true,
             breakTime: true,
             folderTime:true,
+            shiftDate:true,
             room: {    
               select: {
                 roomName: true,   
@@ -347,98 +418,16 @@ const getSingleShift = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-// const getSingleShiftbyuserId = async (req, res) => {
-//   let startOfToday, endOfToday;
-//   const { startDate, endDate } = req.query;
-
-//   if (startDate && endDate) {
-//     startOfToday = new Date(startDate);
-//     endOfToday = new Date(endDate);
-//     endOfToday.setHours(23, 59, 59, 999);
-//   } else {
-//     const today = new Date();
-//     startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-//     endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-//   }
-//   try {
-//     const userId = parseInt(req.params.id);
-
-//     const singleShift = await prisma.shifts.findMany({
-//       where: {
-//         userId: userId, 
-//          AND: [
-//           {
-//             shiftFrom: { lte: endOfToday },
-//           },
-//           {
-//             shiftTo: { gte: startOfToday },
-//           },
-//         ],
-//       },
-//       include: {
-//         user: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             userName: true,
-//             employeeId:true,
-//             designation:true,
-//           },
-//         },
-//         location: true,
-//         schedule: {
-//           select: {
-//             id: true,
-//             day: true,
-//             startTime: true,
-//             endTime: true,
-//             breakTime: true,
-//             folderTime:true,
-//             room: {    
-//               select: {
-//                 roomName: true,   
-//               },
-//             },
-//             workHour:true,
-//             status:true,
-//             shiftsId:true,
-//             createdAt:true,
-//             updatedAt:true,
-
-//           },
-//         }
-//       },
-//     });
-
-//     if (singleShift) {
-//       if (singleShift.assignedBy) {
-//         const assignedByUser = await prisma.user.findUnique({
-//           where: { id: singleShift.assignedBy },
-//           select: { id: true, firstName: true, lastName: true, userName: true },
-//         });
-//         singleShift.assignedBy = assignedByUser;
-//       }
-
-//       return res.status(200).json(singleShift);
-//     } else {
-//       return res.status(404).json({ message: 'Shift not found for the specified user ID.' });
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
 
 const getSingleShiftbyuserId = async (req, res) => {
-  let startOfToday, endOfToday;
   const { startDate, endDate } = req.query;
+    let startOfDate, endOfDate;
 
-  if (startDate && endDate) {
-    startOfToday = new Date(startDate);
-    endOfToday = new Date(endDate);
-    endOfToday.setHours(23, 59, 59, 999);
-  } 
+    if (startDate && endDate) {
+      startOfDate = new Date(startDate);
+      endOfDate = new Date(endDate);
+      endOfDate.setHours(23, 59, 59, 999);
+    }
   // else {
   //   const today = new Date();
   //   startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
@@ -450,15 +439,15 @@ const getSingleShiftbyuserId = async (req, res) => {
 
     const singleShift = await prisma.shifts.findMany({
       where: {
-        userId: userId,
-        AND: [
-          {
-            shiftFrom: { lte: endOfToday },
-          },
-          {
-            shiftTo: { gte: startOfToday },
-          },
-        ],
+        userId:userId,
+        schedule: {
+          some: {
+            shiftDate: {
+              gte: startOfDate.toISOString().slice(0, 10),
+              lte: endOfDate.toISOString().slice(0, 10)
+            }
+          }
+        }
       },
       include: {
         user: {
@@ -467,16 +456,14 @@ const getSingleShiftbyuserId = async (req, res) => {
             firstName: true,
             lastName: true,
             userName: true,
-            employeeId: true,
-            designation: true,
           },
         },
         location: true,
         schedule: {
           where: {
-            startTime: {
-              gte: startOfToday,
-              lte: endOfToday,
+            shiftDate: {
+              gte: startOfDate.toISOString().slice(0, 10),
+              lte: endOfDate.toISOString().slice(0, 10)
             },
           },
           select: {
@@ -486,6 +473,7 @@ const getSingleShiftbyuserId = async (req, res) => {
             endTime: true,
             breakTime: true,
             folderTime: true,
+            shiftDate: true,
             room: {
               select: {
                 roomName: true,
@@ -500,7 +488,7 @@ const getSingleShiftbyuserId = async (req, res) => {
         },
       },
     });
-
+  
     if (singleShift) {
       if (singleShift.assignedBy) {
         const assignedByUser = await prisma.user.findUnique({
@@ -511,7 +499,8 @@ const getSingleShiftbyuserId = async (req, res) => {
       }
 
       return res.status(200).json(singleShift);
-    } else {
+    }
+    else {
       return res.status(404).json({ message: 'Shift not found for the specified user ID.' });
     }
   } catch (error) {
@@ -519,8 +508,6 @@ const getSingleShiftbyuserId = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
 
 const updateSingleShift = async (req, res) => {
   try {
@@ -555,6 +542,7 @@ const updateSingleShift = async (req, res) => {
           },
           data: {
             day: scheduleItem.day,
+            shiftDate:scheduleItem.shiftDate,
             startTime: scheduleItem.startTime ? new Date(scheduleItem.startTime) : null,
             endTime: scheduleItem.endTime ? new Date(scheduleItem.endTime) : null,
             breakTime: scheduleItem.breakTime ? scheduleItem.breakTime : null,
@@ -595,164 +583,6 @@ const deleteSingleShift = async (req, res) => {
     return res.status(400).json({ message: "Failed to delete shift" });
   }
 };
-
-// const swapSingleShift = async (req, res) => {
-//   try {
-//     const shiftId1 = Number(req.body.id1);
-//     const shiftId2 = Number(req.body.id2);
-
-//     // Find the first shift
-//     const shift1 = await prisma.shifts.findUnique({
-//       where: {
-//         id: shiftId1,
-//       },
-//       include: {
-//         schedule: true,
-//       },
-//     });
-
-//     // Find the second shift
-//     const shift2 = await prisma.shifts.findUnique({
-//       where: {
-//         id: shiftId2,
-//       },
-//       include: {
-//         schedule: true,
-//       },
-//     });
-
-//     // Check if shifts were found
-//     if (!shift1 || !shift2) {
-//       return res.status(400).json({ message: 'One or both shifts were not found.' });
-//     }
-
-//     // Update userId for the first shift
-//     await prisma.shifts.update({
-//       where: { id: shiftId1 },
-//       data: {
-//         userId: shift2.userId, // Swap userId values
-//       },
-//     });
-
-//     // Update userId for the second shift
-//     await prisma.shifts.update({
-//       where: { id: shiftId2 },
-//       data: {
-//         userId: shift1.userId, // Swap userId values
-//       },
-//     });
-
-//     // Update the Shift field for schedule items in the first shift
-//     for (const scheduleItem of shift1.schedule) {
-//       await prisma.schedule.update({
-//         where: { id: scheduleItem.id },
-//         data: {
-//           shiftsId: shiftId2, // Assign to the new shift
-//         },
-//       });
-//     }
-
-//     // Update the Shift field for schedule items in the second shift
-//     for (const scheduleItem of shift2.schedule) {
-//       await prisma.schedule.update({
-//         where: { id: scheduleItem.id },
-//         data: {
-//           shiftsId: shiftId1, // Assign to the new shift
-//         },
-//       });
-//     }
-
-//     return res.status(200).json({
-//       message: 'Shift schedules swapped successfully',
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(400).json({ message: 'Failed to update shift' });
-//   }
-// };
-
-
-
-// const swapSingleShift = async (req, res) => {
-//   try {
-//     const shiftId1 = Number(req.body.id1);
-//     const shiftId2 = Number(req.body.id2);
-
-//     const shift1 = await prisma.shifts.findUnique({
-//       where: {
-//         id: shiftId1,
-//       },
-//       include: {
-//         schedule: true,
-//       },
-//     });
-
-//     const shift2 = await prisma.shifts.findUnique({
-//       where: {
-//         id: shiftId2,
-//       },
-//       include: {
-//         schedule: true,
-//       },
-//     });
-
-//     if (!shift1 || !shift2) {
-//       return res.status(400).json({ message: 'One or both shifts were not found.' });
-//     }
-
-//     const schedulesShift1 = shift1.schedule;
-//     const schedulesShift2 = shift2.schedule;
-
-//     await prisma.shifts.update({
-//       where: { id: shiftId1 },
-//       data: {
-//         schedule: {
-//           deleteMany: { id: { in: schedulesShift1.map((s) => s.id) } },
-//           create: schedulesShift2.map((s) => ({
-//             day: s.day,
-//             startTime: s.startTime,
-//             endTime: s.endTime,
-//             breakTime: s.breakTime,
-//             folderTime: s.folderTime,
-//             roomId: s.roomId,
-//             workHour: s.workHour,
-//             status: s.status,
-//             createdAt: s.createdAt,
-//             updatedAt: s.updatedAt,
-//           })),
-//         },
-//       },
-//     });
-
-//     await prisma.shifts.update({
-//       where: { id: shiftId2 },
-//       data: {
-//         schedule: {
-//           deleteMany: { id: { in: schedulesShift2.map((s) => s.id) } },
-//           create: schedulesShift1.map((s) => ({
-//             day: s.day,
-//             startTime: s.startTime,
-//             endTime: s.endTime,
-//             breakTime: s.breakTime,
-//             folderTime: s.folderTime,
-//             roomId: s.roomId,
-//             workHour: s.workHour,
-//             status: s.status,
-//             createdAt: s.createdAt,
-//             updatedAt: s.updatedAt,
-//           })),
-//         },
-//       },
-//     });
-
-//     return res.status(200).json({
-//       message: 'Shift schedules swapped successfully',
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(400).json({ message: 'Failed to update shift' });
-//   }
-// };
 
 const swapSingleShift = async (req, res) => {
   try {
@@ -800,6 +630,7 @@ const swapSingleShift = async (req, res) => {
     return res.status(400).json({ message: 'Failed to update schedule items' });
   }
 };
+
 const swapSingleShiftRequest = async (req, res) => {
   try {
     const scheduleItemId1 = Number(req.body.scheduleItemId1);
@@ -846,13 +677,6 @@ const swapSingleShiftRequest = async (req, res) => {
     return res.status(400).json({ message: 'Failed to update schedule items' });
   }
 };
-
-
-
-
-
-  
-
 
 module.exports = {
   createShift,

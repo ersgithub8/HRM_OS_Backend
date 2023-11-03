@@ -9,7 +9,7 @@ const {
   swapSingleShift,
   getAllShiftmobile,  
 } = require("./shifts.controller");
-const authorize = require("../../utils/authorize"); // authentication middleware
+const authorize = require("../../utils/authorize"); 
 
 const shiftsRoutes = express.Router();
 

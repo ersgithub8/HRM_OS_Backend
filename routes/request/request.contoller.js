@@ -18,7 +18,8 @@ const addrequest=async(req,res)=>{
       console.error(error);
       return res.status(400).json({ message: 'Failed to create request' });
     }
-  }
+  };
+
   const getSinglerequest = async (req, res) => {
     try {
       const singleShift = await prisma.request.findUnique({
@@ -461,8 +462,6 @@ const addrequest=async(req,res)=>{
       return res.status(400).json({ message: 'Failed to update request' });
     }
   };
-
-
 
   module.exports = {
     addrequest,
