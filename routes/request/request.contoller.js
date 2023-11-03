@@ -1,26 +1,6 @@
 const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
 
-// const addrequest=async(req,res)=>{
-//     try { 
-//       const createrequestData = {
-//         FromScheduleId: req.body.FromScheduleId,
-//         ToScheduleId: req.body.ToScheduleId,
-//         userId:req.body.userId,
-//       };
-  
-//       const createRequestResult = await prisma.request.create({
-//         data: createrequestData,
-//       });
-  
-//       return res.status(200).json({ createRequest: createRequestResult, message: "Request created successfully" });
-//     } catch (error) {
-//       console.error(error);
-//       return res.status(400).json({ message: 'Failed to create request' });
-//     }
-//   };
-
-
 const addrequest = async (req, res) => {
   try {
     const { FromScheduleId, ToScheduleId, userId } = req.body;
@@ -299,7 +279,7 @@ const addrequest = async (req, res) => {
       });
   
       if (!singleShift || singleShift.length === 0) {
-        return res.status(400).json({ message: "Request not found" });
+        return res.status(400).json([]);
       }
   
       const shiftsWithSchedulesAndUsers = [];
@@ -350,7 +330,7 @@ const addrequest = async (req, res) => {
         shiftsWithSchedulesAndUsers.push({
           ...shift,
           scheduleFrom: scheduleFrom,
-          scheduleTo: scheduleTo,
+          schedule: scheduleTo,
         });
       }
   
