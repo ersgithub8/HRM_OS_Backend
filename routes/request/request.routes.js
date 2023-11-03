@@ -12,11 +12,11 @@ const authorize = require("../../utils/authorize");
 
 const requestRoutes = express.Router();
 
-requestRoutes.post("/", authorize(""), addrequest);
-requestRoutes.get("/allrequest", authorize(""), getAllrequest);
-requestRoutes.get("/:id", authorize(""), getSinglerequest);
-requestRoutes.get("/users/:id", authorize(""), getSingleuserrequest);
-requestRoutes.put("/swapreq/:id", authorize(""), swaprequest);
+requestRoutes.post("/", authorize("create-request"), addrequest);
+requestRoutes.get("/allrequest", authorize("readAll-request"), getAllrequest);
+requestRoutes.get("/:id", authorize("readSingle-request"), getSinglerequest);
+requestRoutes.get("/users/:id", authorize("readSingle-request"), getSingleuserrequest);
+requestRoutes.put("/swapreq/:id", authorize("update-request"), swaprequest);
 
 
 module.exports = requestRoutes;
