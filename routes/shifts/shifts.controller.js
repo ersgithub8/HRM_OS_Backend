@@ -97,7 +97,7 @@ const getAllShift = async (req, res) => {
             },
           ],
         },
-        
+        orderBy: [{ id: "desc" }],
         include: {
           user: {
             select: {
@@ -305,6 +305,7 @@ const getAllShiftmobile = async (req, res) => {
             }
           }
         },
+        orderBy: [{ id: "desc" }],
         include: {
           user: {
             select: {
