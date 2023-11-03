@@ -42,9 +42,6 @@ const addrequest = async (req, res) => {
     const fromEndTime = `${fromEndDate.getHours()}:${fromEndDate.getMinutes()}:${fromEndDate.getSeconds()}`;
     const toStartTime = `${toStartDate.getHours()}:${toStartDate.getMinutes()}:${toStartDate.getSeconds()}`;
     const toEndTime = `${toEndDate.getHours()}:${toEndDate.getMinutes()}:${toEndDate.getSeconds()}`;
-console.log(fromSchedule.shiftDate);
-console.log(toSchedule.shiftDate);
-// return
     if (
       fromSchedule.shiftDate === toSchedule.shiftDate &&
       (fromStartTime !== toStartTime || fromEndTime !== toEndTime)
@@ -300,6 +297,7 @@ console.log(toSchedule.shiftDate);
         const scheduleFrom = await prisma.schedule.findUnique({
           where: { id: shift.FromScheduleId },
           include: {
+            room:true,
             shifts: {
               include: {
                 user: {
@@ -313,13 +311,17 @@ console.log(toSchedule.shiftDate);
                 },
               },
             },
+           
           },
         });
   
         const scheduleTo = await prisma.schedule.findUnique({
           where: { id: shift.ToScheduleId },
           include: {
+            room:true,
+
             shifts: {
+              
               include: {
                 user: {
                   select: {
@@ -327,7 +329,6 @@ console.log(toSchedule.shiftDate);
                     firstName: true,
                     lastName: true,
                     userName: true,
-                    // Add other fields you need
                   },
                 },
               },
