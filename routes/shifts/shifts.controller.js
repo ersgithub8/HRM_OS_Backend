@@ -567,22 +567,33 @@ const deleteSingleShift = async (req, res) => {
     const shiftId = parseInt(req.params.id);
     const existingShift = await prisma.shifts.findUnique({
       where: { id: shiftId },
+      include: { schedule: true } // Fetch schedules associated with the shift
     });
 
     if (!existingShift) {
       return res.status(404).json({ message: "Shift not found" });
     }
 
-    const deleteShift = await prisma.shifts.delete({
-      where: { id: shiftId },
+    // Delete schedules associated with the shift
+    const deleteSchedules = await prisma.schedule.deleteMany({
+      where: { shiftsId: shiftId }
     });
 
-    return res.status(200).json({deleteShift,
-      message:"Shift deleted succssfully"});
+    // Delete the shift
+    const deleteShift = await prisma.shifts.delete({
+      where: { id: shiftId }
+    });
+
+    return res.status(200).json({
+      deleteShift,
+      deleteSchedules,
+      message: "Shift and associated schedules deleted successfully"
+    });
   } catch (error) {
-    return res.status(400).json({ message: "Failed to delete shift" });
+    return res.status(400).json({ message: "Failed to delete shift and associated schedules" });
   }
 };
+
 
 const swapSingleShift = async (req, res) => {
   try {
