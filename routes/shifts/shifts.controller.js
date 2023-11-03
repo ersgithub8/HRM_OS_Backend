@@ -459,6 +459,7 @@ const getSingleShiftbyuserId = async (req, res) => {
           },
         },
         location: true,
+        
         schedule: {
           where: {
             shiftDate: {
@@ -488,17 +489,21 @@ const getSingleShiftbyuserId = async (req, res) => {
         },
       },
     });
-  
     if (singleShift) {
-      if (singleShift.assignedBy) {
-        const assignedByUser = await prisma.user.findUnique({
-          where: { id: singleShift.assignedBy },
-          select: { id: true, firstName: true, lastName: true, userName: true },
-        });
-        singleShift.assignedBy = assignedByUser;
+      for (let shift of singleShift) {
+        if (shift.assignedBy) {
+          const assignedByUser = await prisma.user.findUnique({
+            where: { id: shift.assignedBy },
+            select: { id: true, firstName: true, lastName: true, userName: true },
+          });
+
+
+          shift.assignedBy = assignedByUser;
+        }
+      return res.status(200).json(singleShift);
+        
       }
 
-      return res.status(200).json(singleShift);
     }
     else {
       return res.status(404).json({ message: 'Shift not found for the specified user ID.' });
