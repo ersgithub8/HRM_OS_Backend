@@ -349,7 +349,7 @@ const addrequest = async (req, res) => {
         shiftsWithSchedulesAndUsers.push({
           ...shift,
           scheduleFrom: scheduleFrom,
-          schedule: scheduleTo,
+          scheduleTo: scheduleTo,
         });
       }
   
