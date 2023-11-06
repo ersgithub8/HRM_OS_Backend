@@ -502,7 +502,7 @@ const getSingleShiftbyuserId = async (req, res) => {
       }
       return res.status(200).json(singleShift);
     } else {
-      return res.status(400).json([]); // Return an empty array if no shifts are found
+      return res.status(200).json([]); // Return an empty array if no shifts are found
     }
   } catch (error) {
     console.log(error);
