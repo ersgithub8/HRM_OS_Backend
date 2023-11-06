@@ -385,6 +385,7 @@ const getSingleShift = async (req, res) => {
             shiftDate:true,
             room: {    
               select: {
+                id:true,
                 roomName: true,   
               },
             },
@@ -502,7 +503,7 @@ const getSingleShiftbyuserId = async (req, res) => {
       }
       return res.status(200).json(singleShift);
     } else {
-      return res.status(200).json([]); // Return an empty array if no shifts are found
+      return res.status(200).json([]); 
     }
   } catch (error) {
     console.log(error);
