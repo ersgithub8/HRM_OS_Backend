@@ -322,6 +322,7 @@ const getAllShiftmobile = async (req, res) => {
                 gte: startOfDate.toISOString().slice(0, 10),
                 lte: endOfDate.toISOString().slice(0, 10)
               },
+              status: true,
             },
             select: {
               id: true,
@@ -467,6 +468,8 @@ const getSingleShiftbyuserId = async (req, res) => {
               gte: startOfDate.toISOString().slice(0, 10),
               lte: endOfDate.toISOString().slice(0, 10)
             },
+            status: true,
+
           },
           select: {
             id: true,

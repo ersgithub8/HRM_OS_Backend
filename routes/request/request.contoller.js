@@ -321,7 +321,7 @@ const addrequest = async (req, res) => {
             room: {
               select: {
                 id: true,
-                location: true, // You can include more fields as needed
+                location: true,
                 roomName: true,
                 status: true,
                 createdAt: true,
