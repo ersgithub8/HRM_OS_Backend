@@ -90,6 +90,7 @@ const addrequest = async (req, res) => {
           day: true,
           startTime: true,
           endTime: true,
+          shiftDate:true,
           breakTime: true,
           folderTime: true,
           room: { select: { roomName: true } },
@@ -108,6 +109,7 @@ const addrequest = async (req, res) => {
           day: true,
           startTime: true,
           endTime: true,
+          shiftDate:true,
           breakTime: true,
           folderTime: true,
           room: { select: { roomName: true } },
@@ -128,6 +130,7 @@ const addrequest = async (req, res) => {
               firstName: true,
               lastName: true,
               userName: true,
+              image:true,
               // Include any other user fields you require
             },
           },
@@ -143,6 +146,8 @@ const addrequest = async (req, res) => {
               firstName: true,
               lastName: true,
               userName: true,
+              image:true,
+
               // Include any other user fields you require
             },
           },
