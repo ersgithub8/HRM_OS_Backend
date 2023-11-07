@@ -424,26 +424,26 @@ const addrequest = async (req, res) => {
           const toScheduleData = { ...toSchedule };
   
           // Swap schedule attributes except for the 'ID'
-          const tempRoomId = fromScheduleData.roomId;
-          const tempShiftsId = fromScheduleData.shiftsId;
-          const tempDay = fromScheduleData.day;
-          const temshiftdate=fromScheduleData.shiftDate;
-          const temstarttime=fromScheduleData.startTime;
-          const temendtime=fromScheduleData.endTime;
+          // const tempRoomId = fromScheduleData.roomId;
+          // const tempShiftsId = fromScheduleData.shiftsId;
+          // const tempDay = fromScheduleData.day;
+          // const temshiftdate=fromScheduleData.shiftDate;
+          // const temstarttime=fromScheduleData.startTime;
+          // const temendtime=fromScheduleData.endTime;
   
-          fromScheduleData.roomId = toSchedule.roomId;
-          fromScheduleData.shiftsId = toSchedule.shiftsId;
-          fromScheduleData.day = toScheduleData.day;
-          fromScheduleData.shiftDate=toScheduleData.shiftDate;
-          fromScheduleData.startTime=toScheduleData.startTime;
-          fromScheduleData.endTime=toScheduleData.endTime;
+          // fromScheduleData.roomId = toSchedule.roomId;
+          // fromScheduleData.shiftsId = toSchedule.shiftsId;
+          // fromScheduleData.day = toScheduleData.day;
+          // fromScheduleData.shiftDate=toScheduleData.shiftDate;
+          // fromScheduleData.startTime=toScheduleData.startTime;
+          // fromScheduleData.endTime=toScheduleData.endTime;
   
           toScheduleData.roomId = tempRoomId;
           toScheduleData.shiftsId = tempShiftsId;
           toScheduleData.day = tempDay;
-          toScheduleData.shiftDate=temshiftdate;
-          toScheduleData.startTime=temstarttime;
-          toScheduleData.endTime=temendtime;
+          // toScheduleData.shiftDate=temshiftdate;
+          // toScheduleData.startTime=temstarttime;
+          // toScheduleData.endTime=temendtime;
   
           // Perform the schedule updates without modifying the 'ID' field
           await prisma.schedule.update({
@@ -481,26 +481,26 @@ const addrequest = async (req, res) => {
           const fromScheduleData = { ...fromSchedule };
           const toScheduleData = { ...toSchedule };
   
-          const tempRoomId = fromScheduleData.roomId;
-          const tempShiftsId = fromScheduleData.shiftsId;
-          const tempDay = fromScheduleData.day;
-          const temshiftdate=fromScheduleData.shiftDate;
-          const temstarttime=fromScheduleData.startTime;
-          const temendtime=fromScheduleData.endTime;
+          // const tempRoomId = fromScheduleData.roomId;
+          // const tempShiftsId = fromScheduleData.shiftsId;
+          // const tempDay = fromScheduleData.day;
+          // const temshiftdate=fromScheduleData.shiftDate;
+          // const temstarttime=fromScheduleData.startTime;
+          // const temendtime=fromScheduleData.endTime;
   
-          fromScheduleData.roomId = toSchedule.roomId;
-          fromScheduleData.shiftsId = toSchedule.shiftsId;
-          fromScheduleData.day = toScheduleData.day;
-          fromScheduleData.shiftDate=toScheduleData.shiftDate;
-          fromScheduleData.startTime=toScheduleData.startTime;
-          fromScheduleData.endTime=toScheduleData.endTime;
+          // fromScheduleData.roomId = toSchedule.roomId;
+          // fromScheduleData.shiftsId = toSchedule.shiftsId;
+          // fromScheduleData.day = toScheduleData.day;
+          // fromScheduleData.shiftDate=toScheduleData.shiftDate;
+          // fromScheduleData.startTime=toScheduleData.startTime;
+          // fromScheduleData.endTime=toScheduleData.endTime;
   
-          toScheduleData.roomId = tempRoomId;
-          toScheduleData.shiftsId = tempShiftsId;
-          toScheduleData.day = tempDay;
-          toScheduleData.shiftDate=temshiftdate;
-          toScheduleData.startTime=temstarttime;
-          toScheduleData.endTime=temendtime;
+          // toScheduleData.roomId = tempRoomId;
+          // toScheduleData.shiftsId = tempShiftsId;
+          // toScheduleData.day = tempDay;
+          // toScheduleData.shiftDate=temshiftdate;
+          // toScheduleData.startTime=temstarttime;
+          // toScheduleData.endTime=temendtime;
   
           await prisma.schedule.update({
             where: { id: existingRequest.ToScheduleId },
@@ -547,26 +547,26 @@ const addrequest = async (req, res) => {
           const fromScheduleData = { ...fromSchedule };
           const toScheduleData = { ...toSchedule };
   
-          const tempRoomId = fromScheduleData.roomId;
-          const tempShiftsId = fromScheduleData.shiftsId;
-          const tempDay = fromScheduleData.day;
-          const temshiftdate=fromScheduleData.shiftDate;
-          const temstarttime=fromScheduleData.startTime;
-          const temendtime=fromScheduleData.endTime;
+          // const tempRoomId = fromScheduleData.roomId;
+          // const tempShiftsId = fromScheduleData.shiftsId;
+          // const tempDay = fromScheduleData.day;
+          // const temshiftdate=fromScheduleData.shiftDate;
+          // const temstarttime=fromScheduleData.startTime;
+          // const temendtime=fromScheduleData.endTime;
   
-          fromScheduleData.roomId = toSchedule.roomId;
-          fromScheduleData.shiftsId = toSchedule.shiftsId;
-          fromScheduleData.day = toScheduleData.day;
-          fromScheduleData.shiftDate=toScheduleData.shiftDate;
-          fromScheduleData.startTime=toScheduleData.startTime;
-          fromScheduleData.endTime=toScheduleData.endTime;
+          // fromScheduleData.roomId = toSchedule.roomId;
+          // fromScheduleData.shiftsId = toSchedule.shiftsId;
+          // fromScheduleData.day = toScheduleData.day;
+          // fromScheduleData.shiftDate=toScheduleData.shiftDate;
+          // fromScheduleData.startTime=toScheduleData.startTime;
+          // fromScheduleData.endTime=toScheduleData.endTime;
   
-          toScheduleData.roomId = tempRoomId;
-          toScheduleData.shiftsId = tempShiftsId;
-          toScheduleData.day = tempDay;
-          toScheduleData.shiftDate=temshiftdate;
-          toScheduleData.startTime=temstarttime;
-          toScheduleData.endTime=temendtime;
+          // toScheduleData.roomId = tempRoomId;
+          // toScheduleData.shiftsId = tempShiftsId;
+          // toScheduleData.day = tempDay;
+          // toScheduleData.shiftDate=temshiftdate;
+          // toScheduleData.startTime=temstarttime;
+          // toScheduleData.endTime=temendtime;
           await prisma.schedule.update({
             where: { id: existingRequest.ToScheduleId },
             data: fromScheduleData,
