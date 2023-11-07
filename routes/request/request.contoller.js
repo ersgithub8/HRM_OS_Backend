@@ -292,7 +292,7 @@ const addrequest = async (req, res) => {
       });
   
       if (!singleShift || singleShift.length === 0) {
-        return res.status(400).json([]);
+        return res.status(200).json([]);
       }
   
       const shiftsWithSchedulesAndUsers = [];
