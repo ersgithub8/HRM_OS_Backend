@@ -385,7 +385,7 @@ const addrequest = async (req, res) => {
   
   const swaprequest = async (req, res) => {
     try {
-      const { userId, requststatus } = req.body;
+      const { userId, requststatus,reason } = req.body;
   
       const existingRequest = await prisma.request.findFirst({
         where: {
@@ -465,7 +465,7 @@ const addrequest = async (req, res) => {
             FromScheduleId: existingRequest.ToScheduleId,
             ToScheduleId: existingRequest.FromScheduleId,
             requststatus: 'REJECTED',
-            // reason:reason,
+            reason:reason,
           },
         });
   
@@ -520,7 +520,7 @@ const addrequest = async (req, res) => {
           where: { id: existingRequest.id },
           data: {
             requststatus: 'REJECTED',
-            // reason: reason,
+            reason: reason,
           },
         });
         return res.status(200).json({ updatedRequest, message: "Request status changed to REJECTED" });
