@@ -263,9 +263,22 @@ const addrequest = async (req, res) => {
   const getSingleuserrequest = async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
+      const { startDate, endDate } = req.query;
+      let startOfDate, endOfDate;
+  
+      if (startDate && endDate) {
+        startOfDate = new Date(startDate);
+        endOfDate = new Date(endDate);
+        endOfDate.setHours(23, 59, 59, 999);
+      
+  
       const singleShift = await prisma.request.findMany({
         where: {
           userId: userId,
+          createdAt: {
+            gte: startOfDate,
+            lte: endOfDate,
+          },
         },
         select: {
           id: true,
@@ -354,7 +367,11 @@ const addrequest = async (req, res) => {
       }
   
       return res.status(200).json(shiftsWithSchedulesAndUsers);
-    } catch (error) {
+    }
+    else{
+      return res.status(200).json([]);
+    }
+   } catch (error) {
       return res.status(400).json({ message: error.message });
     }
   };

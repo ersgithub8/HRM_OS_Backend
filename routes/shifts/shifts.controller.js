@@ -207,83 +207,6 @@ console.log(allShifts.schedule)
   }
 };
 
-// const getAllShiftmobile = async (req, res) => {
-//   try {
-//     let startOfToday, endOfToday;
-//     const { startDate, endDate } = req.query;
-
-//     if (startDate && endDate) {
-//       startOfToday = new Date(startDate);
-//       endOfToday = new Date(endDate);
-//       endOfToday.setHours(23, 59, 59, 999);
-//     } 
-//     // else {
-//     //   const today = new Date();
-//     //   startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-//     //   endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-//     // }
-
-//     const allShifts = await prisma.shifts.findMany({
-//       where: {
-//         AND: [
-//           {
-//             shiftFrom: { lte: endOfToday },
-//           },
-//           {
-//             shiftTo: { gte: startOfToday },
-//           },
-//         ],
-//       },
-//       include: {
-//         user: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             userName: true,
-//           },
-//         },
-//         location: true,
-//         schedule: {
-//           select: {
-//             id: true,
-//             day: true,
-//             startTime: true,
-//             endTime: true,
-//             breakTime: true,
-//             folderTime: true,
-//             shiftDate:true,
-//             room: {
-//               select: {
-//                 roomName: true,
-//               },
-//             },
-//             workHour: true,
-//             status: true,
-//             shiftsId: true,
-//             createdAt: true,
-//             updatedAt: true,
-//           },
-//         },
-//       },
-//     });
-
-//     const selectedSchedules = [];
-//     allShifts.forEach((shift) => {
-//       const selectedShifts = shift.schedule.filter((singleSchedule) => {
-//         const scheduleStartTime = new Date(singleSchedule.startTime);
-//         return scheduleStartTime >= startOfToday && scheduleStartTime <= endOfToday;
-//       });
-//       selectedSchedules.push({ ...shift, schedule: selectedShifts });
-//     });
-
-//     return res.status(200).json(selectedSchedules);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
-
 const getAllShiftmobile = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -388,6 +311,7 @@ const getSingleShift = async (req, res) => {
                 id:true,
                 roomName: true,   
               },
+              
             },
             workHour:true,
             status:true,
