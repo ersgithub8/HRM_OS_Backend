@@ -321,6 +321,7 @@ const getSingleShift = async (req, res) => {
             updatedAt:true,
 
           },
+          
         }
 
       },
@@ -328,10 +329,24 @@ const getSingleShift = async (req, res) => {
     if(!singleShift){
       return res.status(400).json({message:"Shift not found" })
     }
+    const daysOrder = {
+      Monday: 1,
+      Tuesday: 2,
+      Wednesday: 3,
+      Thursday: 4,
+      Friday: 5,
+      Saturday: 6,
+      Sunday: 7,
+    };
+    if (singleShift && singleShift.schedule) {
+      // Sort the days based on custom order
+      singleShift.schedule.sort((a, b) => daysOrder[a.day] - daysOrder[b.day]);
+    }
     if (singleShift && singleShift.assignedBy) {
       const assignedByUser = await prisma.user.findUnique({
         where: { id: singleShift.assignedBy },
         select: { id: true, firstName: true, lastName: true, userName: true },
+        
       });
       const shiftWithAssignedBy = {
         ...singleShift,
