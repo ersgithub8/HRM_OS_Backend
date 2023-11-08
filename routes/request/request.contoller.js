@@ -73,6 +73,7 @@ const addrequest = async (req, res) => {
           FromScheduleId: true,
           ToScheduleId: true,
           requststatus: true,
+          reason:true,
           userId:true,
           createdAt: true,
           updatedAt: true,
@@ -174,6 +175,7 @@ const addrequest = async (req, res) => {
           FromScheduleId: true,
           ToScheduleId: true,
           requststatus: true,
+          reason:true,
           createdAt: true,
           updatedAt: true,
         },
@@ -425,22 +427,22 @@ const addrequest = async (req, res) => {
   
           // Swap schedule attributes except for the 'ID'
           // const tempRoomId = fromScheduleData.roomId;
-          // const tempShiftsId = fromScheduleData.shiftsId;
+          const tempShiftsId = fromScheduleData.shiftsId;
           // const tempDay = fromScheduleData.day;
           // const temshiftdate=fromScheduleData.shiftDate;
           // const temstarttime=fromScheduleData.startTime;
           // const temendtime=fromScheduleData.endTime;
   
           // fromScheduleData.roomId = toSchedule.roomId;
-          // fromScheduleData.shiftsId = toSchedule.shiftsId;
+          fromScheduleData.shiftsId = toSchedule.shiftsId;
           // fromScheduleData.day = toScheduleData.day;
           // fromScheduleData.shiftDate=toScheduleData.shiftDate;
           // fromScheduleData.startTime=toScheduleData.startTime;
           // fromScheduleData.endTime=toScheduleData.endTime;
   
-          toScheduleData.roomId = tempRoomId;
+          // toScheduleData.roomId = tempRoomId;
           toScheduleData.shiftsId = tempShiftsId;
-          toScheduleData.day = tempDay;
+          // toScheduleData.day = tempDay;
           // toScheduleData.shiftDate=temshiftdate;
           // toScheduleData.startTime=temstarttime;
           // toScheduleData.endTime=temendtime;
@@ -482,21 +484,21 @@ const addrequest = async (req, res) => {
           const toScheduleData = { ...toSchedule };
   
           // const tempRoomId = fromScheduleData.roomId;
-          // const tempShiftsId = fromScheduleData.shiftsId;
+          const tempShiftsId = fromScheduleData.shiftsId;
           // const tempDay = fromScheduleData.day;
           // const temshiftdate=fromScheduleData.shiftDate;
           // const temstarttime=fromScheduleData.startTime;
           // const temendtime=fromScheduleData.endTime;
   
           // fromScheduleData.roomId = toSchedule.roomId;
-          // fromScheduleData.shiftsId = toSchedule.shiftsId;
+          fromScheduleData.shiftsId = toSchedule.shiftsId;
           // fromScheduleData.day = toScheduleData.day;
           // fromScheduleData.shiftDate=toScheduleData.shiftDate;
           // fromScheduleData.startTime=toScheduleData.startTime;
           // fromScheduleData.endTime=toScheduleData.endTime;
   
           // toScheduleData.roomId = tempRoomId;
-          // toScheduleData.shiftsId = tempShiftsId;
+          toScheduleData.shiftsId = tempShiftsId;
           // toScheduleData.day = tempDay;
           // toScheduleData.shiftDate=temshiftdate;
           // toScheduleData.startTime=temstarttime;
@@ -548,21 +550,21 @@ const addrequest = async (req, res) => {
           const toScheduleData = { ...toSchedule };
   
           // const tempRoomId = fromScheduleData.roomId;
-          // const tempShiftsId = fromScheduleData.shiftsId;
+          const tempShiftsId = fromScheduleData.shiftsId;
           // const tempDay = fromScheduleData.day;
           // const temshiftdate=fromScheduleData.shiftDate;
           // const temstarttime=fromScheduleData.startTime;
           // const temendtime=fromScheduleData.endTime;
   
           // fromScheduleData.roomId = toSchedule.roomId;
-          // fromScheduleData.shiftsId = toSchedule.shiftsId;
+          fromScheduleData.shiftsId = toSchedule.shiftsId;
           // fromScheduleData.day = toScheduleData.day;
           // fromScheduleData.shiftDate=toScheduleData.shiftDate;
           // fromScheduleData.startTime=toScheduleData.startTime;
           // fromScheduleData.endTime=toScheduleData.endTime;
   
           // toScheduleData.roomId = tempRoomId;
-          // toScheduleData.shiftsId = tempShiftsId;
+          toScheduleData.shiftsId = tempShiftsId;
           // toScheduleData.day = tempDay;
           // toScheduleData.shiftDate=temshiftdate;
           // toScheduleData.startTime=temstarttime;
