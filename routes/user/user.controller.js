@@ -554,6 +554,7 @@ const getSingleUser = async (req, res) => {
                 endTime: true,
                 breakTime: true,
                 folderTime: true,
+                shiftDate:true,
                 workHour: true,
                 room:true,
                 //  {
