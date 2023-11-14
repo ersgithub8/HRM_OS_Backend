@@ -473,10 +473,12 @@ const updateSingleShift = async (req, res) => {
     if (req.body.schedule) {
       for (const scheduleItem of req.body.schedule) {
         const timeDiff = moment(scheduleItem.endTime).diff(moment(scheduleItem.startTime));
-        const totalMinutes = timeDiff / (1000 * 60);
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+    const totalMinutes = timeDiff / (1000 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const workHour = !isNaN(hours) && !isNaN(minutes)
+      ? parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`)
+      : null;
         await prisma.schedule.update({
           where: {
             id: scheduleItem.id, 
@@ -489,9 +491,12 @@ const updateSingleShift = async (req, res) => {
             breakTime: scheduleItem.breakTime ? scheduleItem.breakTime : null,
             roomId: scheduleItem.roomId ? scheduleItem.roomId : null,
             folderTime:scheduleItem.folderTime?scheduleItem.folderTime:null,
-            status:scheduleItem.status
+            status:scheduleItem.status,
+            workHour:workHour
           },
+          
         });
+        
       }
     }
 

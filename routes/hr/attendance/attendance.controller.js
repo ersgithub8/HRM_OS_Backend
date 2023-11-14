@@ -247,11 +247,13 @@ let scheduleForToday;
         const scheduleDate = new Date(schedule.shiftDate);
         const todayDate = new Date(today);
         return (
-          scheduleDate.setHours(0, 0, 0, 0) === todayDate.setHours(0, 0, 0, 0)
+          scheduleDate.setHours(0, 0, 0, 0) === todayDate.setHours(0, 0, 0, 0)&& schedule.status
         );
       });
-    
-      if (scheduleForToday) {
+    if(!scheduleForToday){
+      return res.status(400).json({ message: "You can't mark attendence today shifts is not found" });
+    }
+      else if (scheduleForToday) {
         const currentTimeInPakistan = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
         console.log(currentTimeInPakistan, "pakistan");
         const currentTime = new Date(currentTimeInPakistan);
@@ -283,8 +285,8 @@ let scheduleForToday;
       
     }
      
-    console.log(scheduleForToday,"todaysche");
-  //  return
+    // console.log(scheduleForToday,"todaysche");
+   return
     const existingCheckOut = await prisma.attendance.findFirst({
       where: {
         userId: id,
