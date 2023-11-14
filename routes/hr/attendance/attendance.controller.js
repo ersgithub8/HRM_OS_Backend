@@ -286,7 +286,7 @@ let scheduleForToday;
     }
      
     // console.log(scheduleForToday,"todaysche");
-   return
+  //  return
     const existingCheckOut = await prisma.attendance.findFirst({
       where: {
         userId: id,
@@ -376,8 +376,6 @@ let scheduleForToday;
     return res.status(400).json({ message: error.message });
   }
 };
-
-
 const createadminAttendance = async (req, res) => {
   try {
     const employeeId = req.body.employeeId;
@@ -390,17 +388,34 @@ const createadminAttendance = async (req, res) => {
         employeeId: employeeId,
       },
       include: {
-        shift: true,
-        // status:true,
+        shifts: {
+          include: {
+            schedule: true,
+          },
+        },
       },
     });
+
     if (!user) {
       return res.status(400).json({ message: "User not found with the provided employeeId." });
     }
 
-
     const today = moment(date).startOf('day');
     const tomorrow = moment(today).add(1, 'days');
+
+    const scheduleForToday = user.shifts[0].schedule.find((schedule) => {
+      const scheduleDate = new Date(schedule.shiftDate);
+      const todayDate = new Date(date);
+      return (
+        scheduleDate.setHours(0, 0, 0, 0) === todayDate.setHours(0, 0, 0, 0) && schedule.status
+      );
+    });
+
+    console.log(scheduleForToday);
+
+    if (!scheduleForToday) {
+      return res.status(400).json({ message: "Today's schedule not found or not active." });
+    }
 
     const attendance = await prisma.attendance.findFirst({
       where: {
@@ -411,6 +426,7 @@ const createadminAttendance = async (req, res) => {
         },
       },
     });
+
     if (attendance) {
       return res.status(400).json({ message: "Attendance already exists on this date." });
     }
@@ -479,7 +495,7 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json({
         // result,
-        message: "Attendence hgjhjcreated successfully"
+        message: "Attendence created successfully"
       });
     } else if (!attendance) {
       const newAttendance = await prisma.attendance.create({
@@ -630,10 +646,274 @@ const createadminAttendance = async (req, res) => {
         message: "Attendence created successfully"
       });
     }
+    return res.status(200).json({
+      message: "Attendance created successfully",
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
+
+// const createadminAttendance = async (req, res) => {
+//   try {
+//     const employeeId = req.body.employeeId;
+//     const date = req.body.date ? new Date(req.body.date) : new Date();
+//     const attendenceStatus = req.body.attendenceStatus ? req.body.attendenceStatus : "present";
+
+//     // Fetch the user by employeeId
+//     const user = await prisma.user.findUnique({
+//       where: {
+//         employeeId: employeeId,
+//       },
+//       include: {
+//         shift: true,
+//         // status:true,
+//       },
+//     });
+//     if (!user) {
+//       return res.status(400).json({ message: "User not found with the provided employeeId." });
+//     }
+
+
+//     const today = moment(date).startOf('day');
+//     const tomorrow = moment(today).add(1, 'days');
+
+//     const attendance = await prisma.attendance.findFirst({
+//       where: {
+//         userId: user.id,
+//         date: {
+//           gte: today.toDate(),
+//           lt: tomorrow.toDate(),
+//         },
+//       },
+//     });
+//     if (attendance) {
+//       return res.status(400).json({ message: "Attendance already exists on this date." });
+//     }
+
+//     if (req.query.query === "manualPunch") {
+//       const newAttendance = await prisma.attendance.create({
+//         data: {
+//           userId: user.id,
+//           inTime: null,
+//           outTime: null,
+//           punchBy: req.auth.sub,
+//           inTimeStatus: null,
+//           outTimeStatus: null,
+//           comment: null,
+//           date: date,
+//           attendenceStatus: attendenceStatus,
+//           ip: null,
+//           totalHour: null,
+//           createdAt: date,
+//         },
+//       });
+
+//       // Fetch all today's attendance records including the newly created one
+//       const allAttendance = await prisma.attendance.findMany({
+//         where: {
+//           date: {
+//             gte: today.toDate(),
+//             lt: tomorrow.toDate(),
+//           },
+//         },
+//         orderBy: [
+//           {
+//             id: "desc",
+//           },
+//         ],
+//         include: {
+//           user: {
+//             select: {
+//               firstName: true,
+//               lastName: true,
+//               employeeId: true,
+              
+//             },
+//           },
+//         },
+//       });
+
+//       const punchBy = await prisma.user.findMany({
+//         where: {
+//           id: { in: allAttendance.map((item) => item.punchBy) },
+//         },
+//         select: {
+//           id: true,
+//           firstName: true,
+//           lastName: true,
+//           employeeId: true,
+//         },
+//       });
+
+//       const result = allAttendance.map((attendance) => {
+//         return {
+//           ...attendance,
+//           punchBy: punchBy,
+//         };
+//       });
+
+//       return res.status(200).json({
+//         // result,
+//         message: "Attendence hgjhjcreated successfully"
+//       });
+//     } else if (!attendance) {
+//       const newAttendance = await prisma.attendance.create({
+//         data: {
+//           userId: user.id,
+//           inTime: null,
+//           outTime: null,
+//           punchBy: req.auth.sub,
+//           inTimeStatus: null,
+//           outTimeStatus: null,
+//           comment: null,
+//           date: date,
+//           attendenceStatus: attendenceStatus,
+//           ip: null,
+//           totalHour: null,
+//           createdAt: date,
+
+//         },
+//       });
+
+//       // Fetch all today's attendance records including the newly created one
+//       const allAttendance = await prisma.attendance.findMany({
+//         where: {
+//           date: {
+//             gte: today.toDate(),
+//             lt: tomorrow.toDate(),
+//           },
+//         },
+//         orderBy: [
+//           {
+//             id: "desc",
+//           },
+//         ],
+//         include: {
+//           user: {
+//             select: {
+//               firstName: true,
+//               lastName: true,
+//               employeeId: true,
+//             },
+//           },
+//         },
+//       });
+
+//       const punchBy = await prisma.user.findMany({
+//         where: {
+//           id: { in: allAttendance.map((item) => item.punchBy) },
+//         },
+//         select: {
+//           id: true,
+//           firstName: true,
+//           lastName: true,
+//           employeeId: true,
+//         },
+//       });
+
+//       const result = allAttendance.map((attendance) => {
+//         return {
+//           ...attendance,
+//           punchBy: punchBy,
+//         };
+//       });
+
+//       if (attendenceStatus&&user.status===true) {
+//         const Title = 'Attendance Marked';
+//         const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
+//         const Desc = 'Attendance marked notification';
+//         const Token = user.firebaseToken;
+//         // const Device = user.device;
+//         console.log(Title, Body, Desc, Token);
+//         sendnotifiy(Title, Body, Desc, Token);
+//       }
+
+//       return res.status(200).json({
+//         // result,
+//         message: "Attendence created successfully"
+//       });
+//     } else {
+//       const newAttendance = await prisma.attendance.update({
+//         where: {
+//           id: attendance.id,
+//         },
+//         data: {
+//           outTime: null,
+//           inTime: null,
+//           totalHour: null,
+//           outTimeStatus: null,
+//           attendenceStatus: req.body.attendenceStatus,
+//           date: req.body.date,
+//         },
+//       });
+
+//       // Fetch all today's attendance records including the updated one
+//       const allAttendance = await prisma.attendance.findMany({
+//         where: {
+//           date: {
+//             gte: today.toDate(),
+//             lt: tomorrow.toDate(),
+//           },
+//         },
+//         orderBy: [
+//           {
+//             id: "desc",
+//           },
+//         ],
+//         include: {
+//           user: {
+//             select: {
+//               firstName: true,
+//               lastName: true,
+//               employeeId: true,
+//             },
+//           },
+//         },
+//       });
+
+//       const punchBy = await prisma.user.findMany({
+//         where: {
+//           id: { in: allAttendance.map((item) => item.punchBy) },
+//         },
+//         select: {
+//           id: true,
+//           firstName: true,
+//           lastName: true,
+//           employeeId: true,
+//         },
+//       });
+
+//       const result = allAttendance.map((attendance) => {
+//         return {
+//           ...attendance,
+//           punchBy: punchBy,
+//         };
+//       });
+
+//       if (attendenceStatus&&user.status===true) {
+//         const Title = 'Attendance Marked';
+//         const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
+//         const Desc = 'Attendance marked notification';
+//         const Token = user.firebaseToken;
+//         // const Device = user.device;
+//         console.log(Title, Body, Desc, Token);
+//         sendnotifiy(Title, Body, Desc, Token);
+//       }
+
+//       return res.status(200).json({
+//         // result,
+//         message: "Attendence created successfully"
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
+
 
 
 const getAllAttendance = async (req, res) => {
