@@ -33,16 +33,16 @@ const storage = multer.diskStorage({
         folder = 'safeguard';
         break;
       case 'attachment':
-        folder = 'attachments';
+        folder = 'attachment';
         break;
       case 'adminattachment':
-        folder = 'adminattachments';
+        folder = 'adminattachment';
         break;
       case 'userAttachment':
-        folder = 'userattachments';
+        folder = 'userattachment';
         break;
       case 'contractAttachment':
-        folder = 'contractattachments';
+        folder = 'contractAttachment';
         break;
       default:
         folder = 'uploads';
