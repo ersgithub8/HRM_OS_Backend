@@ -70,7 +70,6 @@ const uploadimagesimple = multer({
   storage: storage,
   fileFilter: fileFilter,
 });
-
 app.post("/upload", uploadimagesimple.fields([
   { name: 'image', maxCount: 2 },
   { name: 'firstaid', maxCount: 2 },
@@ -105,6 +104,14 @@ app.post("/upload", uploadimagesimple.fields([
   }
 });
 
+app.post("/deleteimage", (req, res) => {
+  try {
+    fs.unlinkSync("../uploads" + req.body.path);
+    console.log(path);
+  } catch (e) {
+    console.log("not image");
+  }
+});
 
 
 
@@ -182,7 +189,7 @@ app.use("/setting", require("./routes/setting/setting.routes"));
 app.use("/email", require("./routes/email/email.routes"));
 app.use("/department", require("./routes/hr/department/department.routes"));
 app.use("/location", require("./routes/hr/location/location.routes"));
-app.use("/upload", require("./routes/hr/uploadimage/uploadimg.routes"));
+// app.use("/upload", require("./routes/hr/uploadimage/uploadimg.routes"));
 
 app.use(
   "/employment-status",
