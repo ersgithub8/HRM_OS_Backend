@@ -5,10 +5,109 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const multer = require("multer");
+const path = require("path");
+const { join } = require('path');
 /* variables */
 // express app instance
 const app = express();
 const fileUpload = require('express-fileupload');
+app.use(express.static(path.join(__dirname, "./public")));
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    let folder = '';
+
+    switch (file.fieldname) {
+      case 'image':
+        folder = 'images';
+        break;
+      case 'firstaid':
+        folder = 'firstaid';
+        break;
+      case 'dbscheck':
+        folder = 'dbscheck';
+        break;
+      case 'safeguard':
+        folder = 'safeguard';
+        break;
+      case 'attachment':
+        folder = 'attachments';
+        break;
+      case 'adminattachment':
+        folder = 'adminattachments';
+        break;
+      case 'userAttachment':
+        folder = 'userattachments';
+        break;
+      case 'contractAttachment':
+        folder = 'contractattachments';
+        break;
+      default:
+        folder = 'uploads';
+    }
+
+    cb(null, `./uploads/${folder}`); // Just use the folder, no need to concatenate
+  },
+  filename: function (req, file, cb) {
+    const uniqueIdentifier = Date.now(); // You can use a more sophisticated method for generating a unique identifier
+    const ext = path.extname(file.originalname);
+    const fileName = `${uniqueIdentifier}${ext}`;
+    cb(null, fileName);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.originalname.match(/\.(mp4|jpeg|jpg|png|gif)$/)) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+const uploadimagesimple = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+});
+
+app.post("/upload", uploadimagesimple.fields([
+  { name: 'image', maxCount: 2 },
+  { name: 'firstaid', maxCount: 2 },
+  { name: 'dbscheck', maxCount: 2 },
+  { name: 'safeguard', maxCount: 2 },
+  { name: 'attachment', maxCount: 2 },
+  { name: 'adminattachment', maxCount: 2 },
+  { name: 'userAttachment', maxCount: 2 },
+  { name: 'contractAttachment', maxCount: 2 },
+]), (req, res) => {
+  console.log("Reached the multiple images route handler");
+
+  if (req.files) {
+    const files = Object.keys(req.files).reduce((acc, key) => {
+      acc[key] = req.files[key].map((file, index) => {
+        const split = file.path.split("uploads");
+        const path = split[1].replace(/\\/g, "/");
+        const baseUrl = req.protocol + "://localhost:5000"; // Get base URL
+        const fullPath = baseUrl+"/uploads"+path; // Use path.join to ensure correct path joining
+        return { path: fullPath };
+      });
+      return acc;
+    }, {});
+
+    return res.status(200).json({
+      files: files,
+      message: "Files successfully uploaded",
+      error: false,
+    });
+  } else {
+    return res.status(400).json({ message: "Image upload failed" });
+  }
+});
+
+
+
+
 app.use(fileUpload({
   limit: { fileSize: 50 * 1024 * 1024 ,extended: true},
 }));
