@@ -15,103 +15,126 @@ const fileUpload = require('express-fileupload');
 app.use(express.static(path.join(__dirname, "./public")));
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    let folder = '';
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     let folder = '';
 
-    switch (file.fieldname) {
-      case 'image':
-        folder = 'images';
-        break;
-      case 'firstaid':
-        folder = 'firstaid';
-        break;
-      case 'dbscheck':
-        folder = 'dbscheck';
-        break;
-      case 'safeguard':
-        folder = 'safeguard';
-        break;
-      case 'attachment':
-        folder = 'attachment';
-        break;
-      case 'adminattachment':
-        folder = 'adminattachment';
-        break;
-      case 'userAttachment':
-        folder = 'userattachment';
-        break;
-      case 'contractAttachment':
-        folder = 'contractAttachment';
-        break;
-      default:
-        folder = 'uploads';
-    }
+//     switch (file.fieldname) {
+//       case 'image':
+//         folder = 'images';
+//         break;
+//       case 'firstaid':
+//         folder = 'firstaid';
+//         break;
+//       case 'dbscheck':
+//         folder = 'dbscheck';
+//         break;
+//       case 'safeguard':
+//         folder = 'safeguard';
+//         break;
+//       case 'attachment':
+//         folder = 'attachment';
+//         break;
+//       case 'adminattachment':
+//         folder = 'adminattachment';
+//         break;
+//       case 'userAttachment':
+//         folder = 'userattachment';
+//         break;
+//       case 'contractAttachment':
+//         folder = 'contractAttachment';
+//         break;
+//       default:
+//         folder = 'uploads';
+//     }
 
-    cb(null, `./uploads/${folder}`); // Just use the folder, no need to concatenate
-  },
-  filename: function (req, file, cb) {
-    const uniqueIdentifier = Date.now(); // You can use a more sophisticated method for generating a unique identifier
-    const ext = path.extname(file.originalname);
-    const fileName = `${uniqueIdentifier}${ext}`;
-    cb(null, fileName);
-  },
-});
+//     cb(null, `./uploads/${folder}`); // Just use the folder, no need to concatenate
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueIdentifier = Date.now(); // You can use a more sophisticated method for generating a unique identifier
+//     const ext = path.extname(file.originalname);
+//     const fileName = `${uniqueIdentifier}${ext}`;
+//     cb(null, fileName);
+//   },
+// });
 
-const fileFilter = (req, file, cb) => {
-  if (file.originalname.match(/\.(mp4|jpeg|jpg|png|gif)$/)) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
+// const fileFilter = (req, file, cb) => {
+//   if (file.originalname.match(/\.(mp4|jpeg|jpg|png|pdf|gif)$/)) {
+//     cb(null, true);
+//   } else {
+//     cb(null, false);
+//   }
+// };
 
-const uploadimagesimple = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-});
-app.post("/upload", uploadimagesimple.fields([
-  { name: 'image', maxCount: 2 },
-  { name: 'firstaid', maxCount: 2 },
-  { name: 'dbscheck', maxCount: 2 },
-  { name: 'safeguard', maxCount: 2 },
-  { name: 'attachment', maxCount: 2 },
-  { name: 'adminattachment', maxCount: 2 },
-  { name: 'userAttachment', maxCount: 2 },
-  { name: 'contractAttachment', maxCount: 2 },
-]), (req, res) => {
-  console.log("Reached the multiple images route handler");
+// const uploadimagesimple = multer({
+//   storage: storage,
+//   fileFilter: fileFilter,
+// });
+// app.post("/upload", uploadimagesimple.fields([
+//   { name: 'image', maxCount: 2 },
+//   { name: 'firstaid', maxCount: 2 },
+//   { name: 'dbscheck', maxCount: 2 },
+//   { name: 'safeguard', maxCount: 2 },
+//   { name: 'attachment', maxCount: 2 },
+//   { name: 'adminattachment', maxCount: 2 },
+//   { name: 'userAttachment', maxCount: 2 },
+//   { name: 'contractAttachment', maxCount: 2 },
+// ]), (req, res) => {
+//   console.log("Reached the multiple images route handler");
 
-  if (req.files) {
-    const files = Object.keys(req.files).reduce((acc, key) => {
-      acc[key] = req.files[key].map((file, index) => {
-        const split = file.path.split("uploads");
-        const path = split[1].replace(/\\/g, "/");
-        const baseUrl = req.protocol + "://localhost:5000"; // Get base URL
-        const fullPath = baseUrl+"/uploads"+path; // Use path.join to ensure correct path joining
-        return { path: fullPath };
-      });
-      return acc;
-    }, {});
+//   if (req.files) {
+//     const files = Object.keys(req.files).reduce((acc, key) => {
+//       acc[key] = req.files[key].map((file, index) => {
+//         const split = file.path.split("uploads");
+//         const path = split[1].replace(/\\/g, "/");
+//         const baseUrl = req.protocol + "://localhost:5000"; // Get base URL
+//         const fullPath = baseUrl+"/uploads"+path; // Use path.join to ensure correct path joining
+//         return { path: fullPath };
+//       });
+//       return acc;
+//     }, {});
 
-    return res.status(200).json({
-      files: files,
-      message: "Files successfully uploaded",
-      error: false,
-    });
-  } else {
-    return res.status(400).json({ message: "Image upload failed" });
-  }
-});
+//     return res.status(200).json({
+//       files: files,
+//       message: "Files successfully uploaded",
+//       error: false,
+//     });
+//   } else {
+//     return res.status(400).json({ message: "Image upload failed" });
+//   }
+// });
 
-app.post("/deleteimage", (req, res) => {
-  try {
-    fs.unlinkSync("../uploads" + req.body.path);
-    console.log(path);
-  } catch (e) {
-    console.log("not image");
-  }
-});
+// app.post("/upload/delete", async (req, res) => {
+//   try {
+//     if (req.body.image) {
+//       let img = req.body.image.split("/");
+//       const result = await namecheapAPI.deleteImage({
+//         Bucket: process.env.namecheapBucketName,
+//         Key: img[img.length - 1],
+//       });
+//       if (result.success) {
+//         console.log("Image deleted successfully");
+//         res.status(200).json({
+//           message: "Image Delete Successfully",
+//           error: false,
+//         });
+//       } else {
+//         console.log(result.error);
+//         res.status(404).json({
+//           message: "Image Deletion Failed: " + result.error,
+//           error: true,
+//         });
+//       }
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({
+//       message: "Internal Server Error",
+//       error: true,
+//     });
+//   }
+// });
+
 
 
 
@@ -189,7 +212,7 @@ app.use("/setting", require("./routes/setting/setting.routes"));
 app.use("/email", require("./routes/email/email.routes"));
 app.use("/department", require("./routes/hr/department/department.routes"));
 app.use("/location", require("./routes/hr/location/location.routes"));
-// app.use("/upload", require("./routes/hr/uploadimage/uploadimg.routes"));
+app.use("/upload", require("./routes/hr/uploadimage/uploadimg.routes"));
 
 app.use(
   "/employment-status",
