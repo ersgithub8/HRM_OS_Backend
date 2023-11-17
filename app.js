@@ -48,10 +48,10 @@ const storage = multer.diskStorage({
         folder = 'uploads';
     }
 
-    cb(null, `./uploads/${folder}`); // Just use the folder, no need to concatenate
+    cb(null, `./uploads/${folder}`); 
   },
   filename: function (req, file, cb) {
-    const uniqueIdentifier = Date.now(); // You can use a more sophisticated method for generating a unique identifier
+    const uniqueIdentifier = Date.now(); 
     const ext = path.extname(file.originalname);
     const fileName = `${uniqueIdentifier}${ext}`;
     cb(null, fileName);
@@ -71,14 +71,14 @@ const uploadimagesimple = multer({
   fileFilter: fileFilter,
 });
 app.post("/upload", uploadimagesimple.fields([
-  { name: 'image', maxCount: 2 },
-  { name: 'firstaid', maxCount: 2 },
-  { name: 'dbscheck', maxCount: 2 },
-  { name: 'safeguard', maxCount: 2 },
-  { name: 'attachment', maxCount: 2 },
-  { name: 'adminattachment', maxCount: 2 },
-  { name: 'userAttachment', maxCount: 2 },
-  { name: 'contractAttachment', maxCount: 2 },
+  { name: 'image', maxCount: 1 },
+  { name: 'firstaid', maxCount: 1 },
+  { name: 'dbscheck', maxCount: 1 },
+  { name: 'safeguard', maxCount: 1 },
+  { name: 'attachment', maxCount: 1 },
+  { name: 'adminattachment', maxCount: 1 },
+  { name: 'userAttachment', maxCount: 1 },
+  { name: 'contractAttachment', maxCount: 1 },
 ]), (req, res) => {
   console.log("Reached the multiple images route handler");
 
@@ -87,8 +87,8 @@ app.post("/upload", uploadimagesimple.fields([
       acc[key] = req.files[key].map((file, index) => {
         const split = file.path.split("uploads");
         const path = split[1].replace(/\\/g, "/");
-        const baseUrl = req.protocol + "://localhost:5000"; // Get base URL
-        const fullPath = baseUrl+"/uploads"+path; // Use path.join to ensure correct path joining
+        const baseUrl = req.protocol + "://localhost:5000"; 
+        const fullPath = baseUrl+"/uploads"+path; 
         return { path: fullPath };
       });
       return acc;
@@ -106,31 +106,16 @@ app.post("/upload", uploadimagesimple.fields([
 
 
 
-app.post("/upload/delete", async (req, res) => {
-  try {
-    if (req.body.image) {
-      let img = req.body.image.split("/");
-      let imageName = img[img.length - 1];
-      
-      // Specify the path to your upload folder
-      let imagePath = path.join(__dirname, 'uploads', imageName);
-console.log(imagePath);
-      await fs.unlink(imagePath);
-
-      console.log("Image deleted successfully");
-      res.status(200).json({
-        message: "Image Delete Successfully",
-        error: false,
-      });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      message: "Internal Server Error",
-      error: true,
-    });
-  }
-});
+// app.post("/upload/delete", async (req, res) => {
+//   (req, res) => {
+//       try {
+//         fs.unlinkSync("../uploads" + req.body.path);
+//         console.log("image del")
+//       } catch (e) {
+//         console.log("not image");
+//       }
+//     }
+//   });
 
 
 
@@ -142,6 +127,7 @@ app.use(fileUpload({
 // holds all the allowed origins for cors access
 let allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:3000/",
   "http://localhost:5000",
   "http://4.227.140.35:3001",
   "http://4.227.140.35:3000",
