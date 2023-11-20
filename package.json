@@ -9,6 +9,10 @@
     "watch": "nodemon server.js",
     "precommit": "pretty-quick --staged"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ersgithub8/HRM_OS_Backend.git"
+  },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
@@ -51,9 +55,11 @@
     "sequelize": "^6.32.1",
     "sharp": "^0.31.0",
     "to-words": "^3.3.1",
+    "ts-node": "^10.9.1",
     "yarn": "^1.22.19"
   },
   "devDependencies": {
-    "prettier": "2.7.1"
+    "prettier": "2.7.1",
+    "ts-node": "10.9.1"
   }
 }
