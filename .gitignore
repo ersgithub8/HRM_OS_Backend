@@ -122,10 +122,10 @@ dist
 # prisma/seed.js
 # prisma/seed.js
 # prisma/schema.prisma
-# prisma/migrations/migration_lock.toml
-# prisma/migrations/20230817103031_/migration.sql
-# prisma/migrations/20230815112159_/migration.sql
-# prisma/seed.js
-# *.prisma
-# prisma/migrations/20230815112159_/migration.sql
-# prisma/migrations/20230818050622_/migration.sql
+prisma/migrations/migration_lock.toml
+prisma/migrations/20230817103031_/migration.sql
+prisma/migrations/20230815112159_/migration.sql
+prisma/seed.js
+*.prisma
+prisma/migrations/20230815112159_/migration.sql
+prisma/migrations/20230818050622_/migration.sql
