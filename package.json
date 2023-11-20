@@ -60,6 +60,7 @@
   },
   "devDependencies": {
     "prettier": "2.7.1",
-    "ts-node": "10.9.1"
+    "ts-node": "10.9.1",
+    "@prisma/client": "4.16.2"
   }
 }
