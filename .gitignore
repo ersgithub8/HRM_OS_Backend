@@ -119,9 +119,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-# prisma/seed.js
-# prisma/seed.js
-# prisma/schema.prisma
+prisma/seed.js
+prisma/seed.js
+prisma/schema.prisma
 prisma/migrations/migration_lock.toml
 prisma/migrations/20230817103031_/migration.sql
 prisma/migrations/20230815112159_/migration.sql
