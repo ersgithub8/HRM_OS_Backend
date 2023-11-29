@@ -88,7 +88,7 @@ const login = async (req, res) => {
     }
 
   } catch (error) {
-
+console.log(error)
     return res.status(502).json({ message: "Server is not responding. Please try again later." });
 
   }

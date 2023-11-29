@@ -8,92 +8,88 @@ datasource db {
 }
 
 model user {
-  id         Int       @id @default(autoincrement())
-  firstName  String?
-  lastName   String?
-  firebaseToken String?
-  device        String @default("Android") 
-  userName   String    @unique
-  password   String
-  email      String?   @unique
-  phone      String?   @unique
-  reference_id  Int?
-  referenceid_two  Int?
-  dob           DateTime?
-  emergencycontact      String?
-  nicno                 String?
-  identitystatus        String?
-  firstaid              String?
-  firstaidtext              String?
-  dbscheck              String?
-  dbschecktext              String?
-  safeguarding          String?
-  safeguardingtext      String?
-  bankallowedleave String @default("8")
- remaingbankallowedleave String @default("8")
- annualallowedleave String @default("20")
- remainingannualallowedleave String @default("20")
-  companyname           String?
-  designation           String?
-  joining_date          DateTime?
-  end_date              DateTime?
-  address               String?
-  manualleave           Float?
+  id                          Int                  @id @default(autoincrement())
+  firstName                   String?
+  lastName                    String?
+  firebaseToken               String?
+  device                      String               @default("Android")
+  userName                    String               @unique
+  password                    String
+  email                       String?              @unique
+  phone                       String?              @unique
+  reference_id                Int?
+  referenceid_two             Int?
+  dob                         DateTime?
+  emergencycontact            String?
+  nicno                       String?
+  identitystatus              String?
+  firstaid                    String?
+  firstaidtext                String?
+  dbscheck                    String?
+  dbschecktext                String?
+  safeguarding                String?
+  safeguardingtext            String?
+  bankallowedleave            String               @default("8")
+  remaingbankallowedleave     String               @default("8")
+  annualallowedleave          String               @default("20")
+  remainingannualallowedleave String               @default("20")
+  companyname                 String?
+  designation                 String?
+  joining_date                DateTime?
+  end_date                    DateTime?
+  address                     String?
+  manualleave                 Float?
   contractAttachment          String?
-  reference_contact     String?
-  referencecontacttwo  String?
-  resetPasswordToken   String?
-  resetPasswordExpires  DateTime @default(now())
-  // address
-  street     String?
-  city       String?
-  state      String?
-  zipCode    String?
-  country    String?
-  joinDate   DateTime?
-  leaveDate  DateTime?
-  employeeId String?   @unique
-  bloodGroup String?
-  image      String?
-  documents           String?
-  employmentStatus   employmentStatus? @relation(fields: [employmentStatusId], references: [id])
-  employmentStatusId Int?
-  department         department?       @relation(fields: [departmentId], references: [id])
-  departmentId       Int?
-  role               role?             @relation(fields: [roleId], references: [id])
-  roleId             Int?
-  shift              shift?            @relation(fields: [shiftId], references: [id])
-  shiftId            Int?
-  location              location?            @relation(fields: [locationId], references: [id])
-  locationId            Int?
-  leavePolicy        leavePolicy?      @relation(fields: [leavePolicyId], references: [id])
-  leavePolicyId      Int?
-  weeklyHoliday      weeklyHoliday?    @relation(fields: [weeklyHolidayId], references: [id])
-  weeklyHolidayId    Int?
- 
- 
-  attendance         attendance[]
-  leaveApplication   leaveApplication[]
-  task   task[]
-  meeting    meeting[]
-  room    room[]
-  shifts  shifts[]
-  payslip            payslip[]
-  educations         education[]
-  salaryHistory      salaryHistory[]
-  designationHistory designationHistory[]
-  awardHistory       awardHistory[]
-  status             Boolean              @default(true)
-  applicationStatus  String               @default("PENDING")
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  project            project[]
-  projectTeamMember  projectTeamMember[]
+  reference_contact           String?
+  referencecontacttwo         String?
+  resetPasswordToken          String?
+  resetPasswordExpires        DateTime             @default(now())
+  street                      String?
+  city                        String?
+  state                       String?
+  zipCode                     String?
+  country                     String?
+  joinDate                    DateTime?
+  leaveDate                   DateTime?
+  employeeId                  String?              @unique
+  bloodGroup                  String?
+  image                       String?
+  documents                   String?
+  employmentStatusId          Int?
+  departmentId                Int?
+  roleId                      Int?
+  shiftId                     Int?
+  locationId                  Int?
+  leavePolicyId               Int?
+  weeklyHolidayId             Int?
+  status                      Boolean              @default(true)
+  applicationStatus           String               @default("PENDING")
+  createdAt                   DateTime             @default(now())
+  updatedAt                   DateTime             @updatedAt
+  attendance                  attendance[]
+  awardHistory                awardHistory[]
+  designationHistory          designationHistory[]
+  educations                  education[]
+  leaveApplication            leaveApplication[]
+  payslip                     payslip[]
+  project                     project[]
+  projectTeamMember           projectTeamMember[]
+  room                        room[]
+  salaryHistory               salaryHistory[]
+  shifts                      shifts[]
+  department                  department?          @relation(fields: [departmentId], references: [id])
+  employmentStatus            employmentStatus?    @relation(fields: [employmentStatusId], references: [id])
+  leavePolicy                 leavePolicy?         @relation(fields: [leavePolicyId], references: [id])
+  location                    location?            @relation(fields: [locationId], references: [id])
+  role                        role?                @relation(fields: [roleId], references: [id])
+  shift                       shift?               @relation(fields: [shiftId], references: [id])
+  weeklyHoliday               weeklyHoliday?       @relation(fields: [weeklyHolidayId], references: [id])
+  meeting                     meeting[]            @relation("meetingTouser")
+  task                        task[]               @relation("taskTouser")
 }
 
 model education {
   id           Int       @id @default(autoincrement())
-  user         user      @relation(fields: [userId], references: [id])
   userId       Int
   degree       String
   institution  String
@@ -101,30 +97,27 @@ model education {
   result       String
   startDate    DateTime
   endDate      DateTime?
-
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         user      @relation(fields: [userId], references: [id])
 }
 
-//manage location
 model location {
   id           Int       @id @default(autoincrement())
-  user      user[]
-  meeting    meeting[]
-  room    room[]
-  shifts  shifts[]
   latitude     String?
   longitude    String?
   locationName String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  meeting      meeting[]
+  room         room[]
+  shifts       shifts[]
+  user         user[]
 }
 
-// manage salary history of employee
 model salaryHistory {
   id        Int       @id @default(autoincrement())
-  user      user      @relation(fields: [userId], references: [id])
   userId    Int
   salary    Float
   startDate String
@@ -133,63 +126,59 @@ model salaryHistory {
   status    Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  user      user      @relation(fields: [userId], references: [id])
 }
 
 model designation {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique
+  status             Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
   designationHistory designationHistory[]
-
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model department {
-  id     Int     @id @default(autoincrement())
-  name   String
-  status Boolean @default(true)
-  user   user[]
-  meeting    meeting[]
-  task        task[]
+  id      Int       @id @default(autoincrement())
+  name    String
+  status  Boolean   @default(true)
+  meeting meeting[]
+  task    task[]
+  user    user[]
 }
 
 model employmentStatus {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   colourValue String
   description String?
-
-  user user[]
-
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        user[]
 }
 
-// designation history of employee
 model designationHistory {
   id            Int         @id @default(autoincrement())
-  user          user        @relation(fields: [userId], references: [id])
   userId        Int
-  designation   designation @relation(fields: [designationId], references: [id])
   designationId Int
   startDate     DateTime
   endDate       DateTime?
   comment       String?
+  designation   designation @relation(fields: [designationId], references: [id])
+  user          user        @relation(fields: [userId], references: [id])
 }
 
 model shift {
   id        Int      @id @default(autoincrement())
   name      String   @unique
-  startTime DateTime @db.Time
-  endTime   DateTime @db.Time
+  startTime DateTime @db.Time(6)
+  endTime   DateTime @db.Time(6)
   workHour  Float
-  user      user[]
   status    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      user[]
 }
 
 model award {
@@ -205,41 +194,40 @@ model award {
 
 model awardHistory {
   id          Int      @id @default(autoincrement())
-  user        user     @relation(fields: [userId], references: [id])
   userId      Int
-  award       award    @relation(fields: [awardId], references: [id])
   awardId     Int
   awardedDate DateTime
   comment     String?
   status      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  award       award    @relation(fields: [awardId], references: [id])
+  user        user     @relation(fields: [userId], references: [id])
 }
 
 model attendance {
-  id            Int       @id @default(autoincrement())
-  user          user      @relation(fields: [userId], references: [id])
-  userId        Int
-  inTime        DateTime?
-  outTime       DateTime?
-  ip            String?
-  comment       String?
-  punchBy       Int?
-  totalHour     Float?
-  overtime      Float?
-  inTimeStatus  String?
-  outTimeStatus String?
-  attendenceStatus  String?    
-  date          DateTime  @default(now()) 
-  status        Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  inTime           DateTime?
+  outTime          DateTime?
+  ip               String?
+  comment          String?
+  punchBy          Int?
+  totalHour        Float?
+  overtime         Float?
+  inTimeStatus     String?
+  outTimeStatus    String?
+  attendenceStatus String?
+  date             DateTime  @default(now())
+  status           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             user      @relation(fields: [userId], references: [id])
 }
 
 model leaveApplication {
   id              Int       @id @default(autoincrement())
-  user            user      @relation(fields: [userId], references: [id])
-  employeeid      String?  
+  employeeid      String?
   userId          Int
   leaveType       String
   leavecategory   String?
@@ -258,11 +246,11 @@ model leaveApplication {
   status          String    @default("PENDING")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  user            user      @relation(fields: [userId], references: [id])
 }
 
 model payslip {
   id                Int      @id @default(autoincrement())
-  user              user     @relation(fields: [userId], references: [id])
   userId            Int
   salaryMonth       Int
   salaryYear        Int
@@ -285,8 +273,8 @@ model payslip {
   paymentStatus     String   @default("UNPAID")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  user              user     @relation(fields: [userId], references: [id])
 
-  // userId, salaryMonth and salaryYear are composite unique keys
   @@unique([userId, salaryMonth, salaryYear])
 }
 
@@ -304,10 +292,10 @@ model leavePolicy {
   name             String   @unique
   paidLeaveCount   Int
   unpaidLeaveCount Int
-  user             user[]
   status           Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  user             user[]
 }
 
 model weeklyHoliday {
@@ -321,7 +309,6 @@ model weeklyHoliday {
   user      user[]
 }
 
-//project management schema
 model publicHoliday {
   id        Int      @id @default(autoincrement())
   name      String
@@ -333,65 +320,62 @@ model publicHoliday {
 
 model project {
   id               Int           @id @default(autoincrement())
-  projectManager   user          @relation(fields: [projectManagerId], references: [id])
   projectManagerId Int
   name             String
   startDate        DateTime
   endDate          DateTime
   description      String
-  status           String        @default("PENDING") //progress, on hold, or completed
+  status           String        @default("PENDING")
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   milestone        milestone[]
-  
+  projectManager   user          @relation(fields: [projectManagerId], references: [id])
   projectTeam      projectTeam[]
   taskStatus       taskStatus[]
 }
 
 model milestone {
   id          Int      @id @default(autoincrement())
-  project     project  @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectId   Int
   name        String
   startDate   DateTime
   endDate     DateTime
   description String
-  status      String   @default("PENDING") //progress, completed, or delayed.
+  status      String   @default("PENDING")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+  project     project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model task {
-  id             Int            @id @default(autoincrement())
-  department         department?       @relation(fields: [departmentId], references: [id])
-  departmentId       Int?
- user           user[]
-  name           String
-  startDate      DateTime
-  endDate        DateTime
-  completionTime Float?
-  assignedBy   Int?
-  description    String?
-  reviewComment  String?
-  priority       priority       @relation(fields: [priorityId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  priorityId     Int
-  taskStatus     String        @default("PENDING")
-  adminattachment   String?
-  userAttachment    String?
-  updatedBy         Int?
-  status         Boolean        @default(true)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt 
+  id              Int         @id @default(autoincrement())
+  departmentId    Int?
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  completionTime  Float?
+  assignedBy      Int?
+  description     String?
+  reviewComment   String?
+  priorityId      Int
+  taskStatus      String      @default("PENDING")
+  adminattachment String?
+  userAttachment  String?
+  updatedBy       Int?
+  status          Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  department      department? @relation(fields: [departmentId], references: [id])
+  priority        priority    @relation(fields: [priorityId], references: [id], onDelete: Cascade)
+  user            user[]      @relation("taskTouser")
 }
 
 model taskStatus {
   id        Int     @id @default(autoincrement())
-  project   project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectId Int
   name      String
   status    Boolean @default(true)
-  
+  project   project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, name])
 }
@@ -406,65 +390,62 @@ model priority {
 model projectTeam {
   id                Int                 @id @default(autoincrement())
   projectTeamName   String
-  project           project             @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectId         Int
   status            Boolean             @default(true)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   assignedTask      assignedTask[]
+  project           project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectTeamMember projectTeamMember[]
 }
 
 model projectTeamMember {
   id            Int         @id @default(autoincrement())
-  projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectTeamId Int
-  user          user        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId        Int
   status        Boolean     @default(true)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade)
+  user          user        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model assignedTask {
   id            Int         @id @default(autoincrement())
-  //task          task        @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  //taskId        Int
-  projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   projectTeamId Int
   status        Boolean     @default(true)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  projectTeam   projectTeam @relation(fields: [projectTeamId], references: [id], onDelete: Cascade)
 }
 
 model role {
   id             Int              @id @default(autoincrement())
   name           String           @unique
   status         Boolean          @default(true)
-  rolePermission rolePermission[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  rolePermission rolePermission[]
   user           user[]
 }
 
 model permission {
   id             Int              @id @default(autoincrement())
   name           String           @unique
-  rolePermission rolePermission[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  rolePermission rolePermission[]
 }
 
-// role_id and permission_id are composite unique keys
 model rolePermission {
   id            Int        @id @default(autoincrement())
-  role          role       @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   role_id       Int
-  permission    permission @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   permission_id Int
   status        Boolean    @default(true)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+  permission    permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  role          role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
 
   @@unique([role_id, permission_id])
 }
@@ -479,19 +460,17 @@ model account {
 model subAccount {
   id         Int           @id @default(autoincrement())
   name       String        @unique
-  account    account       @relation(fields: [account_id], references: [id])
   account_id Int
-  debit      transaction[] @relation("debit")
-  credit     transaction[] @relation("credit")
   status     Boolean       @default(true)
+  account    account       @relation(fields: [account_id], references: [id])
+  credit     transaction[] @relation("credit")
+  debit      transaction[] @relation("debit")
 }
 
 model transaction {
   id          Int        @id @default(autoincrement())
   date        DateTime
-  debit       subAccount @relation("debit", fields: [debit_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   debit_id    Int
-  credit      subAccount @relation("credit", fields: [credit_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   credit_id   Int
   particulars String
   amount      Float
@@ -500,6 +479,8 @@ model transaction {
   status      Boolean    @default(true)
   created_at  DateTime   @default(now())
   updated_at  DateTime   @updatedAt
+  credit      subAccount @relation("credit", fields: [credit_id], references: [id], onDelete: Cascade)
+  debit       subAccount @relation("debit", fields: [debit_id], references: [id], onDelete: Cascade)
 }
 
 model appSetting {
@@ -512,90 +493,91 @@ model appSetting {
   website      String
   footer       String
 }
+
 model training {
-  id           Int    @id @default(autoincrement())
- day       String?
-  leaveFrom       DateTime?
-  leaveTo         DateTime?
- createdAt     DateTime  @default(now())
- updatedAt     DateTime  @updatedAt
+  id        Int       @id @default(autoincrement())
+  day       String?
+  leaveFrom DateTime?
+  leaveTo   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model meeting {
-  id           Int    @id @default(autoincrement())
-  department         department?       @relation(fields: [departmentId], references: [id])
-  departmentId       Int?
-  location              location?            @relation(fields: [locationId], references: [id])
-  locationId            Int?
-  user           user[]
+  id           Int         @id @default(autoincrement())
+  departmentId Int?
+  locationId   Int?
   assignedBy   Int?
-  meetingdate       DateTime?
-  startTime DateTime
-  endTime   DateTime 
-  meetingType       String?
-  meetingLink       String?
- createdAt     DateTime  @default(now())
- updatedAt     DateTime  @updatedAt
+  meetingdate  DateTime?
+  startTime    DateTime
+  endTime      DateTime
+  meetingType  String?
+  meetingLink  String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  department   department? @relation(fields: [departmentId], references: [id])
+  location     location?   @relation(fields: [locationId], references: [id])
+  user         user[]      @relation("meetingTouser")
 }
+
 model room {
-  id           Int    @id @default(autoincrement())
-  location              location?            @relation(fields: [locationId], references: [id])
-  locationId            Int?
-    user            user      @relation(fields: [userId], references: [id]) 
-  userId          Int
-  schedule           Schedule[]
-  roomName     String?
-  status       Boolean  @default(true)
- createdAt     DateTime  @default(now())
- updatedAt     DateTime  @updatedAt
+  id         Int        @id @default(autoincrement())
+  locationId Int?
+  userId     Int
+  roomName   String?
+  status     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  schedule   Schedule[]
+  location   location?  @relation(fields: [locationId], references: [id])
+  user       user       @relation(fields: [userId], references: [id])
 }
 
 model shifts {
-  id                  Int      @id @default(autoincrement())
-  name                String?
-   location              location?            @relation(fields: [locationId], references: [id])
-  locationId            Int?
-  shiftFrom           DateTime?
-  shiftTo             DateTime?
-  weekNumber          Int?
-  user                user?     @relation(fields: [userId], references: [id])  
-  userId              Int?
-  assignedBy   Int?
-  generalInfo          String?
-  schedule           Schedule[]
-  status              Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id          Int        @id @default(autoincrement())
+  name        String?
+  locationId  Int?
+  shiftFrom   DateTime?
+  shiftTo     DateTime?
+  weekNumber  Int?
+  userId      Int?
+  assignedBy  Int?
+  generalInfo String?
+  status      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  schedule    Schedule[]
+  location    location?  @relation(fields: [locationId], references: [id])
+  user        user?      @relation(fields: [userId], references: [id])
 }
 
 model Schedule {
-  id                   Int      @id @default(autoincrement())
-  day                  String?
-  shiftDate            String?
-  startTime            DateTime?
-  endTime              DateTime?
-  breakTime            Int?
-  folderTime           Int?
-  room                 room?    @relation(fields: [roomId], references: [id])
-  roomId               Int?
-  workHour             Float?
-  request             request[]
-  status               Boolean  @default(true)
-  shifts                shifts?    @relation(fields: [shiftsId], references: [id])
-  shiftsId              Int?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id         Int       @id @default(autoincrement())
+  day        String?
+  shiftDate  String?
+  startTime  DateTime?
+  endTime    DateTime?
+  breakTime  Int?
+  folderTime Int?
+  roomId     Int?
+  workHour   Float?
+  status     Boolean   @default(true)
+  shiftsId   Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  room       room?     @relation(fields: [roomId], references: [id])
+  shifts     shifts?   @relation(fields: [shiftsId], references: [id])
+  request    request[]
 }
 
-model request{
-  id                   Int      @id @default(autoincrement())
-  schedule                Schedule?     @relation(fields: [FromScheduleId], references: [id])  
-  FromScheduleId            Int?
-  ToScheduleId              Int?
-  userId                    Int?
-  reason                    String?
-  requststatus               String  @default("PENDING")
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+model request {
+  id             Int       @id @default(autoincrement())
+  FromScheduleId Int?
+  ToScheduleId   Int?
+  userId         Int?
+  reason         String?
+  requststatus   String    @default("PENDING")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  schedule       Schedule? @relation(fields: [FromScheduleId], references: [id])
 }
-

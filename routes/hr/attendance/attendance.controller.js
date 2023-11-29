@@ -913,9 +913,6 @@ const createadminAttendance = async (req, res) => {
 // };
 
 
-
-
-
 const getAllAttendance = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
     return res
