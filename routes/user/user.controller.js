@@ -4,7 +4,7 @@ require("dotenv").config();
 const crypto = require("crypto");
 const hirarchy=require("../hr/hirarchy/hirarchy.controller")
 
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const _ = require("lodash");
 const admin = require("firebase-admin");
