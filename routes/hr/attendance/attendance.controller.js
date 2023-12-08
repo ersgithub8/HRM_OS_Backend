@@ -211,7 +211,7 @@ const createAttendance = async (req, res) => {
     const id = parseInt(req.body.userId);
     let inTimeStatus;
     let outTimeStatus;
-let scheduleForToday;
+    let scheduleForToday;
 
     // Check user authorization
     if (!(id === req.auth.sub) && !req.auth.permissions.includes("create-attendance")) {
