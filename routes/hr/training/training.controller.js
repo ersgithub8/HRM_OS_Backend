@@ -5,7 +5,7 @@ const moment = require("moment");
 const createSingleTraining = async (req, res) => {
   if (req.query.query === "deletemany") {
     try {
-      // delete many designation at once
+      // delete many training at once
       const deletetraining = await prisma.training.deleteMany({
         where: {
           id: {
