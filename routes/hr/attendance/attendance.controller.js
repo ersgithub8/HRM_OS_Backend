@@ -12,8 +12,8 @@ var FCM = require("fcm-node");
 //create a new employee  attendence with old shift module
 // const createAttendance = async (req, res) => {
 //   try {
-    // let inTimeStatus;
-    // let outTimeStatus;
+// let inTimeStatus;
+// let outTimeStatus;
 //     const id = parseInt(req.body.userId);
 //     if (
 //       !(id === req.auth.sub) &&
@@ -45,54 +45,54 @@ var FCM = require("fcm-node");
 //       },
 //     });
 
-    // if (attendance === null) {
-    //   const startTime = moment(new Date()).format('HH:mm'); // Example start time
-    //   const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
-    //   const startTimeParts = startTime.split(':');
-    //   const endTimeParts = endTime.split(':');
-    //   const startHour = parseInt(startTimeParts[0], 10);
-    //   const startMinute = parseInt(startTimeParts[1], 10);
+// if (attendance === null) {
+//   const startTime = moment(new Date()).format('HH:mm'); // Example start time
+//   const endTime = moment(user?.shift?.startTime).format('HH:mm');   // Example end time
+//   const startTimeParts = startTime.split(':');
+//   const endTimeParts = endTime.split(':');
+//   const startHour = parseInt(startTimeParts[0], 10);
+//   const startMinute = parseInt(startTimeParts[1], 10);
 
-    //   const endHour = parseInt(endTimeParts[0], 10);
-    //   const endMinute = parseInt(endTimeParts[1], 10);
+//   const endHour = parseInt(endTimeParts[0], 10);
+//   const endMinute = parseInt(endTimeParts[1], 10);
 
-    //   const totalMinutesStart = startHour * 60 + startMinute;
-    //   const totalMinutesEnd = endHour * 60 + endMinute;
+//   const totalMinutesStart = startHour * 60 + startMinute;
+//   const totalMinutesEnd = endHour * 60 + endMinute;
 
-    //   const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
-    //   if (timeDifferenceMinutes >= 0) {
-    //     inTimeStatus = "OnTime"
-    //   }
-    //   else {
-    //     inTimeStatus = "Late"
-    //   }
-    // }
+//   const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
+//   if (timeDifferenceMinutes >= 0) {
+//     inTimeStatus = "OnTime"
+//   }
+//   else {
+//     inTimeStatus = "Late"
+//   }
+// }
 
-    // else {
-    //   const startTime = moment(new Date()).format('HH:mm'); // Example start time
-    //   const endTime = moment(user?.shift?.endTime).format('HH:mm');   // Example end time
-    //   const startTimeParts = startTime.split(':');
-    //   const endTimeParts = endTime.split(':');
-    //   const startHour = parseInt(startTimeParts[0], 10);
-    //   const startMinute = parseInt(startTimeParts[1], 10);
+// else {
+//   const startTime = moment(new Date()).format('HH:mm'); // Example start time
+//   const endTime = moment(user?.shift?.endTime).format('HH:mm');   // Example end time
+//   const startTimeParts = startTime.split(':');
+//   const endTimeParts = endTime.split(':');
+//   const startHour = parseInt(startTimeParts[0], 10);
+//   const startMinute = parseInt(startTimeParts[1], 10);
 
-    //   const endHour = parseInt(endTimeParts[0], 10);
-    //   const endMinute = parseInt(endTimeParts[1], 10);
+//   const endHour = parseInt(endTimeParts[0], 10);
+//   const endMinute = parseInt(endTimeParts[1], 10);
 
-    //   const totalMinutesStart = startHour * 60 + startMinute;
-    //   const totalMinutesEnd = endHour * 60 + endMinute;
+//   const totalMinutesStart = startHour * 60 + startMinute;
+//   const totalMinutesEnd = endHour * 60 + endMinute;
 
-    //   const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
-    //   if (timeDifferenceMinutes <= 0) {
-    //     outTimeStatus = "OnTime"
-    //   }
-    //   else {
-    //     outTimeStatus = "Early"
-    //   }
-    // }
+//   const timeDifferenceMinutes = totalMinutesEnd - totalMinutesStart;
+//   if (timeDifferenceMinutes <= 0) {
+//     outTimeStatus = "OnTime"
+//   }
+//   else {
+//     outTimeStatus = "Early"
+//   }
+// }
 
 
-   
+
 
 
 //     // let overtimeMinutes = 0;
@@ -102,22 +102,22 @@ var FCM = require("fcm-node");
 //     // }
 
 
-    
 
-    // const existingCheckOut = await prisma.attendance.findFirst({
-    //   where: {
-    //     userId: id,
-    //     outTime: {
-    //       gte: today.toDate(),
-    //       lt: tomorrow.toDate(),
-    //     },
-    //   },
-    // });
-    // if (attendance && existingCheckOut) {
-    //   return res.status(400).json({
-    //     message: "Clock in has already been marked for today.",
-    //   });
-    // }
+
+// const existingCheckOut = await prisma.attendance.findFirst({
+//   where: {
+//     userId: id,
+//     outTime: {
+//       gte: today.toDate(),
+//       lt: tomorrow.toDate(),
+//     },
+//   },
+// });
+// if (attendance && existingCheckOut) {
+//   return res.status(400).json({
+//     message: "Clock in has already been marked for today.",
+//   });
+// }
 //     const outTime = new Date(moment.now());
 
 //     if (req.query.query === "manualPunch") {
@@ -172,12 +172,12 @@ var FCM = require("fcm-node");
 //       const inTime = new Date(attendance.inTime); // Assuming attendance.inTime is a valid date
 
 //       const outTime = new Date(); // Initialize outTime with the current time
-      
+
 //       const millisecondsDiff = outTime - inTime;
-      
+
 //       // Convert milliseconds to minutes
 //       const totalMinutes = Math.floor(millisecondsDiff / (1000 * 60));
-      
+
 //       // Calculate hours and minutes
 //       // const hours = Math.floor(totalMinutes / 60);
 //       // const minutes = totalMinutes % 60;
@@ -205,7 +205,7 @@ var FCM = require("fcm-node");
 //   }
 // };
 
-
+//create and update single attendence
 const createAttendance = async (req, res) => {
   try {
     const id = parseInt(req.body.userId);
@@ -241,36 +241,36 @@ const createAttendance = async (req, res) => {
           },
         },
       },
-    });   
+    });
     if (user && user.shifts.length > 0) {
-       scheduleForToday = user.shifts[0].schedule.find((schedule) => {
+      scheduleForToday = user.shifts[0].schedule.find((schedule) => {
         const scheduleDate = new Date(schedule.shiftDate);
         const todayDate = new Date(today);
         return (
-          scheduleDate.setHours(0, 0, 0, 0) === todayDate.setHours(0, 0, 0, 0)&& schedule.status
+          scheduleDate.setHours(0, 0, 0, 0) === todayDate.setHours(0, 0, 0, 0) && schedule.status
         );
       });
-    if(!scheduleForToday){
-      return res.status(400).json({ message: "You can't mark attendence today shifts is not found" });
-    }
+      if (!scheduleForToday) {
+        return res.status(400).json({ message: "You can't mark attendence today shifts is not found" });
+      }
       else if (scheduleForToday) {
         const currentTimeInPakistan = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
         console.log(currentTimeInPakistan, "pakistan");
         const currentTime = new Date(currentTimeInPakistan);
-        
+
         const startTime = new Date(scheduleForToday.startTime);
         const endTime = new Date(scheduleForToday.endTime);
-        console.log(currentTime,"current");
+        console.log(currentTime, "current");
         console.log(startTime, "starttime");
         console.log(endTime, "endtime");
-      
+
         const totalMillisecondsStart = startTime.getTime();
         const totalMillisecondsEnd = endTime.getTime();
         const totalMillisecondsCurrent = currentTime.getTime();
         console.log(totalMillisecondsCurrent, "current");
         console.log(totalMillisecondsEnd, "end");
         console.log(totalMillisecondsStart, "start");
-      
+
         if (totalMillisecondsCurrent >= totalMillisecondsStart && totalMillisecondsCurrent <= totalMillisecondsEnd) {
           inTimeStatus = "OnTime";
           outTimeStatus = "OnTime";
@@ -282,11 +282,11 @@ const createAttendance = async (req, res) => {
           outTimeStatus = "Ontime";
         }
       }
-      
+
     }
-     
+
     // console.log(scheduleForToday,"todaysche");
-  //  return
+    //  return
     const existingCheckOut = await prisma.attendance.findFirst({
       where: {
         userId: id,
@@ -301,7 +301,7 @@ const createAttendance = async (req, res) => {
         message: "Clock in has already been marked for today.",
       });
     }
-    
+
     if (req.query.query === "manualPunch") {
       const inTime = new Date();
       const outTime = new Date();
@@ -376,6 +376,7 @@ const createAttendance = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+//create single attendence of user by admin manually
 const createadminAttendance = async (req, res) => {
   try {
     const employeeId = req.body.employeeId;
@@ -468,7 +469,7 @@ const createadminAttendance = async (req, res) => {
               firstName: true,
               lastName: true,
               employeeId: true,
-              
+
             },
           },
         },
@@ -559,7 +560,7 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
-      if (attendenceStatus&&user.status===true) {
+      if (attendenceStatus && user.status === true) {
         const Title = 'Attendance Marked';
         const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
         const Desc = 'Attendance marked notification';
@@ -631,7 +632,7 @@ const createadminAttendance = async (req, res) => {
         };
       });
 
-      if (attendenceStatus&&user.status===true) {
+      if (attendenceStatus && user.status === true) {
         const Title = 'Attendance Marked';
         const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
         const Desc = 'Attendance marked notification';
@@ -729,7 +730,7 @@ const createadminAttendance = async (req, res) => {
 //               firstName: true,
 //               lastName: true,
 //               employeeId: true,
-              
+
 //             },
 //           },
 //         },
@@ -913,6 +914,8 @@ const createadminAttendance = async (req, res) => {
 // };
 
 
+
+//get all attendence
 const getAllAttendance = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
     return res
@@ -1011,6 +1014,7 @@ const getAllAttendance = async (req, res) => {
   }
 };
 
+//get single attendence by attendenceid
 const getSingleAttendance = async (req, res) => {
   try {
     const singleAttendance = await prisma.attendance.findUnique({
@@ -1057,7 +1061,7 @@ const getSingleAttendance = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
+//get attence by userid
 const getAttendanceByUserId = async (req, res) => {
   try {
     const { createdAtFrom, createdAtTo } = req.query;
@@ -1132,10 +1136,10 @@ const getAttendanceByUserId = async (req, res) => {
     //   },
     // });
     const punchByIds = allAttendance
-    .map((item) => item.punchBy) // Get an array of punchBy values
-    .filter((id) => id !== null && id !== undefined);
+      .map((item) => item.punchBy) // Get an array of punchBy values
+      .filter((id) => id !== null && id !== undefined);
     let punchBy;
-  
+
     if (punchByIds.length > 0) {
       // If there are non-null and non-undefined punchByIds, fetch corresponding users
       punchBy = await prisma.user.findMany({
@@ -1293,8 +1297,6 @@ function setDateTimeFromString(dateString) {
 
   return today;
 }
-
-
 const getTodayAttendanceByUserId = async (req, res) => {
   try {
     // const today = new Date();
@@ -1302,8 +1304,8 @@ const getTodayAttendanceByUserId = async (req, res) => {
     // // return
     // today.setHours(0, 0, 0, 0);
     const databaseRecordDateString = "2023-10-25T05:48:06.155Z";
-const matchedDate = setDateTimeFromString(databaseRecordDateString);
-    const today = matchedDate; 
+    const matchedDate = setDateTimeFromString(databaseRecordDateString);
+    const today = matchedDate;
     // console.log(today); 
     // const databaseRecordDate = new Date("2023-10-20T05:48:06.155Z");
     // today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
@@ -1331,7 +1333,7 @@ const matchedDate = setDateTimeFromString(databaseRecordDateString);
         userId: userId,
         date: {
           gte: today,
-      lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
         },
       },
       orderBy: [
@@ -1395,7 +1397,6 @@ const matchedDate = setDateTimeFromString(databaseRecordDateString);
     return res.status(400).json({ message: error.message });
   }
 };
-
 const search = async (req, res) => {
   if (!req.auth.permissions.includes("readAll-attendance")) {
     return res.status(401).json({ message: "You are not able to access this route." });
@@ -1444,27 +1445,27 @@ const search = async (req, res) => {
         ...attendanceQuery,
       });
       const punchByIds = allAttendance
-  .map((item) => item.punchBy) // Get an array of punchBy values
-  .filter((id) => id !== null && id !== undefined);
-  let punchBy;
+        .map((item) => item.punchBy) // Get an array of punchBy values
+        .filter((id) => id !== null && id !== undefined);
+      let punchBy;
 
-  if (punchByIds.length > 0) {
-    // If there are non-null and non-undefined punchByIds, fetch corresponding users
-    punchBy = await prisma.user.findMany({
-      where: {
-        id: { in: punchByIds },
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        employeeId: true,
-      },
-    });
-  } else {
-    // If all punchByIds are null or undefined, set punchBy to an empty array
-    punchBy = [];
-  }
+      if (punchByIds.length > 0) {
+        // If there are non-null and non-undefined punchByIds, fetch corresponding users
+        punchBy = await prisma.user.findMany({
+          where: {
+            id: { in: punchByIds },
+          },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeId: true,
+          },
+        });
+      } else {
+        // If all punchByIds are null or undefined, set punchBy to an empty array
+        punchBy = [];
+      }
 
       // Count present and absent records
       let presentCount = 0;
@@ -1566,11 +1567,11 @@ const search = async (req, res) => {
         },
       });
       // const allAttendances = await prisma.attendance.findMany({
-        // orderBy: [
-        //   {
-        //     id: "desc",
-        //   },
-        // ],
+      // orderBy: [
+      //   {
+      //     id: "desc",
+      //   },
+      // ],
       //   skip: Number(skip),
       //   take: Number(limit),
       //   // where: {
@@ -1695,10 +1696,10 @@ const search = async (req, res) => {
       // });
 
       const punchByIds = userAttendance
-      .map((item) => item.punchBy) // Get an array of punchBy values
-      .filter((id) => id !== null && id !== undefined);
+        .map((item) => item.punchBy) // Get an array of punchBy values
+        .filter((id) => id !== null && id !== undefined);
       let punchBy;
-    
+
       if (punchByIds.length > 0) {
         // If there are non-null and non-undefined punchByIds, fetch corresponding users
         punchBy = await prisma.user.findMany({
@@ -1792,10 +1793,10 @@ const search = async (req, res) => {
       // });
 
       const punchByIds = userAttendance
-      .map((item) => item.punchBy) // Get an array of punchBy values
-      .filter((id) => id !== null && id !== undefined);
+        .map((item) => item.punchBy) // Get an array of punchBy values
+        .filter((id) => id !== null && id !== undefined);
       let punchBy;
-    
+
       if (punchByIds.length > 0) {
         // If there are non-null and non-undefined punchByIds, fetch corresponding users
         punchBy = await prisma.user.findMany({
@@ -1837,7 +1838,6 @@ const search = async (req, res) => {
     return res.status(500).json({ message: "An error occurred while fetching attendance records.", error: error.message });
   }
 };
-
 const updateSingleAttendence = async (req, res) => {
   try {
     const existingAttendence = await prisma.attendance.findUnique({
@@ -1883,7 +1883,6 @@ const updateSingleAttendence = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 const deleteSingleAttendence = async (req, res) => {
   try {
     const attendanceId = Number(req.params.id);
@@ -1912,9 +1911,6 @@ const deleteSingleAttendence = async (req, res) => {
     return res.status(400).json(error.message);
   }
 };
-
-
-
 const createAttendanceonleave = async (req, res) => {
   try {
     const id = parseInt(req.body.userId);
@@ -1989,7 +1985,7 @@ const createAttendanceonleave = async (req, res) => {
     if (req.body.fromleave) {
       return res.status(200).json({
         attendanceCreationPromises,
-        message:"Leave status updated successfully"
+        message: "Leave status updated successfully"
       });
     } else {
       return res.status(200).json({
@@ -2000,7 +1996,6 @@ const createAttendanceonleave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 function sendnotifiy(Title, Body, Desc, Token) {
   try {
     const message = {

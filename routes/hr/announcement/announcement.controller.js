@@ -2,7 +2,7 @@ const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
 const admin = require("firebase-admin");
 var FCM = require("fcm-node");
-//create a new employee
+//create a new announement
 const createSingleAnnouncement = async (req, res) => {
   if (req.query.query === "deletemany") {
     try {
@@ -48,7 +48,7 @@ const createSingleAnnouncement = async (req, res) => {
     }
   }
 };
-
+//get all announement
 const getAllAnnouncement = async (req, res) => {
   if (req.query.query === "all") {
     const allAnnouncement = await prisma.announcement.findMany({
@@ -99,7 +99,7 @@ const getAllAnnouncement = async (req, res) => {
     }
   }
 };
-
+//get single announement
 const getSingleAnnouncement = async (req, res) => {
   try {
     const singleAnnouncement = await prisma.announcement.findUnique({
@@ -112,7 +112,7 @@ const getSingleAnnouncement = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
+//update single announement
 const updateSingleAnnouncement = async (req, res) => {
   try {
     const updatedAnnouncement = await prisma.announcement.update({
@@ -129,7 +129,7 @@ const updateSingleAnnouncement = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
+//delete single announement
 const deletedAnnouncement = async (req, res) => {
   try {
     console.log("req.body", req.body);
@@ -146,6 +146,7 @@ const deletedAnnouncement = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+//send notification to all user function
 async function sendNotify(title, body, desc, tokens) {
   try {
     const messages = tokens.map((token) => ({

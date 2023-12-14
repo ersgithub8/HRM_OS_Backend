@@ -24,7 +24,7 @@
     "@aws-sdk/s3-request-presigner": "^3.400.0",
     "@prisma/client": "^4.16.2",
     "@sendgrid/mail": "^7.7.0",
-    "aws-sdk": "^2.1218.0",
+    "aws-sdk": "^2.1518.0",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",

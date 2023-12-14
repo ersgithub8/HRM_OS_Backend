@@ -1,6 +1,6 @@
 const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
-
+//shift exchange request
 const addrequest = async (req, res) => {
   try {
     const { FromScheduleId, ToScheduleId, userId } = req.body;
@@ -60,8 +60,7 @@ const addrequest = async (req, res) => {
     return res.status(400).json({ message: "Failed to create a request" });
   }
 };
-
-
+//get single request
   const getSinglerequest = async (req, res) => {
     try {
       const singleShift = await prisma.request.findUnique({
@@ -166,7 +165,7 @@ const addrequest = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
   };
-  
+  //get all request
   const getAllrequest = async (req, res) => {
     try {
       const allRequests = await prisma.request.findMany({
@@ -268,7 +267,7 @@ const addrequest = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
   };
-  
+  //get single request by userid
   const getSingleuserrequest = async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
@@ -384,7 +383,7 @@ const addrequest = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
   };
-  
+  //swap request
   const swaprequest = async (req, res) => {
     try {
       const { userId, requststatus,reason } = req.body;

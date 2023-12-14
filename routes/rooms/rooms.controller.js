@@ -1,7 +1,7 @@
 const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
 
-
+//create single room
 const createrooms = async (req, res) => {
     try {
       const {locationId, roomName, } = req.body;
@@ -23,7 +23,7 @@ const createrooms = async (req, res) => {
       return res.status(400).json({ message: 'Failed to create room'});
     }
   };
-
+//get all romms
   const getAllrooms = async (req, res) => {
     if (req.query.query === "all") {
       const allRooms = await prisma.room.findMany({
@@ -112,6 +112,7 @@ const createrooms = async (req, res) => {
       }
     }
   };  
+  //update single room byid
   const updaterooms = async (req, res) => {
     try {
         const {locationId, roomName,status } = req.body;
@@ -135,6 +136,7 @@ const createrooms = async (req, res) => {
       return res.status(400).json({ message: "Failed to update room"});
     }
   };
+  //get single room byis
   const getroomById = async (req, res) => {
     try {
       const singroom = await prisma.room.findUnique({
@@ -221,7 +223,7 @@ const createrooms = async (req, res) => {
   //     return res.status(400).json({ message: error.message });
   //   }
   // };
-  
+  //get room by locationid
   const getroomBylocationId = async (req, res) => {
     try {
       const locationId = Number(req.params.id);
@@ -256,7 +258,7 @@ const createrooms = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
   };
-  
+  //delete single room byid
   const deleteroom = async (req, res) => {
     try {
       const deletedMeeting = await prisma.room.delete({

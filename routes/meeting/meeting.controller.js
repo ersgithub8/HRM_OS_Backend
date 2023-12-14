@@ -220,7 +220,7 @@ const createmeeting = async (req, res) => {
     return res.status(400).json({ message: 'Failed to create meeting' });
   }
 };
-
+//get all meetings behalf of date
 const getAllMeeting = async (req, res) => {
   try {
     const { date } = req.query;
@@ -270,7 +270,7 @@ const getAllMeeting = async (req, res) => {
   }
 };
 
-//get task by id controller
+//get meeting by id controller
 const getMeetingById = async (req, res) => {
   try {
     const meetingId = Number(req.params.id);
@@ -510,8 +510,6 @@ const getMeetingByuserId = async (req, res) => {
   }
 };
 
-
-
 const updateMeeting = async (req, res) => {
   try {
     const { userId, meetingType, meetingLink, departmentId, locationId } = req.body;
@@ -548,11 +546,7 @@ const updateMeeting = async (req, res) => {
   }
 };
 
-
-
-
-
-//delete task controller
+//delete meeting controller
 const deleteMeeting = async (req, res) => {
   try {
     const deletedMeeting = await prisma.meeting.delete({
@@ -567,7 +561,7 @@ const deleteMeeting = async (req, res) => {
     return res.status(400).json({ message: "Failed to delete meeting" });
   }
 };
-
+//funtion for send notification of meeting for all user 
 async function sendNotify(title, body, desc, tokens) {
   try {
     const messages = tokens.map((token) => ({
