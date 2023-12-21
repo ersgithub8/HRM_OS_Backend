@@ -3,7 +3,7 @@ const sendEmail = require("../../utils/emails")
 require("dotenv").config();
 const crypto = require("crypto");
 const hirarchy=require("../hr/hirarchy/hirarchy.controller")
-
+const moment = require('moment');
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const _ = require("lodash");
@@ -84,6 +84,7 @@ const login = async (req, res) => {
       return res.status(200).json({
         ...userWithoutPassword,
         token,
+        message:"Login successfully"
       });
     }
 
@@ -280,118 +281,121 @@ const register = async (req, res) => {
       },
     });
     const { password, ...userWithoutPassword } = createUser;
-    return res.status(201).json(userWithoutPassword);
+    return res.status(200).json({userWithoutPassword,
+    message:"User register successfully"});
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
 const getAllUser = async (req, res) => {
-  if (req.query.query === "all") {
-    try {
-      const allUser = await prisma.user.findMany({
-        include: {
-          designationHistory: {
-            include: {
-              designation: true,
-            },
-          },
-          salaryHistory: true,
-          educations: true,
-          location: true,
-          employmentStatus: true,
-          department: true,
-          role: true,
-          shift: true,
-          leavePolicy: true,
-          weeklyHoliday: true,
-          awardHistory: true,
-        },
-      });
-      return res.status(200).json(
-        allUser
-          .map((u) => {
-            const { password, ...userWithoutPassword } = u;
-            return userWithoutPassword;
-          })
-          .sort((a, b) => b.id - a.id)
-      );
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
-  } else if (req.query.status === "false") {
-    try {
-      const allUser = await prisma.user.findMany({
-        where: {
-          status: false,
-        },
-        include: {
-          designationHistory: {
-            include: {
-              designation: true,
-            },
-          },
-          salaryHistory: true,
-          location: true,
-          educations: true,
-          employmentStatus: true,
-          department: true,
-          role: true,
-          shift: true,
-          leavePolicy: true,
-          weeklyHoliday: true,
-          awardHistory: true,
-        },
-      });
-      return res.status(200).json(
-        allUser
-          .map((u) => {
-            const { password, ...userWithoutPassword } = u;
-            return userWithoutPassword;
-          })
-          .sort((a, b) => b.id - a.id)
-      );
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
-  } else {
-    try {
-      const allUser = await prisma.user.findMany({
-        where: {
-          status: true,
-        },
-        include: {
-          designationHistory: {
-            include: {
-              designation: true,
-            },
-          },
-          salaryHistory: true,
-          educations: true,
-          location: true,
-          employmentStatus: true,
-          department: true,
-          role: true,
-          shift: true,
-          leavePolicy: true,
-          weeklyHoliday: true,
-          awardHistory: true,
-        },
-      });
-      return res.status(200).json(
-        allUser
-          .map((u) => {
-            const { password, ...userWithoutPassword } = u;
-            return userWithoutPassword;
-          })
-          .sort((a, b) => b.id - a.id)
+  try {
+    const date = moment().startOf('day');
 
-      );
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
+    const allUser = await prisma.user.findMany({
+      include: {
+        designationHistory: {
+          include: {
+            designation: true,
+          },
+        },
+        salaryHistory: true,
+        educations: true,
+        location: true,
+        employmentStatus: true,
+        department: true,
+        role: true,
+        leavePolicy: true,
+        weeklyHoliday: true,
+        awardHistory: true,
+        shifts: {
+          select: {
+            id: true,
+            name: true,
+            shiftFrom: true,
+            shiftTo: true,
+            weekNumber: true,
+            status: true,
+            location: true,
+            createdAt: true,
+            updatedAt: true,
+            schedule: {
+              where: {
+                shiftDate: {
+  gte: date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+  lt: moment(date).endOf('day').format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+},
+                status: true,
+              },
+              select: {
+                day: true,
+                shiftDate: true,
+                workHour: true,
+                room: {
+                  select: {
+                    id: true,
+                    locationId: true,
+                    userId: true,
+                    roomName: true,
+                    status: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
+                status: true,
+              },
+            },
+          },
+        },
+        room: {
+          orderBy: {
+            id: "desc",
+          },
+          take: 1,
+        },
+      },
+    });
+
+  const formattedSchedule = allUser.map((user) => {
+  const { password, shifts = [], ...userWithoutPassword } = user;
+
+  const formattedShifts = shifts.map((shift) => {
+    const formattedSchedule = (shift.schedule || []).map((s) => ({
+      day: s.day,
+      shiftDate: moment(s.shiftDate).format("MM/DD/YYYY"),
+      workHour: s.workHour,
+      room: {
+        id: s.room.id,
+        locationId: s.room.locationId,
+        userId: s.room.userId,
+        roomName: s.room.roomName,
+        status: s.room.status,
+        createdAt: s.room.createdAt,
+        updatedAt: s.room.updatedAt,
+      },
+      status: s.status,
+    }));
+
+    return {
+      ...shift,
+      schedule: formattedSchedule,
+    };
+  });
+
+  return {
+    ...userWithoutPassword,
+    shifts: formattedShifts,
+  };
+});
+
+return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
+
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
+
+
 // const getSingleUser = async (req, res) => {
 //   try {
 //     const singleUser = await prisma.user.findUnique({
@@ -434,35 +438,35 @@ const getAllUser = async (req, res) => {
 //     });
 
 //     // calculate paid and unpaid leave days for the user for the current year
-//     const leaveDays = await prisma.leaveApplication.findMany({
-//       where: {
-//         userId: Number(req.params.id),
-//         status: "ACCEPTED",
-//         acceptLeaveFrom: {
-//           gte: new Date(new Date().getFullYear(), 0, 1),
-//         },
-//         acceptLeaveTo: {
-//           lte: new Date(new Date().getFullYear(), 11, 31),
-//         },
-//       },
-//     });
-//     const paidLeaveDays = leaveDays
-//       .filter((l) => l.leaveType === "PAID")
-//       .reduce((acc, item) => {
-//         return acc + item.leaveDuration;
-//       }, 0);
-//     const unpaidLeaveDays = leaveDays
-//       .filter((l) => l.leaveType === "UNPAID")
-//       .reduce((acc, item) => {
-//         return acc + item.leaveDuration;
-//       }, 0);
+    // const leaveDays = await prisma.leaveApplication.findMany({
+    //   where: {
+    //     userId: Number(req.params.id),
+    //     status: "ACCEPTED",
+    //     acceptLeaveFrom: {
+    //       gte: new Date(new Date().getFullYear(), 0, 1),
+    //     },
+    //     acceptLeaveTo: {
+    //       lte: new Date(new Date().getFullYear(), 11, 31),
+    //     },
+    //   },
+    // });
+    // const paidLeaveDays = leaveDays
+    //   .filter((l) => l.leaveType === "PAID")
+    //   .reduce((acc, item) => {
+    //     return acc + item.leaveDuration;
+    //   }, 0);
+    // const unpaidLeaveDays = leaveDays
+    //   .filter((l) => l.leaveType === "UNPAID")
+    //   .reduce((acc, item) => {
+    //     return acc + item.leaveDuration;
+    //   }, 0);
 
-//     singleUser.paidLeaveDays = paidLeaveDays;
-//     singleUser.unpaidLeaveDays = unpaidLeaveDays;
-//     singleUser.leftPaidLeaveDays =
-//       singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
-//     singleUser.leftUnpaidLeaveDays =
-//       singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
+    // singleUser.paidLeaveDays = paidLeaveDays;
+    // singleUser.unpaidLeaveDays = unpaidLeaveDays;
+    // singleUser.leftPaidLeaveDays =
+    //   singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
+    // singleUser.leftUnpaidLeaveDays =
+    //   singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
 //     const id = parseInt(req.params.id);
 //     // only allow admins and owner to access other user records. use truth table to understand the logic
 //     if (
@@ -597,15 +601,19 @@ const getSingleUser = async (req, res) => {
   .filter((l) => l.leavecategory === "paid")
   .reduce((acc, item) => acc + item.leaveDuration, 0);
 console.log(paidLeaveDays,"days");
-const unpaidLeaveDays = 0;
-// leaveDays
-//   .filter((l) => l.leavecategory === "unpaid")
-//   .reduce((acc, item) => acc + item.leaveDuration, 0);
+const unpaidLeaveDays = 
+leaveDays
+  .filter((l) => l.leavecategory === "unpaid")
+  .reduce((acc, item) => acc + item.leaveDuration, 0);
 // Calculate remaining leave days
 singleUser.paidLeaveDays = paidLeaveDays;
 singleUser.unpaidLeaveDays = unpaidLeaveDays;
-singleUser.leftPaidLeaveDays = singleUser.remainingannualallowedleave - paidLeaveDays;
-singleUser.leftUnpaidLeaveDays = singleUser.remaingbankallowedleave- unpaidLeaveDays;
+const paidLeaveCount = singleUser.leavePolicy.paidLeaveCount;
+const unpaidLeaveCount = singleUser.leavePolicy.unpaidLeaveCount;
+
+// Calculate remaining leave days
+singleUser.leftPaidLeaveDays = (paidLeaveCount - paidLeaveDays).toString();
+singleUser.leftUnpaidLeaveDays = (unpaidLeaveCount - unpaidLeaveDays).toString();
 
 // Set to null if leavePolicy or respective leave counts are null
 if (!singleUser.leavePolicy) {
@@ -815,7 +823,7 @@ let annualallowedleave;
     }
     return res.status(200).json({
       userWithoutPassword,
-      message: "User profile updated successfully",
+      message: "User  updated successfully",
     });
   } catch (error) {
     console.log(error);
@@ -1203,7 +1211,7 @@ const users_forgot_password = async (req, res) => {
 
     });
 
-    return res.status(200).json({ message: 'Email sent with reset instructions', email: user.email });
+    return res.status(200).json({ message: 'OTP code is send to your email', email: user.email });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Something went wrong' });

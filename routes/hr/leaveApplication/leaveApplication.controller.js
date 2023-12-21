@@ -864,13 +864,13 @@ const grantedLeave = async (req, res, next) => {
       req.body.fromleave = true;
       next();
     }
-    // else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
-    //   req.body.status = 'REJECTED';
-    //   req.body.userId = existingLeave.user.id;
-    //   req.body.grantedLeave = grantedLeave;
-    //   req.body.fromleave = true;
-    //   next();
-    // }
+    else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
+      // req.body.status = 'REJECTED';
+      req.body.userId = existingLeave.user.id;
+      req.body.grantedLeave = grantedLeave;
+      req.body.fromleave = true;
+      next();
+    }
     else {
       return res.status(200).json({
         grantedLeave,
@@ -1082,14 +1082,14 @@ const todayLeaveState = async (req, res) => {
       percentageChange = ((todayLeavesCounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
       percentageChange = parseFloat(percentageChange.toFixed(1));
       percentageChange = Math.min(percentageChange, 100);
-      percentageChange = Math.max(percentageChange, -100);
+      percentageChange = Math.max(percentageChange, 0);
     }
     else {
       if (todayLeavesCounts !== 0) {
         percentageChange = ((todayLeavesCounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
         percentageChange = parseFloat(percentageChange.toFixed(1));
         percentageChange = Math.min(percentageChange, 100);
-        percentageChange = Math.max(percentageChange, -100);
+        percentageChange = Math.max(percentageChange, 0);
       }
       // If both yesterdayTotalCount and todayLeavesCounts are 0, percentageChange remains 0.
     }
@@ -1108,15 +1108,56 @@ const todayLeaveState = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+// const yearlyLeaveState = async (req, res) => {
+//   try {
+//     const date = new Date();
+//     const currentMonth = date.getUTCMonth() + 1;
+//     const monthCounts = [];
+//     for (let month = 1; month <= currentMonth; month++) {
+//       const currentMonthStart = new Date(date.getFullYear(), month - 1, 1, 0, 0, 0);
+//       const nextMonth = month === 12 ? 1 : month + 1;
+//       const currentMonthEnd = new Date(date.getFullYear(), nextMonth - 1, 1, 0, 0, 0);
+//       const monthlyLeaves = await prisma.leaveApplication.findMany({
+//         where: {
+//           createdAt: { gte: currentMonthStart, lt: currentMonthEnd },
+//           status: { in: ['APPROVED', 'REJECTED'] },
+//         },
+//       });
+
+//       const monthCount = {
+//         month: new Date(currentMonthStart).toLocaleString('en-us', { month: 'short' }),
+//         approved: 0,
+//         rejected: 0,
+//       };
+
+//       monthlyLeaves.forEach(leave => {
+//         if (leave.status === 'APPROVED') monthCount.approved++;
+//         else if (leave.status === 'REJECTED') monthCount.rejected++;
+//       });
+
+//       monthCounts.push(monthCount);
+//     }
+
+//     return res.status(200).json({
+//       yearCounts: monthCounts,
+//     });
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
 const yearlyLeaveState = async (req, res) => {
   try {
     const date = new Date();
     const currentMonth = date.getUTCMonth() + 1;
     const monthCounts = [];
+
     for (let month = 1; month <= currentMonth; month++) {
       const currentMonthStart = new Date(date.getFullYear(), month - 1, 1, 0, 0, 0);
-      const nextMonth = month === 12 ? 1 : month + 1;
-      const currentMonthEnd = new Date(date.getFullYear(), nextMonth - 1, 1, 0, 0, 0);
+      
+      // Adjust the calculation of currentMonthEnd to represent the end of the current month
+      const currentMonthEnd = new Date(date.getFullYear(), month, 0, 23, 59, 59);
+
       const monthlyLeaves = await prisma.leaveApplication.findMany({
         where: {
           createdAt: { gte: currentMonthStart, lt: currentMonthEnd },
@@ -1145,6 +1186,7 @@ const yearlyLeaveState = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 const MonthlyApprovedLeaves = async (req, res) => {
   try {
     const { date } = req.query;

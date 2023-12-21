@@ -39,7 +39,7 @@ const updateUsersFields = async () => {
 
 // Schedule the cron job to run on August 31st (Month: 8, Day: 31)
 cron.schedule('0 0 31 8 *', updateUsersFields);
-
+//create attendence with attendencestatus holiday when public holiay
 const createAttendanceOnLeave = async () => {
   try {
     const today = new Date();  

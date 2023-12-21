@@ -11,9 +11,85 @@ const { join } = require('path');
 /* variables */
 // express app instance
 const app = express();
-const fileUpload = require('express-fileupload');
+// const fileUpload = require('express-fileupload');
 app.use(express.static(path.join(__dirname, "./public")));
 app.use(express.urlencoded({ extended: true }));
+
+
+app.get("/", (req, res) => {
+  res.send("Server is Running");
+});
+
+// app.post("/upload/delete", async (req, res) => {
+//   (req, res) => {
+//       try {
+//         fs.unlinkSync("../uploads" + req.body.path);
+//         console.log("image del")
+//       } catch (e) {
+//         console.log("not image");
+//       }
+//     }
+//   });
+
+
+
+
+
+// app.use(fileUpload({
+//   limit: { fileSize: 50 * 1024 * 1024 ,extended: true},
+// }));
+// holds all the allowed origins for cors access
+let allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3000/",
+  "http://localhost:5000",
+  "http://4.227.140.35:3001",
+  "http://4.227.140.35:3000",
+  "http://3.111.150.18:3000",
+  "https://www.wise1ne.com",
+  "http://www.wise1ne.com"
+];
+
+const admin = require("firebase-admin");
+const serviceAccount = require("./serviceAccountKey.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+// limit the number of requests from a single IP address
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 2000, // Limit each IP to 20 requests per `window` (here, per 15 minutes)
+  standardHeaders: false, // Disable rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+/* Middleware */
+// for compressing the response body
+// app.use(compression());
+// app.use(bodyParser.json({limit: '50mb'}));
+// app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+// app.use(express.json());
+// helmet: secure express app by setting various HTTP headers. And serve cross origin resources.
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+// morgan: log requests to console in dev environment
+app.use(morgan("dev"));
+// allows cors access from allowedOrigins array
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        let msg =
+          "The CORS policy for this site does not " +
+          "allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    
+  })
+);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -83,16 +159,19 @@ app.post("/upload", uploadimagesimple.fields([
   console.log("Reached the multiple images route handler");
 
   if (req.files) {
-    const files = Object.keys(req.files).reduce((acc, key) => {
-      acc[key] = req.files[key].map((file, index) => {
-        const split = file.path.split("uploads");
-        const path = split[1].replace(/\\/g, "/");
-        const baseUrl = req.protocol + "://localhost:5000"; 
-        const fullPath = baseUrl+"/uploads"+path; 
-        return { path: fullPath };
-      });
-      return acc;
-    }, {});
+    const files = {};
+
+    Object.keys(req.files).forEach((key) => {
+      const file = req.files[key][0]; // Assuming maxCount is always 1
+
+      const split = file.path.split("uploads");
+      const path = split[1].replace(/\\/g, "/");
+      const baseUrl = req.protocol + "://backend.wise1ne.com";
+      const fullPath = baseUrl + "/uploads" + path;
+
+      // Convert array structure to object
+      files[key] = { path: fullPath };
+    });
 
     return res.status(200).json({
       files: files,
@@ -104,80 +183,9 @@ app.post("/upload", uploadimagesimple.fields([
   }
 });
 
-app.get("/", (req, res) => {
-  res.send("Server is Running");
-});
-
-// app.post("/upload/delete", async (req, res) => {
-//   (req, res) => {
-//       try {
-//         fs.unlinkSync("../uploads" + req.body.path);
-//         console.log("image del")
-//       } catch (e) {
-//         console.log("not image");
-//       }
-//     }
-//   });
 
 
-
-
-
-app.use(fileUpload({
-  limit: { fileSize: 50 * 1024 * 1024 ,extended: true},
-}));
-// holds all the allowed origins for cors access
-let allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3000/",
-  "http://localhost:5000",
-  "http://4.227.140.35:3001",
-  "http://4.227.140.35:3000",
-  "http://3.111.150.18:3000",
-  "https://www.wise1ne.com",
-  "http://www.wise1ne.com"
-];
-
-const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-// limit the number of requests from a single IP address
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 2000, // Limit each IP to 20 requests per `window` (here, per 15 minutes)
-  standardHeaders: false, // Disable rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
-/* Middleware */
-// for compressing the response body
-// app.use(compression());
-// app.use(bodyParser.json({limit: '50mb'}));
-// app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-// app.use(express.json());
-// helmet: secure express app by setting various HTTP headers. And serve cross origin resources.
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-// morgan: log requests to console in dev environment
-app.use(morgan("dev"));
-// allows cors access from allowedOrigins array
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        let msg =
-          "The CORS policy for this site does not " +
-          "allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-  })
-);
-
+app.options('/upload', cors());
 // parse requests of content-type - application/json
 app.use(express.json({ extended: true }));
 

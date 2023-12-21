@@ -261,18 +261,51 @@ const updateSingleLocation = async (req, res) => {
   }
 };
 
+// const deletedLocation = async (req, res) => {
+//   try {
+//     const deletedLocation = await prisma.location.delete({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//     });
+//     return res.status(200).json({ deletedLocation });
+//   } catch (error) {
+//     return res.status(400).json(error.message);
+//   }
+// };
 const deletedLocation = async (req, res) => {
   try {
-    const deletedLocation = await prisma.location.delete({
+    const locationId = Number(req.params.id);
+
+    // Retrieve all rooms associated with the location
+    const roomsToDelete = await prisma.room.findMany({
       where: {
-        id: Number(req.params.id),
+        locationId: locationId,
       },
     });
-    return res.status(200).json({ deletedLocation });
+
+    // Delete each room
+    for (const room of roomsToDelete) {
+      await prisma.room.delete({
+        where: {
+          id: room.id,
+        },
+      });
+    }
+
+    // Delete the location itself
+    const deletedLocation = await prisma.location.delete({
+      where: {
+        id: locationId,
+      },
+    });
+
+    return res.status(200).json({ message:"Location deleted successfully" });
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ error: error.message });
   }
 };
+
 
 module.exports = {
   createSingleLocation,

@@ -286,6 +286,7 @@ const getSingleShift = async (req, res) => {
         id: parseInt(req.params.id),
       },
       include: {
+        
         user: {
           select: {
             id: true,
@@ -293,7 +294,11 @@ const getSingleShift = async (req, res) => {
             lastName: true,
             userName: true,
             employeeId:true,
-            designation:true,
+            designationHistory: {
+              include: {
+                designation: true,
+              },
+            },
           },
         },
         location:true,

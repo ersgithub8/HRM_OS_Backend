@@ -99,19 +99,40 @@ const getSingleEmployment = async (req, res) => {
   }
 };
 
-const deletedEmployment = async (req, res) => {
+const updateEmployment = async (req, res) => {
   try {
-    const deletedEmployment = await prisma.employmentStatus.update({
+    const updateEmployment = await prisma.employmentStatus.update({
       where: {
         id: Number(req.params.id),
       },
       data: {
-        status: req.body.status,
+        name: req.body.name,
+        colourValue:req.body.colourValue,
+        description:req.body.description,
       },
     });
-    return res.status(200).json(deletedEmployment);
+    return res.status(200).json({
+      message:"Employment status deleted successfully"
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
+  }
+};
+const deletedEmployment = async (req, res) => {
+  try {
+    const deletedEmployment = await prisma.employmentStatus.delete({
+      where: {
+        id: Number(req.params.id),
+      },
+    });
+    return res.status(200).json({ 
+      // deletedTraing,
+      message:"Employment status deleted successfully"
+     });
+  } catch (error) {
+    return res.status(400).json({
+      message:"Failed to delete Employment"
+    });
   }
 };
 
@@ -120,4 +141,5 @@ module.exports = {
   getAllEmployment,
   getSingleEmployment,
   deletedEmployment,
+  updateEmployment
 };

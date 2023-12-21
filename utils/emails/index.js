@@ -5,25 +5,20 @@ const path = require("path");
 
 //for hosting email
 var transporter = nodemailer.createTransport({
-  // host: process.env.host,
-  service: "gmail",
+  host: "nc-ph-4087.wise1ne.com",
   port: 465,
   secure: true,
-  // secureConnection: false, // TLS requires secureConnection to be false
-
   auth: {
-    user: process.env.user,
-    pass: process.env.pass,
+    user: "wcbchildcare@wise1ne.com",
+    pass: "Alliswell11@",
   },
-  //,
-  // tls: {
-  //   rejectUnauthorized: false
-  // }
+ 
 });
+
 
 // console.log(process.env.user);
 const createEmailOption = ({ receipentEmail, subject, body, html }) => ({
-  from: process.env.user,
+  from: 'wcbchildcare@wise1ne.com',
   to: receipentEmail,
   ...(subject && { subject }),
   ...(body && { body }),
