@@ -1,7 +1,9 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
 const moment = require("moment");
-
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
+//create a new announement
 const createSingleTraining = async (req, res) => {
   if (req.query.query === "deletemany") {
     try {
@@ -44,7 +46,18 @@ const createSingleTraining = async (req, res) => {
           leaveTo:leaveTo,
         },
       });
+      const user = await prisma.user.findMany({ where: { status: true } })
+      // console.log(user);
+      const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
+      const newTokens = tokenArray.filter(item => item !== null)
 
+      const Title = "Training:"+req.body.Day;
+      const Body = "From"+req.body.leaveFrom+"To"+req.body.leaveTo
+
+      const Desc = 'Training notification';
+      // const Device = user.device;
+      console.log(Title, Body, Desc, newTokens);
+      sendNotify(Title, Body, Desc, newTokens);
       return res.status(200).json({
         createdTraining,
         message:"Training added successfully"
@@ -138,6 +151,36 @@ const deleteSingleTrining = async (req, res) => {
     });
   }
 };
+async function sendNotify(title, body, desc, tokens) {
+  try {
+    const messages = tokens.map((token) => ({
+      notification: {
+        title: title,
+        body: body,
+      },
+      token: token,
+    }));
+
+    const sendPromises = messages.map((message) =>
+      admin.messaging().send(message)
+    );
+
+    const results = await Promise.allSettled(sendPromises);
+
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        console.log(`Notification sent to token ${tokens[index]}`);
+      } else {
+        console.log(
+          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+        );
+      }
+    });
+
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+  }
+}
 
 module.exports = {
   createSingleTraining,

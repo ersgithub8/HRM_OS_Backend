@@ -5,7 +5,7 @@ const path = require("path");
 
 //for hosting email
 var transporter = nodemailer.createTransport({
-  host: "nc-ph-4087.wise1ne.com",
+  host: "mail.wise1ne.com",
   port: 465,
   secure: true,
   auth: {
