@@ -153,11 +153,32 @@ const getSingeLeavePolicy = async (req, res) => {
   }
 };
 
+// const updateSingleLeavePolicy = async (req, res) => {
+//   try {
+//     const updatedLeavePolicy = await prisma.leavePolicy.update({
+//       where: {
+//         id: parseInt(req.params.id),
+//       },
+//       data: {
+//         name: req.body.name,
+//         paidLeaveCount: parseInt(req.body.paidLeaveCount),
+//         unpaidLeaveCount: parseInt(req.body.unpaidLeaveCount),
+//       },
+//     });
+
+//     return res.status(200).json(updatedLeavePolicy);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+
 const updateSingleLeavePolicy = async (req, res) => {
   try {
+    const leavePolicyId = parseInt(req.params.id);
     const updatedLeavePolicy = await prisma.leavePolicy.update({
       where: {
-        id: parseInt(req.params.id),
+        id: leavePolicyId,
       },
       data: {
         name: req.body.name,
@@ -166,7 +187,21 @@ const updateSingleLeavePolicy = async (req, res) => {
       },
     });
 
-    return res.status(200).json(updatedLeavePolicy);
+    // After updating leave policy, update all users with the new values
+    const updatedUsers = await prisma.user.updateMany({
+      where: {
+        leavePolicyId: leavePolicyId,
+      },
+      data: {
+        annualallowedleave: updatedLeavePolicy.paidLeaveCount.toString(),
+        remainingannualallowedleave: updatedLeavePolicy.paidLeaveCount.toString(),
+      },
+    });
+
+    return res.status(200).json({
+      updatedLeavePolicy,
+      updatedUsers,
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -179,8 +214,18 @@ const deleteSingleLeavePolicy = async (req, res) => {
         id: parseInt(req.params.id),
       },
     });
+    const updatedUsers = await prisma.user.updateMany({
+      where: {
+        leavePolicyId: leavePolicyId,
+      },
+      data: {
+        annualallowedleave: null,
+        remainingannualallowedleave: null,
+      },
+    });
 
-    return res.status(200).json(deletedLeavePolicy);
+    return res.status(200).json({deletedLeavePolicy,updatedUsers
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

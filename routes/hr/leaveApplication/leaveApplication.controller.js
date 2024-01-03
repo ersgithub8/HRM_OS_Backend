@@ -53,7 +53,7 @@ const createSingleLeave = async (req, res) => {
 
 
       if (overlappingLeaveCount >= 2) {
-        return res.status(400).json({ message: "Already 2 leaves approved for this day." });
+        return res.status(400).json({ message: "2 Leaves are already approved for the same date." });
       }
 
       const training = await prisma.training.findMany({
@@ -70,12 +70,12 @@ const createSingleLeave = async (req, res) => {
       });
 
       if (training.length > 0) {
-        return res.status(400).json({ message: "You can't apply leave on a training day" });
+        return res.status(400).json({ message: "You can't apply for leave on a training day." });
       }
 
 
       if ([0, 1, 8].includes(leaveFrom.getMonth())) {
-        return res.status(400).json({ message: "Leave not allowed in Jan,Feb, or Sep." });
+        return res.status(400).json({ message: "Leaves are not allowed in Jan, Feb, & Sep." });
       }
       var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime();
 
@@ -118,7 +118,7 @@ const createSingleLeave = async (req, res) => {
                                           leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
                                             leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
       if (Difference_In_Days < submitDays) {
-        return res.status(400).json({ message: `You must apply at least ${submitDays} days before the leave date.` });
+        return res.status(400).json({ message: `Please must apply at least  ${submitDays} days before the leave date.` });
       }
       const existingLeave = await prisma.leaveApplication.findFirst({
         where: {
@@ -130,7 +130,7 @@ const createSingleLeave = async (req, res) => {
       });
 
       if (existingLeave) {
-        return res.status(400).json({ message: "Your leave already approved this day." });
+        return res.status(400).json({ message: "Your leave is already approved for same day." });
       }
       const leaveType = req.body.leaveType; // Get the leaveType from the request
 
@@ -180,10 +180,10 @@ const createSingleLeave = async (req, res) => {
       }
       return res.status(200).json({
         createdLeave,
-        message: "Leave application apply successfully"
+        message: "Your leave application is submitted successfully."
       });
     } catch (error) {
-      return res.status(400).json({ message: "Failed to apply leave application" });
+      return res.status(400).json({ message: "Failed to submit leave application." });
     }
   }
 };
@@ -237,7 +237,7 @@ const adminSingleLeave = async (req, res) => {
 
 
       if (overlappingLeaveCount >= 2) {
-        return res.status(400).json({ message: "Already 2 leaves approved for this day." });
+        return res.status(400).json({ message: "2 Leaves are already approved for the same date." });
       }
 
       const training = await prisma.training.findMany({
@@ -254,10 +254,10 @@ const adminSingleLeave = async (req, res) => {
       });
 
       if (training.length > 0) {
-        return res.status(400).json({ message: "You can't apply leave on a training day" });
+        return res.status(400).json({ message: "You can't apply for leave on a training day." });
       }
       if ([0, 1, 8].includes(leaveFrom.getMonth())) {
-        return res.status(400).json({ message: "Leave not allowed in Jan,Feb, or Sep." });
+        return res.status(400).json({ message: "Leaves are not allowed in Jan, Feb, & Sep." });
       }
       var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime();
 
@@ -303,7 +303,7 @@ const adminSingleLeave = async (req, res) => {
 
       console.log(submitDays, "fsgdf");
       if (Difference_In_Days < submitDays) {
-        return res.status(400).json({ message: `You apply ${submitDays} days before the leave date.` });
+        return res.status(400).json({ message: `Please must apply at least  ${submitDays} days before the leave date.` });
       }
       const existingLeave = await prisma.leaveApplication.findFirst({
         where: {
@@ -317,7 +317,7 @@ const adminSingleLeave = async (req, res) => {
       });
 
       if (existingLeave) {
-        return res.status(400).json({ message: "User leave is already approved for this day." });
+        return res.status(400).json({ message: "Your leave is already approved for same day." });
       }
       const leaveType = req.body.leaveType; // Get the leaveType from the request
 
@@ -386,10 +386,10 @@ const adminSingleLeave = async (req, res) => {
 
       return res.status(200).json({
         createdLeave,
-        message: "Leave application apply successfully"
+        message: "Your leave application is submitted successfully."
       });
     } catch (error) {
-      return res.status(400).json({ message:"Failed to apply leave application" });
+      return res.status(400).json({ message:"Failed to Submit leave application." });
     }
   }
 };
@@ -709,11 +709,10 @@ const grantedLeave = async (req, res, next) => {
         user: true,
       },
     });
-    console.log("dvghcahgdhagvdhgsavdhgsavdvghsavdshga", existingLeave.user.firebaseToken);
     const leaveDuration = existingLeave.leaveDuration
 
     if (!existingLeave) {
-      return res.status(404).json({ message: 'Leave application not found' });
+      return res.status(404).json({ message: 'Leave application not found.' });
     }
 
     if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
@@ -865,7 +864,7 @@ const grantedLeave = async (req, res, next) => {
       next();
     }
     else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
-      // req.body.status = 'REJECTED';
+    //   req.body.status = 'REJECTED';
       req.body.userId = existingLeave.user.id;
       req.body.grantedLeave = grantedLeave;
       req.body.fromleave = true;
@@ -983,10 +982,10 @@ const deleteSingleLeave = async (req, res) => {
     });
     return res.status(200).json({
       deletedLeaveApplication,
-      message: "Leave application deleted successfully"
+      message: "Leave application deleted successfully."
     });
   } catch (error) {
-    return res.status(400).json({ message: "leave not found" });
+    return res.status(400).json({ message: "Failed to delete leave application. " });
   }
 }
 const todayLeaveState = async (req, res) => {
@@ -1108,44 +1107,6 @@ const todayLeaveState = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-// const yearlyLeaveState = async (req, res) => {
-//   try {
-//     const date = new Date();
-//     const currentMonth = date.getUTCMonth() + 1;
-//     const monthCounts = [];
-//     for (let month = 1; month <= currentMonth; month++) {
-//       const currentMonthStart = new Date(date.getFullYear(), month - 1, 1, 0, 0, 0);
-//       const nextMonth = month === 12 ? 1 : month + 1;
-//       const currentMonthEnd = new Date(date.getFullYear(), nextMonth - 1, 1, 0, 0, 0);
-//       const monthlyLeaves = await prisma.leaveApplication.findMany({
-//         where: {
-//           createdAt: { gte: currentMonthStart, lt: currentMonthEnd },
-//           status: { in: ['APPROVED', 'REJECTED'] },
-//         },
-//       });
-
-//       const monthCount = {
-//         month: new Date(currentMonthStart).toLocaleString('en-us', { month: 'short' }),
-//         approved: 0,
-//         rejected: 0,
-//       };
-
-//       monthlyLeaves.forEach(leave => {
-//         if (leave.status === 'APPROVED') monthCount.approved++;
-//         else if (leave.status === 'REJECTED') monthCount.rejected++;
-//       });
-
-//       monthCounts.push(monthCount);
-//     }
-
-//     return res.status(200).json({
-//       yearCounts: monthCounts,
-//     });
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
 const yearlyLeaveState = async (req, res) => {
   try {
     const date = new Date();
@@ -1186,7 +1147,6 @@ const yearlyLeaveState = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
 const MonthlyApprovedLeaves = async (req, res) => {
   try {
     const { date } = req.query;

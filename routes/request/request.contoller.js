@@ -1,17 +1,40 @@
 const { getPagination } = require("../../utils/query");
 const prisma = require("../../utils/prisma");
+const admin = require("firebase-admin");
+var FCM = require("fcm-node");
+const { DECIMAL } = require("sequelize");
 //shift exchange request
 const addrequest = async (req, res) => {
   try {
     const { FromScheduleId, ToScheduleId, userId } = req.body;
 
-    const fromSchedule = await prisma.schedule.findUnique({
+     const fromSchedule = await prisma.schedule.findUnique({
       where: { id: FromScheduleId },
+      include: {
+        shifts: {
+          include: {
+            user: true,
+          },
+        },
+      },
+
+      
     });
 
     const toSchedule = await prisma.schedule.findUnique({
       where: { id: ToScheduleId },
+      include: {
+        shifts: {
+          include: {
+            user: true,
+          },
+        },
+      },
+
+      
     });
+    const fromUser = fromSchedule.shifts.user;
+    const toUser = toSchedule.shifts.user;
 
     const fromStartDate = new Date(fromSchedule.startTime);
     const fromEndDate = new Date(fromSchedule.endTime);
@@ -31,7 +54,7 @@ const addrequest = async (req, res) => {
     });
 
     if (existingRequest) {
-      return res.status(400).json({ message: "Request already exists for this shift" });
+      return res.status(400).json({ message: "Request already exists for same shift." });
     }
     if (
       fromSchedule.shiftDate === toSchedule.shiftDate &&
@@ -46,18 +69,32 @@ const addrequest = async (req, res) => {
           userId,
         },
       });
+      const Title = 'Swap Request';
+      const Body =  'Your request has been added';
+      const Desc = 'Request notification';
+      const fromToken = fromUser.firebaseToken;
+      const Title1 = 'Swap Request';
+      const Body1 =  fromUser.firstName+" "+fromUser.lastName+"\n"+"Date:"+fromSchedule.shiftDate;
+      const Desc1 = 'Request notification'; // Replace with the actual field containing the Firebase token
+      const toToken = toUser.firebaseToken;
+      // const Device = user.device;
+   
+     await sendnotifiy(Title, Body, Desc, fromToken);
+    await  sendnotifiy1(Title1, Body1, Desc1, toToken);
+    console.log(Title, Body, Desc, fromToken,"fromtoken");
+    console.log(Title1, Body1, Desc1, toToken,"totoken");
 
       return res
         .status(200)
-        .json({ createRequest: createRequestResult, message: "Request created successfully" });
+        .json({ createRequest: createRequestResult, message: "Request created successfully." });
     } else {
       return res
         .status(400)
-        .json({ message: "Failed to create request shift statrtime endtime are same" });
+        .json({ message: "Failed to create request shift, start & end time are same." });
     }
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ message: "Failed to create a request" });
+    return res.status(400).json({ message: "Failed to create a request." });
   }
 };
 //get single request
@@ -93,7 +130,25 @@ const addrequest = async (req, res) => {
           shiftDate:true,
           breakTime: true,
           folderTime: true,
-          room: { select: { roomName: true } },
+           room: {
+                select: {
+                  id: true,
+                  location: {
+                    select: {
+                      id: true,
+                      latitude: true,
+                      longitude: true,
+                      locationName: true,
+                      createdAt: true,
+                      updatedAt: true,
+                    },
+                  },
+                  roomName: true,
+                  status: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
           workHour: true,
           status: true,
           shiftsId: true,
@@ -112,7 +167,25 @@ const addrequest = async (req, res) => {
           shiftDate:true,
           breakTime: true,
           folderTime: true,
-          room: { select: { roomName: true } },
+           room: {
+                select: {
+                  id: true,
+                  location: {
+                    select: {
+                      id: true,
+                      latitude: true,
+                      longitude: true,
+                      locationName: true,
+                      createdAt: true,
+                      updatedAt: true,
+                    },
+                  },
+                  roomName: true,
+                  status: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
           workHour: true,
           status: true,
           shiftsId: true,
@@ -166,7 +239,108 @@ const addrequest = async (req, res) => {
     }
   };
   //get all request
-  const getAllrequest = async (req, res) => {
+//   const getAllrequest = async (req, res) => {
+//     try {
+//       const allRequests = await prisma.request.findMany({
+//         select: {
+//           id: true,
+//           FromScheduleId: true,
+//           ToScheduleId: true,
+//           requststatus: true,
+//           reason:true,
+//           createdAt: true,
+//           updatedAt: true,
+//         },
+//       });
+  
+//       const allRequestsWithDetails = [];
+  
+//       for (const singleShift of allRequests) {
+//         const scheduleFrom = await prisma.schedule.findUnique({
+//           where: { id: singleShift.FromScheduleId },
+//           select: {
+//             id: true,
+//             day: true,
+//             startTime: true,
+//             endTime: true,
+//             shiftDate:true,
+//             breakTime: true,
+//             folderTime: true,
+//             room: { select: { roomName: true } },
+//             workHour: true,
+//             status: true,
+//             shiftsId: true,
+//             createdAt: true,
+//             updatedAt: true,
+//           },
+//         });
+  
+//         const scheduleTo = await prisma.schedule.findUnique({
+//           where: { id: singleShift.ToScheduleId },
+//           select: {
+//             id: true,
+//             day: true,
+//             startTime: true,
+//             endTime: true,
+//             shiftDate:true,
+//             breakTime: true,
+//             folderTime: true,
+//             room: { select: { roomName: true } },
+//             workHour: true,
+//             status: true,
+//             shiftsId: true,
+//             createdAt: true,
+//             updatedAt: true,
+//           },
+//         });
+  
+//         const shiftFromDetails = await prisma.shifts.findUnique({
+//           where: { id: scheduleFrom.shiftsId },
+//           include: {
+//             user: {
+//               select: {
+//                 id: true,
+//                 firstName: true,
+//                 lastName: true,
+//                 userName: true,
+//                 image:true,
+//                 // Include any other user fields you require
+//               },
+//             },
+//           },
+//         });
+  
+//         const shiftToDetails = await prisma.shifts.findUnique({
+//           where: { id: scheduleTo.shiftsId },
+//           include: {
+//             user: {
+//               select: {
+//                 id: true,
+//                 firstName: true,
+//                 lastName: true,
+//                 userName: true,
+//                 image:true,
+//                 // Include any other user fields you require
+//               },
+//             },
+//           },
+//         });
+  
+//         const shiftWithSchedulesAndUsers = {
+//           ...singleShift,
+//           scheduleFrom: { ...scheduleFrom, shifts: shiftFromDetails },
+//           scheduleTo: { ...scheduleTo, shifts: shiftToDetails },
+//         };
+  
+//         allRequestsWithDetails.push(shiftWithSchedulesAndUsers);
+//       }
+  
+//       return res.status(200).json(allRequestsWithDetails);
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   };
+ const getAllrequest = async (req, res) => {
     try {
       const allRequests = await prisma.request.findMany({
         select: {
@@ -183,6 +357,10 @@ const addrequest = async (req, res) => {
       const allRequestsWithDetails = [];
   
       for (const singleShift of allRequests) {
+        const scheduleFromId = singleShift.FromScheduleId;
+        const scheduleToId = singleShift.ToScheduleId;
+  
+        if (scheduleFromId !== null && scheduleToId !== null) {
         const scheduleFrom = await prisma.schedule.findUnique({
           where: { id: singleShift.FromScheduleId },
           select: {
@@ -193,7 +371,25 @@ const addrequest = async (req, res) => {
             shiftDate:true,
             breakTime: true,
             folderTime: true,
-            room: { select: { roomName: true } },
+            room: {
+                select: {
+                  id: true,
+                  location: {
+                    select: {
+                      id: true,
+                      latitude: true,
+                      longitude: true,
+                      locationName: true,
+                      createdAt: true,
+                      updatedAt: true,
+                    },
+                  },
+                  roomName: true,
+                  status: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
             workHour: true,
             status: true,
             shiftsId: true,
@@ -212,7 +408,25 @@ const addrequest = async (req, res) => {
             shiftDate:true,
             breakTime: true,
             folderTime: true,
-            room: { select: { roomName: true } },
+            room: {
+                select: {
+                  id: true,
+                  location: {
+                    select: {
+                      id: true,
+                      latitude: true,
+                      longitude: true,
+                      locationName: true,
+                      createdAt: true,
+                      updatedAt: true,
+                    },
+                  },
+                  roomName: true,
+                  status: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
             workHour: true,
             status: true,
             shiftsId: true,
@@ -231,7 +445,6 @@ const addrequest = async (req, res) => {
                 lastName: true,
                 userName: true,
                 image:true,
-                // Include any other user fields you require
               },
             },
           },
@@ -261,14 +474,14 @@ const addrequest = async (req, res) => {
   
         allRequestsWithDetails.push(shiftWithSchedulesAndUsers);
       }
-  
+    }
       return res.status(200).json(allRequestsWithDetails);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
   };
   //get single request by userid
-  const getSingleuserrequest = async (req, res) => {
+ const getSingleuserrequest = async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { startDate, endDate } = req.query;
@@ -278,7 +491,7 @@ const addrequest = async (req, res) => {
         startOfDate = new Date(startDate);
         endOfDate = new Date(endDate);
         endOfDate.setHours(23, 59, 59, 999);
-      
+      }
   
       const singleShift = await prisma.request.findMany({
         where: {
@@ -306,294 +519,690 @@ const addrequest = async (req, res) => {
       const shiftsWithSchedulesAndUsers = [];
   
       for (const shift of singleShift) {
-        const scheduleFrom = await prisma.schedule.findUnique({
-          where: { id: shift.FromScheduleId },
-          include: {
-            room: {
-              select: {
-                id: true,
-                location: true, // You can include more fields as needed
-                roomName: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
+        // Check if FromScheduleId is not null before querying the schedule
+        if (shift.FromScheduleId !== null) {
+          const scheduleFrom = await prisma.schedule.findUnique({
+            where: { id: shift.FromScheduleId },
+            include: {
+              room: {
+                select: {
+                  id: true,
+                  location: true, // You can include more fields as needed
+                  roomName: true,
+                  status: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
               },
-            },
-            shifts: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    userName: true,
-                    // Add other fields you need
+              shifts: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      userName: true,
+                      // Add other fields you need
+                    },
                   },
                 },
               },
             },
-           
-          },
-        });
+          });
   
-        const scheduleTo = await prisma.schedule.findUnique({
-          where: { id: shift.ToScheduleId },
-          include: {
-            room: {
-              select: {
-                id: true,
-                location: true,
-                roomName: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
-        
-            
-            shifts: {
-             
+          // Check if scheduleFrom is not null before pushing to the array
+          if (scheduleFrom) {
+            const scheduleTo = await prisma.schedule.findUnique({
+              where: { id: shift.ToScheduleId },
               include: {
-                user: {
+                room: {
                   select: {
                     id: true,
-                    firstName: true,
-                    lastName: true,
-                    userName: true,
+                    location: true, // You can include more fields as needed
+                    roomName: true,
+                    status: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
+                shifts: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        userName: true,
+                        // Add other fields you need
+                      },
+                    },
                   },
                 },
               },
-            },
-          },
-        });
+            });
   
-        shiftsWithSchedulesAndUsers.push({
-          ...shift,
-          scheduleFrom: scheduleFrom,
-          scheduleTo: scheduleTo,
-        });
+            shiftsWithSchedulesAndUsers.push({
+              ...shift,
+              scheduleFrom: scheduleFrom,
+              scheduleTo: scheduleTo,
+            });
+          }
+        }
       }
   
       return res.status(200).json(shiftsWithSchedulesAndUsers);
-    }
-    else{
-      return res.status(200).json([]);
-    }
-   } catch (error) {
+    } catch (error) {
       return res.status(400).json({ message: error.message });
     }
   };
-  //swap request
-  const swaprequest = async (req, res) => {
-    try {
-      const { userId, requststatus,reason } = req.body;
+// const getSingleuserrequest = async (req, res) => {
+//   try {
+//     const userId = parseInt(req.params.id);
+//     const { startDate, endDate } = req.query;
+//     let startOfDate, endOfDate;
+
+//     if (startDate && endDate) {
+//       startOfDate = new Date(startDate);
+//       endOfDate = new Date(endDate);
+//       endOfDate.setHours(23, 59, 59, 999);
+//     }
+
+//     const requests = await prisma.request.findMany({
+//       where: {
+//         userId: userId,
+//         createdAt: {
+//           gte: startOfDate,
+//           lte: endOfDate,
+//         },
+//       },
+//       include: {
+//         scheduleFrom: {
+//           include: {
+//             room: {
+//               select: {
+//                 id: true,
+//                 location: true,
+//                 roomName: true,
+//                 status: true,
+//                 createdAt: true,
+//                 updatedAt: true,
+//               },
+//             },
+//             shifts: {
+//               include: {
+//                 user: {
+//                   select: {
+//                     id: true,
+//                     firstName: true,
+//                     lastName: true,
+//                     userName: true,
+//                   },
+//                 },
+//               },
+//             },
+//           },
+//         },
+//         scheduleTo: {
+//           include: {
+//             room: {
+//               select: {
+//                 id: true,
+//                 location: true,
+//                 roomName: true,
+//                 status: true,
+//                 createdAt: true,
+//                 updatedAt: true,
+//               },
+//             },
+//             shifts: {
+//               include: {
+//                 user: {
+//                   select: {
+//                     id: true,
+//                     firstName: true,
+//                     lastName: true,
+//                     userName: true,
+//                   },
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       },
+//     });
+
+//     return res.status(200).json(requests);
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
+
+//  const getSingleuserrequest = async (req, res) => {
+//     try {
+//       const userId = parseInt(req.params.id);
+//       const { startDate, endDate } = req.query;
+//       let startOfDate, endOfDate;
   
-      const existingRequest = await prisma.request.findFirst({
+//       if (startDate && endDate) {
+//         startOfDate = new Date(startDate);
+//         endOfDate = new Date(endDate);
+//         endOfDate.setHours(23, 59, 59, 999);
+//       }
+  
+//       const requests = await prisma.request.findMany({
+//         where: {
+//           userId: userId,
+//           createdAt: {
+//             gte: startOfDate,
+//             lte: endOfDate,
+//           },
+//         },
+//         include: {
+//           schedule: {
+//             include: {
+//               room: {
+//                 select: {
+//                   id: true,
+//                   location: true,
+//                   roomName: true,
+//                   status: true,
+//                   createdAt: true,
+//                   updatedAt: true,
+//                 },
+//               },
+//               shifts: {
+//                 include: {
+//                   user: {
+//                     select: {
+//                       id: true,
+//                       firstName: true,
+//                       lastName: true,
+//                       userName: true,
+//                     },
+//                   },
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       });
+  
+//       return res.status(200).json(requests);
+//     } catch (error) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//   };
+
+
+
+  //swap request
+//   const swaprequest = async (req, res) => {
+//     try {
+//       const { userId, requststatus,reason } = req.body;
+  
+//       const existingRequest = await prisma.request.findFirst({
+//         where: {
+//           userId: userId,
+//         },
+//       });
+  
+//       if (!existingRequest) {
+//         return res.status(400).json({ message: "Request not found" });
+//       }
+  
+//       let updatedRequest;
+  
+//       if (existingRequest.requststatus === 'PENDING'&&requststatus === 'APPROVED') {
+//         updatedRequest = await prisma.request.update({
+//           where: { id: existingRequest.id },
+//           data: {
+//             FromScheduleId: existingRequest.ToScheduleId,
+//             ToScheduleId: existingRequest.FromScheduleId,
+//             requststatus: 'APPROVED',
+//           },
+          
+//         });
+        
+        
+//         const fromSchedule = await prisma.schedule.findUnique({
+//           where: { id: existingRequest.ToScheduleId },
+//         });
+  
+//         const toSchedule = await prisma.schedule.findUnique({
+//           where: { id: existingRequest.FromScheduleId },
+//         });
+  
+//         if (fromSchedule && toSchedule) {
+//           const fromScheduleData = { ...fromSchedule };
+//           const toScheduleData = { ...toSchedule };
+  
+//           // Swap schedule attributes except for the 'ID'
+//           // const tempRoomId = fromScheduleData.roomId;
+//           const tempShiftsId = fromScheduleData.shiftsId;
+//           // const tempDay = fromScheduleData.day;
+//           // const temshiftdate=fromScheduleData.shiftDate;
+//           // const temstarttime=fromScheduleData.startTime;
+//           // const temendtime=fromScheduleData.endTime;
+  
+//           // fromScheduleData.roomId = toSchedule.roomId;
+//           fromScheduleData.shiftsId = toSchedule.shiftsId;
+//           // fromScheduleData.day = toScheduleData.day;
+//           // fromScheduleData.shiftDate=toScheduleData.shiftDate;
+//           // fromScheduleData.startTime=toScheduleData.startTime;
+//           // fromScheduleData.endTime=toScheduleData.endTime;
+  
+//           // toScheduleData.roomId = tempRoomId;
+//           toScheduleData.shiftsId = tempShiftsId;
+//           // toScheduleData.day = tempDay;
+//           // toScheduleData.shiftDate=temshiftdate;
+//           // toScheduleData.startTime=temstarttime;
+//           // toScheduleData.endTime=temendtime;
+  
+//           // Perform the schedule updates without modifying the 'ID' field
+//           await prisma.schedule.update({
+//             where: { id: existingRequest.ToScheduleId },
+//             data: fromScheduleData,
+//           });
+  
+//           await prisma.schedule.update({
+//             where: { id: existingRequest.FromScheduleId },
+//             data: toScheduleData,
+//           });
+//         }
+  
+//         return res.status(200).json({ updatedRequest, message: "Request status changed to APPROVED" });
+//       } else if (existingRequest.requststatus === 'APPROVED'&&requststatus === 'REJECTED') {
+//         updatedRequest = await prisma.request.update({
+//           where: { id: existingRequest.id },
+//           data: {
+//             FromScheduleId: existingRequest.ToScheduleId,
+//             ToScheduleId: existingRequest.FromScheduleId,
+//             requststatus: 'REJECTED',
+//             reason:reason,
+//           },
+//         });
+  
+//         const fromSchedule = await prisma.schedule.findUnique({
+//           where: { id: existingRequest.ToScheduleId },
+//         });
+  
+//         const toSchedule = await prisma.schedule.findUnique({
+//           where: { id: existingRequest.FromScheduleId },
+//         });
+  
+//         if (fromSchedule && toSchedule) {
+//           const fromScheduleData = { ...fromSchedule };
+//           const toScheduleData = { ...toSchedule };
+  
+//           // const tempRoomId = fromScheduleData.roomId;
+//           const tempShiftsId = fromScheduleData.shiftsId;
+//           // const tempDay = fromScheduleData.day;
+//           // const temshiftdate=fromScheduleData.shiftDate;
+//           // const temstarttime=fromScheduleData.startTime;
+//           // const temendtime=fromScheduleData.endTime;
+  
+//           // fromScheduleData.roomId = toSchedule.roomId;
+//           fromScheduleData.shiftsId = toSchedule.shiftsId;
+//           // fromScheduleData.day = toScheduleData.day;
+//           // fromScheduleData.shiftDate=toScheduleData.shiftDate;
+//           // fromScheduleData.startTime=toScheduleData.startTime;
+//           // fromScheduleData.endTime=toScheduleData.endTime;
+  
+//           // toScheduleData.roomId = tempRoomId;
+//           toScheduleData.shiftsId = tempShiftsId;
+//           // toScheduleData.day = tempDay;
+//           // toScheduleData.shiftDate=temshiftdate;
+//           // toScheduleData.startTime=temstarttime;
+//           // toScheduleData.endTime=temendtime;
+  
+//           await prisma.schedule.update({
+//             where: { id: existingRequest.ToScheduleId },
+//             data: fromScheduleData,
+//           });
+  
+//           await prisma.schedule.update({
+//             where: { id: existingRequest.FromScheduleId },
+//             data: toScheduleData,
+//           });
+//         }
+  
+//         return res.status(200).json({ updatedRequest, message: "Request status changed to REJECTED" });
+//       }
+//       else if (existingRequest.requststatus === 'PENDING' && requststatus === 'REJECTED') {
+//         updatedRequest = await prisma.request.update({
+//           where: { id: existingRequest.id },
+//           data: {
+//             requststatus: 'REJECTED',
+//             reason: reason,
+//           },
+//         });
+//         return res.status(200).json({ updatedRequest, message: "Request status changed to REJECTED" });
+//       }
+//       else if (existingRequest.requststatus === 'REJECTED'&&requststatus === 'APPROVED') {
+//         updatedRequest = await prisma.request.update({
+//           where: { id: existingRequest.id },
+//           data: {
+//             FromScheduleId: existingRequest.ToScheduleId,
+//             ToScheduleId: existingRequest.FromScheduleId,
+//             requststatus: 'APPROVED',
+//           },
+//         });
+        
+//         const fromSchedule = await prisma.schedule.findUnique({
+//           where: { id: existingRequest.ToScheduleId },
+//         });
+  
+//         const toSchedule = await prisma.schedule.findUnique({
+//           where: { id: existingRequest.FromScheduleId },
+//         });
+//   console.log(fromSchedule);
+//         if (fromSchedule && toSchedule) {
+//           const fromScheduleData = { ...fromSchedule };
+//           const toScheduleData = { ...toSchedule };
+  
+//           // const tempRoomId = fromScheduleData.roomId;
+//           const tempShiftsId = fromScheduleData.shiftsId;
+//           // const tempDay = fromScheduleData.day;
+//           // const temshiftdate=fromScheduleData.shiftDate;
+//           // const temstarttime=fromScheduleData.startTime;
+//           // const temendtime=fromScheduleData.endTime;
+  
+//           // fromScheduleData.roomId = toSchedule.roomId;
+//           fromScheduleData.shiftsId = toSchedule.shiftsId;
+//           // fromScheduleData.day = toScheduleData.day;
+//           // fromScheduleData.shiftDate=toScheduleData.shiftDate;
+//           // fromScheduleData.startTime=toScheduleData.startTime;
+//           // fromScheduleData.endTime=toScheduleData.endTime;
+  
+//           // toScheduleData.roomId = tempRoomId;
+//           toScheduleData.shiftsId = tempShiftsId;
+//           // toScheduleData.day = tempDay;
+//           // toScheduleData.shiftDate=temshiftdate;
+//           // toScheduleData.startTime=temstarttime;
+//           // toScheduleData.endTime=temendtime;
+//           await prisma.schedule.update({
+//             where: { id: existingRequest.ToScheduleId },
+//             data: fromScheduleData,
+//           });
+  
+//           await prisma.schedule.update({
+//             where: { id: existingRequest.FromScheduleId },
+//             data: toScheduleData,
+//           });
+//         }
+  
+//         return res.status(200).json({ updatedRequest, message: "Request status changed to REJECTED" });
+//       }
+//       else {
+//         return res.status(400).json({ message: "Invalid request status" });
+//       }
+//     } catch (error) {
+//       console.error(error);
+//       return res.status(400).json({ message: 'Failed to update request' });
+//     }
+//   };
+const updateSchedules = async (fromScheduleId, toScheduleId) => {
+  const fromSchedule = await prisma.schedule.findUnique({
+    where: { id: fromScheduleId },
+  });
+
+  const toSchedule = await prisma.schedule.findUnique({
+    where: { id: toScheduleId },
+  });
+
+  if (fromSchedule && toSchedule) {
+    const fromScheduleData = { ...fromSchedule };
+    const toScheduleData = { ...toSchedule };
+
+    // Swap schedule attributes except for the 'ID'
+    const tempShiftsId = fromScheduleData.shiftsId;
+
+    fromScheduleData.shiftsId = toSchedule.shiftsId;
+    toScheduleData.shiftsId = tempShiftsId;
+
+    await prisma.schedule.update({
+      where: { id: fromScheduleId },
+      data: fromScheduleData,
+    });
+
+    await prisma.schedule.update({
+      where: { id: toScheduleId },
+      data: toScheduleData,
+    });
+  }
+};
+
+const swaprequest = async (req, res) => {
+  try {
+    const { userId, requststatus, reason } = req.body;
+
+   const existingRequest = await prisma.request.findFirst({
+      where: {
+        userId: userId,
+      },
+      include: {
+        schedule: {
+          include: {
+            shifts: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    
+    if (!existingRequest) {
+      return res.status(400).json({ message: "Shift swap request not found." });
+    }
+
+    let updatedRequest;
+
+    switch (existingRequest.requststatus) {
+      case 'PENDING':
+        if (requststatus === 'APPROVED') {
+          updatedRequest = await prisma.request.update({
+            where: { id: existingRequest.id },
+            data: {
+              FromScheduleId: existingRequest.ToScheduleId,
+              ToScheduleId: existingRequest.FromScheduleId,
+              requststatus: 'APPROVED',
+            },
+          });
+          const Title = 'Swap Request Approved';
+          const Body =  'Your request has been approved';
+          const Desc = 'Request notification';
+          const fromToken = existingRequest.schedule.shifts.user.firebaseToken;
+          const Title1 = 'Swap Request Approved';
+          const Body1 =  existingRequest.schedule.shifts.user.firstName+" "+existingRequest.schedule.shifts.user.lastName;
+          const Desc1 = 'Request notification'; // Replace with the actual field containing the Firebase token
+        const toToken = existingRequest.schedule.shifts.user.firebaseToken;
+          // const Device = user.device;
+       
+         await sendnotifiy(Title, Body, Desc, fromToken);
+        await  sendnotifiy1(Title1, Body1, Desc1, toToken);
+        console.log(Title, Body, Desc, fromToken,"fromtoken");
+        console.log(Title1, Body1, Desc1, toToken,"totoken");
+          await updateSchedules(existingRequest.ToScheduleId, existingRequest.FromScheduleId);
+        } else if (requststatus === 'REJECTED') {
+          updatedRequest = await prisma.request.update({
+            where: { id: existingRequest.id },
+            data: {
+              requststatus: 'REJECTED',
+              reason: reason,
+            },
+          });
+        }
+        break;
+      case 'APPROVED':
+        if (requststatus === 'REJECTED') {
+          updatedRequest = await prisma.request.update({
+            where: { id: existingRequest.id },
+            data: {
+              FromScheduleId: existingRequest.ToScheduleId,
+              ToScheduleId: existingRequest.FromScheduleId,
+              requststatus: 'REJECTED',
+              reason: reason,
+            },
+          });
+         const Title = 'Swap Request Rejected';
+          const Body =  'Your request has been rejected';
+          const Desc = 'Request notification';
+          const fromToken = existingRequest.schedule.shifts.user.firebaseToken;
+          const Title1 = 'Swap Request Rejected';
+          const Body1 =  existingRequest.schedule.shifts.user.firstName+" "+existingRequest.schedule.shifts.user.lastName;
+          const Desc1 = 'Request notification'; // Replace with the actual field containing the Firebase token
+        const toToken = existingRequest.schedule.shifts.user.firebaseToken;
+          // const Device = user.device;
+       
+         await sendnotifiy(Title, Body, Desc, fromToken);
+        await  sendnotifiy1(Title1, Body1, Desc1, toToken);
+        console.log(Title, Body, Desc, fromToken,"fromtoken");
+        console.log(Title1, Body1, Desc1, toToken,"totoken");
+          await updateSchedules(existingRequest.ToScheduleId, existingRequest.FromScheduleId);
+        }
+        break;
+      case 'REJECTED':
+        if (requststatus === 'APPROVED') {
+          updatedRequest = await prisma.request.update({
+            where: { id: existingRequest.id },
+            data: {
+              FromScheduleId: existingRequest.ToScheduleId,
+              ToScheduleId: existingRequest.FromScheduleId,
+              requststatus: 'APPROVED',
+            },
+          });
+          const Title = 'Swap Request';
+          const Body =  'Your request has been approved';
+          const Desc = 'Request notification';
+          const fromToken = existingRequest.schedule.shifts.user.firebaseToken;
+          const Title1 = 'Swap Request Approved';
+          const Body1 =  existingRequest.schedule.shifts.user.firstName+" "+existingRequest.schedule.shifts.user.lastName;
+          const Desc1 = 'Request notification'; // Replace with the actual field containing the Firebase token
+        const toToken = existingRequest.schedule.shifts.user.firebaseToken;
+          // const Device = user.device;
+       
+         await sendnotifiy(Title, Body, Desc, fromToken);
+        await  sendnotifiy1(Title1, Body1, Desc1, toToken);
+        console.log(Title, Body, Desc, fromToken,"fromtoken");
+        console.log(Title1, Body1, Desc1, toToken,"totoken");
+          await updateSchedules(existingRequest.ToScheduleId, existingRequest.FromScheduleId);
+        }
+        break;
+      default:
+        return res.status(400).json({ message: "Invalid request status" });
+    }
+
+    return res.status(200).json({ updatedRequest, message: `Shift swap sequest status is changed to ${requststatus}` });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ message: 'Failed to update request' });
+  }
+};
+const deleteRequest = async (req, res) => {
+    try {
+      const deleteRequest = await prisma.request.delete({
         where: {
-          userId: userId,
+          id: Number(req.params.id),
         },
       });
-  
-      if (!existingRequest) {
-        return res.status(400).json({ message: "Request not found" });
-      }
-  
-      let updatedRequest;
-  
-      if (existingRequest.requststatus === 'PENDING'&&requststatus === 'APPROVED') {
-        updatedRequest = await prisma.request.update({
-          where: { id: existingRequest.id },
-          data: {
-            FromScheduleId: existingRequest.ToScheduleId,
-            ToScheduleId: existingRequest.FromScheduleId,
-            requststatus: 'APPROVED',
-          },
-          
-        });
-        
-        
-        const fromSchedule = await prisma.schedule.findUnique({
-          where: { id: existingRequest.ToScheduleId },
-        });
-  
-        const toSchedule = await prisma.schedule.findUnique({
-          where: { id: existingRequest.FromScheduleId },
-        });
-  
-        if (fromSchedule && toSchedule) {
-          const fromScheduleData = { ...fromSchedule };
-          const toScheduleData = { ...toSchedule };
-  
-          // Swap schedule attributes except for the 'ID'
-          // const tempRoomId = fromScheduleData.roomId;
-          const tempShiftsId = fromScheduleData.shiftsId;
-          // const tempDay = fromScheduleData.day;
-          // const temshiftdate=fromScheduleData.shiftDate;
-          // const temstarttime=fromScheduleData.startTime;
-          // const temendtime=fromScheduleData.endTime;
-  
-          // fromScheduleData.roomId = toSchedule.roomId;
-          fromScheduleData.shiftsId = toSchedule.shiftsId;
-          // fromScheduleData.day = toScheduleData.day;
-          // fromScheduleData.shiftDate=toScheduleData.shiftDate;
-          // fromScheduleData.startTime=toScheduleData.startTime;
-          // fromScheduleData.endTime=toScheduleData.endTime;
-  
-          // toScheduleData.roomId = tempRoomId;
-          toScheduleData.shiftsId = tempShiftsId;
-          // toScheduleData.day = tempDay;
-          // toScheduleData.shiftDate=temshiftdate;
-          // toScheduleData.startTime=temstarttime;
-          // toScheduleData.endTime=temendtime;
-  
-          // Perform the schedule updates without modifying the 'ID' field
-          await prisma.schedule.update({
-            where: { id: existingRequest.ToScheduleId },
-            data: fromScheduleData,
-          });
-  
-          await prisma.schedule.update({
-            where: { id: existingRequest.FromScheduleId },
-            data: toScheduleData,
-          });
-        }
-  
-        return res.status(200).json({ updatedRequest, message: "Request status changed to APPROVED" });
-      } else if (existingRequest.requststatus === 'APPROVED'&&requststatus === 'REJECTED') {
-        updatedRequest = await prisma.request.update({
-          where: { id: existingRequest.id },
-          data: {
-            FromScheduleId: existingRequest.ToScheduleId,
-            ToScheduleId: existingRequest.FromScheduleId,
-            requststatus: 'REJECTED',
-            reason:reason,
-          },
-        });
-  
-        const fromSchedule = await prisma.schedule.findUnique({
-          where: { id: existingRequest.ToScheduleId },
-        });
-  
-        const toSchedule = await prisma.schedule.findUnique({
-          where: { id: existingRequest.FromScheduleId },
-        });
-  
-        if (fromSchedule && toSchedule) {
-          const fromScheduleData = { ...fromSchedule };
-          const toScheduleData = { ...toSchedule };
-  
-          // const tempRoomId = fromScheduleData.roomId;
-          const tempShiftsId = fromScheduleData.shiftsId;
-          // const tempDay = fromScheduleData.day;
-          // const temshiftdate=fromScheduleData.shiftDate;
-          // const temstarttime=fromScheduleData.startTime;
-          // const temendtime=fromScheduleData.endTime;
-  
-          // fromScheduleData.roomId = toSchedule.roomId;
-          fromScheduleData.shiftsId = toSchedule.shiftsId;
-          // fromScheduleData.day = toScheduleData.day;
-          // fromScheduleData.shiftDate=toScheduleData.shiftDate;
-          // fromScheduleData.startTime=toScheduleData.startTime;
-          // fromScheduleData.endTime=toScheduleData.endTime;
-  
-          // toScheduleData.roomId = tempRoomId;
-          toScheduleData.shiftsId = tempShiftsId;
-          // toScheduleData.day = tempDay;
-          // toScheduleData.shiftDate=temshiftdate;
-          // toScheduleData.startTime=temstarttime;
-          // toScheduleData.endTime=temendtime;
-  
-          await prisma.schedule.update({
-            where: { id: existingRequest.ToScheduleId },
-            data: fromScheduleData,
-          });
-  
-          await prisma.schedule.update({
-            where: { id: existingRequest.FromScheduleId },
-            data: toScheduleData,
-          });
-        }
-  
-        return res.status(200).json({ updatedRequest, message: "Request status changed to REJECTED" });
-      }
-      else if (existingRequest.requststatus === 'PENDING' && requststatus === 'REJECTED') {
-        updatedRequest = await prisma.request.update({
-          where: { id: existingRequest.id },
-          data: {
-            requststatus: 'REJECTED',
-            reason: reason,
-          },
-        });
-        return res.status(200).json({ updatedRequest, message: "Request status changed to REJECTED" });
-      }
-      else if (existingRequest.requststatus === 'REJECTED'&&requststatus === 'APPROVED') {
-        updatedRequest = await prisma.request.update({
-          where: { id: existingRequest.id },
-          data: {
-            FromScheduleId: existingRequest.ToScheduleId,
-            ToScheduleId: existingRequest.FromScheduleId,
-            requststatus: 'APPROVED',
-          },
-        });
-        
-        const fromSchedule = await prisma.schedule.findUnique({
-          where: { id: existingRequest.ToScheduleId },
-        });
-  
-        const toSchedule = await prisma.schedule.findUnique({
-          where: { id: existingRequest.FromScheduleId },
-        });
-  console.log(fromSchedule);
-        if (fromSchedule && toSchedule) {
-          const fromScheduleData = { ...fromSchedule };
-          const toScheduleData = { ...toSchedule };
-  
-          // const tempRoomId = fromScheduleData.roomId;
-          const tempShiftsId = fromScheduleData.shiftsId;
-          // const tempDay = fromScheduleData.day;
-          // const temshiftdate=fromScheduleData.shiftDate;
-          // const temstarttime=fromScheduleData.startTime;
-          // const temendtime=fromScheduleData.endTime;
-  
-          // fromScheduleData.roomId = toSchedule.roomId;
-          fromScheduleData.shiftsId = toSchedule.shiftsId;
-          // fromScheduleData.day = toScheduleData.day;
-          // fromScheduleData.shiftDate=toScheduleData.shiftDate;
-          // fromScheduleData.startTime=toScheduleData.startTime;
-          // fromScheduleData.endTime=toScheduleData.endTime;
-  
-          // toScheduleData.roomId = tempRoomId;
-          toScheduleData.shiftsId = tempShiftsId;
-          // toScheduleData.day = tempDay;
-          // toScheduleData.shiftDate=temshiftdate;
-          // toScheduleData.startTime=temstarttime;
-          // toScheduleData.endTime=temendtime;
-          await prisma.schedule.update({
-            where: { id: existingRequest.ToScheduleId },
-            data: fromScheduleData,
-          });
-  
-          await prisma.schedule.update({
-            where: { id: existingRequest.FromScheduleId },
-            data: toScheduleData,
-          });
-        }
-  
-        return res.status(200).json({ updatedRequest, message: "Request status changed to REJECTED" });
-      }
-       else {
-        return res.status(400).json({ message: "Invalid request status" });
-      }
+      return res.status(200).json({
+        message: "Request deleted successfully"
+      });
     } catch (error) {
-      console.error(error);
-      return res.status(400).json({ message: 'Failed to update request' });
+      return res.status(400).json({ message: "Failed to delete Request" });
     }
   };
-
+  // function sendnotify(title, body, fromToken, toToken) {
+  //   try {
+  //     const fromMessage = {
+  //       notification: {
+  //         title: title,
+  //         body: body,
+  //       },
+  //       token: fromToken,
+  //     };
+  
+  //     const toMessage = {
+  //       notification: {
+  //         title: title,
+  //         body: body,
+  //       },
+  //       token: toToken,
+  //     };
+  
+  //     // Sending notifications
+  //     admin.messaging().send(fromMessage)
+  //       .then((response) => {
+  //         console.log("Notification Sent to From Token");
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error sending notification to From Token:", error);
+  //       });
+  
+  //     admin.messaging().send(toMessage)
+  //       .then((response) => {
+  //         console.log("Notification Sent to To Token");
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error sending notification to To Token:", error);
+  //       });
+  
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //   }
+  // }
+  function sendnotifiy(Title, Body, Desc, fromToken) {
+    try {
+      const message = {
+        notification: {
+          title: Title,
+          body: Body,
+          // desc:Desc
+        },
+        token: fromToken,
+      };
+      admin
+        .messaging()
+        .send(message)
+        .then((response) => { console.log("Notification Send ....") })
+        .catch((error) => {
+          console.log("Error sending notification:", error);
+        });
+  
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  }
+  function sendnotifiy1(Title1, Body1, Desc1, toToken) {
+    try {
+      const message = {
+        notification: {
+          title: Title1,
+          body: Body1,
+          // desc:Desc1,
+        },
+        token: toToken,
+      };
+      admin
+        .messaging()
+        .send(message)
+        .then((response) => { console.log("Notification Send ....") })
+        .catch((error) => {
+          console.log("Error sending notification:", error);
+        });
+  
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  }
   module.exports = {
     addrequest,
     getSinglerequest,
     getAllrequest,
     getSingleuserrequest,
-    swaprequest
+    swaprequest,
+        deleteRequest
+
   }

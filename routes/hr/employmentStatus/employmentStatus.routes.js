@@ -5,7 +5,6 @@ const {
   getAllEmployment,
   getSingleEmployment,
   deletedEmployment,
-  updateEmployment,
 } = require("./employmentStatus.controller");
 const authorize = require("../../../utils/authorize"); // authentication middleware
 
@@ -26,15 +25,10 @@ employmentRoutes.get(
   authorize("readSingle-employmentStatus"),
   getSingleEmployment
 );
-employmentRoutes.delete(
+employmentRoutes.put(
   "/:id",
   authorize("delete-employmentStatus"),
   deletedEmployment
-);
-employmentRoutes.put(
-  "/:id",
-  authorize("update-employmentStatus"),
-  updateEmployment
 );
 
 module.exports = employmentRoutes;

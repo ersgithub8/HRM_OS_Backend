@@ -167,7 +167,7 @@ const createmeeting = async (req, res) => {
     });
 
     if (conflictingMeeting) {
-      return res.status(400).json({ message: 'A meeting is already scheduled during this time' });
+      return res.status(400).json({ message: 'Meeting is already scheduled for the same date.' });
     }
 
 
@@ -213,7 +213,7 @@ const createmeeting = async (req, res) => {
 
     return res.status(200).json({
       newMeeting,
-      message: 'Meeting created successfully',
+      message: 'Meeting created successfully.',
     });
   } catch (error) {
     console.error('Error creating meeting:', error);

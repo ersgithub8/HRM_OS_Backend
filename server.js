@@ -39,7 +39,7 @@ const updateUsersFields = async () => {
 
 // Schedule the cron job to run on August 31st (Month: 8, Day: 31)
 cron.schedule('0 0 31 8 *', updateUsersFields);
-//create attendence with attendencestatus holiday when public holiay
+
 const createAttendanceOnLeave = async () => {
   try {
     const today = new Date();  
@@ -106,7 +106,7 @@ const createAttendanceOnLeave = async () => {
   }
 };
 
-cron.schedule('1 0 * * *', async () => {
+cron.schedule('59 23 * * *', async () => {
   await createAttendanceOnLeave();
   console.log('Cron job ran at 12:01 AM.');
 }, {
@@ -114,57 +114,113 @@ cron.schedule('1 0 * * *', async () => {
   timezone: 'America/New_York', 
 });
 
+// Schedule the cron job to run every day at 11:59 PM
+cron.schedule('59 23 * * *', async () => {
+  try {
+    // Fetch all users
+    const users = await prisma.user.findMany({
+      include: {
+        shifts: {
+          include: {
+            schedule: true,
+          },
+        },
+      },
+    });
 
+    // Flag to track if any active schedule is found for any user
+    let anyActiveSchedule = false;
 
-// Optionally, you can stop the cron job after a specific duration
-// Uncomment the following line if you want to stop the job after 10 minutes
-// setTimeout(() => job.stop(), 10 * 60 * 1000);
+    // Iterate through each user
+    for (const user of users) {
+      const today = moment();
 
+      // Check if attendance is already marked for today
+      const existingAttendance = await prisma.attendance.findFirst({
+        where: {
+          userId: user.id,
+          date: {
+            // Include time information in the comparison
+            gte: today.startOf('day').toDate(),
+            lte: today.endOf('day').toDate(),
+          },
+        },
+      });
 
-// const updateUsersFields = async () => {
-//   try {
-//     // Fetch all users
-//     const allUsers = await prisma.user.findMany();
+      if (existingAttendance) {
+        // Attendance already marked for today, skip this user
+        continue;
+      }
 
-//     for (const user of allUsers) {
-//       const updatedBankAllowedLeaveValue = '8'; // Convert to string
-//       const remaingbankallowedleave = '8'; // Convert to string
+      let scheduleForToday;
 
-//       // Calculate years of service based on joining date
-//       const joinDate = new Date(user.joinDate);
-//       const currentDate = new Date();
-//       const yearsOfService = Math.floor((currentDate - joinDate) / (365 * 24 * 60 * 60 * 1000));
+      // Iterate through all shifts and schedules to find the schedule for today
+      for (const shift of user.shifts) {
+        scheduleForToday = shift.schedule.find((schedule) => {
+          const scheduleDate = new Date(schedule.shiftDate);
+          return (
+            scheduleDate.setHours(0, 0, 0, 0) === today.set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).toDate().getTime() &&
+            schedule.status
+          );
+        });
 
-//       // Calculate updated annual allowed leaves based on years of service
-//       let updatedAnnualAllowedLeaveValue = '20'; // Default value
+        if (scheduleForToday) {
+          // Set the flag to true if an active schedule is found
+          anyActiveSchedule = true;
+          break; // Break the loop if a schedule for today is found
+        }
+      }
 
-//       if (yearsOfService >= 5) {
-//         updatedAnnualAllowedLeaveValue = (parseInt(updatedAnnualAllowedLeaveValue) + 1).toString();
-//       }
+      if (scheduleForToday && scheduleForToday.status === true) {
+        // Mark as absent
+        await prisma.attendance.create({
+          data: {
+            userId: user.id,
+            inTime: null,
+            outTime: null,
+            punchBy: 1, 
+            inTimeStatus: null,
+            outTimeStatus: null,
+            comment: 'Absent',
+            date: today.toDate(),
+            attendenceStatus: 'absent',
+            ip: null,
+            totalHour: null,
+            createdAt: today.toDate(),
+          },
+        });
+      } else if (scheduleForToday && scheduleForToday.status === false) {
+        // Mark as holiday
+        await prisma.attendance.create({
+          data: {
+            userId: user.id,
+            inTime: null,
+            outTime: null,
+            punchBy: 1, 
+            inTimeStatus: null,
+            outTimeStatus: null,
+            comment: 'Holiday',
+            date: today.toDate(),
+            attendenceStatus: 'holiday',
+            ip: null,
+            totalHour: null,
+            createdAt: today.toDate(),
+          },
+        });
+      }
+    }
 
-//       if (yearsOfService >= 6) {
-//         updatedAnnualAllowedLeaveValue = (parseInt(updatedAnnualAllowedLeaveValue) + 1).toString();
-//       }
+    // Check if no active schedules were found for any user
+    if (!anyActiveSchedule) {
+      console.log('No active schedules found. No actions performed.');
+    } else {
+      console.log('Cron job executed successfully.');
+    }
+  } catch (error) {
+    console.error('Error in cron job:', error.message);
+  }
+});
 
-//       // Update the user fields
-//       await prisma.user.update({
-//         where: { id: user.id },
-//         data: {
-//           bankallowedleave: updatedBankAllowedLeaveValue,
-//           remaingbankallowedleave: remaingbankallowedleave,  
-//           annualallowedleave: updatedAnnualAllowedLeaveValue,
-//           remainingannualallowedleave: updatedAnnualAllowedLeaveValue  
-//         },
-//       });
-//     }
-
-//     console.log('User fields updated successfully.');
-//   } catch (error) {
-//     console.error('Error updating user fields:', error.message);
-//   }
-// };
-
-// run server depending on environment
 if (process.env.NODE_ENV === "production") {
   https
     .createServer(

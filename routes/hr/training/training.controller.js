@@ -36,7 +36,7 @@ const createSingleTraining = async (req, res) => {
       });
     console.log(overlappingTraining);
       if (overlappingTraining) {
-        return res.status(400).json({ message: "Training already exists within this date range." });
+        return res.status(400).json({ message: "Training day already exists within this date range." });
       }
      
       const createdTraining = await prisma.training.create({
@@ -51,7 +51,7 @@ const createSingleTraining = async (req, res) => {
       const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
       const newTokens = tokenArray.filter(item => item !== null)
 
-      const Title = "Training:"+req.body.Day;
+      const Title = "Training Added";
       const Body = "From"+req.body.leaveFrom+"To"+req.body.leaveTo
 
       const Desc = 'Training notification';
@@ -128,10 +128,10 @@ const updateSingleTrining = async (req, res) => {
     });
     return res.status(200).json({
       updatedTraining,
-      message:"Trainig updated successfully"
+      message:"Training day updated successfully."
     });
   } catch (error) {
-    return res.status(400).json({ message:"Failed to update training" });
+    return res.status(400).json({ message:"Failed to update training day" });
   }
 };
 const deleteSingleTrining = async (req, res) => {
@@ -143,11 +143,11 @@ const deleteSingleTrining = async (req, res) => {
     });
     return res.status(200).json({ 
       // deletedTraing,
-      message:"Training deleted successfully"
+      message:"Training day deleted successfully."
      });
   } catch (error) {
     return res.status(400).json({
-      message:"Failed to delete training"
+      message:"Failed to delete training day"
     });
   }
 };

@@ -13,39 +13,120 @@ const jwt = require("jsonwebtoken");
 const { isNullOrUndefined } = require("util");
 const secret = process.env.JWT_SECRET;
 
+// const login = async (req, res) => {
+//   try {
+//     const allUser = await prisma.user.findMany();
+//     const user = allUser.find(
+//       (u) =>
+//         u.userName === req.body.userName
+//     );
+
+
+//     if (!user) {
+//       console.log("User not found or password doesn't match");
+//       return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
+//     }
+//     // if (!user.status) {
+//     //   console.log("User not found or password doesn't match");
+//     //   return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
+//     // }
+//     if (user.applicationStatus === "PENDING") {
+//       console.log("User account is not approved");
+//       return res.status(401).json({ message: "Authentication failed. User account is not approved." });
+//     }
+//     if (user.applicationStatus === "REJECTED") {
+//       console.log("User account is rejected");
+//       return res.status(401).json({ message: "Authentication failed. User account is not approved." });
+//     }
+//     const passwordMatches = bcrypt.compareSync(req.body.password, user.password);
+
+//     if (!passwordMatches) {
+//       console.log("Password doesn't match");
+//       return res.status(400).json({
+//         message: "Authentication failed. Password  is incorrect.",
+//       });
+//     }
+//     // get permission from user roles
+//     const permissions = await prisma.role.findUnique({
+//       where: {
+//         id: user.roleId,
+//       },
+//       include: {
+//         rolePermission: {
+//           include: {
+//             permission: true,
+//           },
+//         },
+//       },
+//     });
+//     // store all permissions name to an array
+//     const permissionNames = permissions.rolePermission.map(
+//       (rp) => rp.permission.name
+//     );
+
+//     if (user) {
+//       const token = jwt.sign(
+//         { sub: user.id, permissions: permissionNames },
+//         secret,
+//         {
+//           expiresIn: "24h",
+//         }
+//       );
+//       const updatedUser = await prisma.user.update({
+//         where: { id: user.id },
+//         data: {
+//           firebaseToken: req.body.firebaseToken || user.firebaseToken,
+//           device: req.body.device || "Android",
+//         },
+//       });
+//       // updatedUser();
+//       const { password, ...userWithoutPassword } = user;
+//       return res.status(200).json({
+//         ...userWithoutPassword,
+//         token,
+//         message:"Login successfully"
+//       });
+//     }
+
+//   } catch (error) {
+// console.log(error)
+//     return res.status(502).json({ message: "Server is not responding. Please try again later." });
+
+//   }
+// };
 const login = async (req, res) => {
   try {
-    const allUser = await prisma.user.findMany();
-    const user = allUser.find(
-      (u) =>
-        u.userName === req.body.userName
-    );
-
+    const allUsers = await prisma.user.findMany();
+    const user = allUsers.find((u) => u.userName === req.body.userName);
 
     if (!user) {
-      console.log("User not found or password doesn't match");
-      return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
+      return res.status(400).json({ message: "Authentication failed. Username is incorrect." });
     }
-    // if (!user.status) {
-    //   console.log("User not found or password doesn't match");
-    //   return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
-    // }
-    if (user.applicationStatus === "PENDING") {
-      console.log("User account is not approved");
+
+     if (user.applicationStatus === "PENDING") {
       return res.status(401).json({ message: "Authentication failed. User account is not approved." });
     }
     if (user.applicationStatus === "REJECTED") {
-      console.log("User account is rejected");
-      return res.status(401).json({ message: "Authentication failed. User account is not approved." });
+      return res.status(401).json({ message: "Authentication failed. Your application has been rejected." });
     }
+
     const passwordMatches = bcrypt.compareSync(req.body.password, user.password);
 
     if (!passwordMatches) {
-      console.log("Password doesn't match");
-      return res.status(400).json({
-        message: "Authentication failed. Password  is incorrect.",
-      });
+      return res.status(400).json({ message: "Authentication failed. Password is incorrect." });
     }
+
+    // Update Firebase token and device information
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        firebaseToken: req.body.firebaseToken || user.firebaseToken,
+        device: req.body.device || "Android",
+      },
+    });
+
+    const { password, ...userWithoutPassword } = updatedUser;
+
     // get permission from user roles
     const permissions = await prisma.role.findUnique({
       where: {
@@ -59,41 +140,30 @@ const login = async (req, res) => {
         },
       },
     });
+
     // store all permissions name to an array
     const permissionNames = permissions.rolePermission.map(
       (rp) => rp.permission.name
     );
 
-    if (user) {
-      const token = jwt.sign(
-        { sub: user.id, permissions: permissionNames },
-        secret,
-        {
-          expiresIn: "24h",
-        }
-      );
-      const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          firebaseToken: req.body.firebaseToken || user.firebaseToken,
-          device: req.body.device || "Android",
-        },
-      });
-      // updatedUser();
-      const { password, ...userWithoutPassword } = user;
-      return res.status(200).json({
-        ...userWithoutPassword,
-        token,
-        message:"Login successfully"
-      });
-    }
+    const token = jwt.sign(
+      { sub: user.id, permissions: permissionNames },
+      secret,
+      {
+        expiresIn: "24h",
+      }
+    );
 
+    return res.status(200).json({
+      ...userWithoutPassword,
+      token,
+    });
   } catch (error) {
-console.log(error)
+    console.error(error);
     return res.status(502).json({ message: "Server is not responding. Please try again later." });
-
   }
 };
+
 
 const validate = async (req, res) => {
   try {
@@ -243,7 +313,7 @@ const register = async (req, res) => {
         //leaves section
         bankallowedleave:process.env.totalbankleaves,
         remaingbankallowedleave:process.env.totalremainbank,
-        annualallowedleave:process.env.totalanualleaves,
+        annualallowedleave:"0",
         remainingannualallowedleave:remainingannualallowedleave,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
@@ -294,9 +364,12 @@ const getAllUser = async (req, res) => {
 
     const allUser = await prisma.user.findMany({
       include: {
-        designationHistory: {
+         designationHistory: {
           include: {
             designation: true,
+          },
+          orderBy: {
+            startDate: 'desc', // Order by start date in ascending order
           },
         },
         salaryHistory: true,
@@ -438,35 +511,35 @@ return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
 //     });
 
 //     // calculate paid and unpaid leave days for the user for the current year
-    // const leaveDays = await prisma.leaveApplication.findMany({
-    //   where: {
-    //     userId: Number(req.params.id),
-    //     status: "ACCEPTED",
-    //     acceptLeaveFrom: {
-    //       gte: new Date(new Date().getFullYear(), 0, 1),
-    //     },
-    //     acceptLeaveTo: {
-    //       lte: new Date(new Date().getFullYear(), 11, 31),
-    //     },
-    //   },
-    // });
-    // const paidLeaveDays = leaveDays
-    //   .filter((l) => l.leaveType === "PAID")
-    //   .reduce((acc, item) => {
-    //     return acc + item.leaveDuration;
-    //   }, 0);
-    // const unpaidLeaveDays = leaveDays
-    //   .filter((l) => l.leaveType === "UNPAID")
-    //   .reduce((acc, item) => {
-    //     return acc + item.leaveDuration;
-    //   }, 0);
+//     const leaveDays = await prisma.leaveApplication.findMany({
+//       where: {
+//         userId: Number(req.params.id),
+//         status: "ACCEPTED",
+//         acceptLeaveFrom: {
+//           gte: new Date(new Date().getFullYear(), 0, 1),
+//         },
+//         acceptLeaveTo: {
+//           lte: new Date(new Date().getFullYear(), 11, 31),
+//         },
+//       },
+//     });
+//     const paidLeaveDays = leaveDays
+//       .filter((l) => l.leaveType === "PAID")
+//       .reduce((acc, item) => {
+//         return acc + item.leaveDuration;
+//       }, 0);
+//     const unpaidLeaveDays = leaveDays
+//       .filter((l) => l.leaveType === "UNPAID")
+//       .reduce((acc, item) => {
+//         return acc + item.leaveDuration;
+//       }, 0);
 
-    // singleUser.paidLeaveDays = paidLeaveDays;
-    // singleUser.unpaidLeaveDays = unpaidLeaveDays;
-    // singleUser.leftPaidLeaveDays =
-    //   singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
-    // singleUser.leftUnpaidLeaveDays =
-    //   singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
+//     singleUser.paidLeaveDays = paidLeaveDays;
+//     singleUser.unpaidLeaveDays = unpaidLeaveDays;
+//     singleUser.leftPaidLeaveDays =
+//       singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
+//     singleUser.leftUnpaidLeaveDays =
+//       singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
 //     const id = parseInt(req.params.id);
 //     // only allow admins and owner to access other user records. use truth table to understand the logic
 //     if (
@@ -486,6 +559,7 @@ return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
 //   }
 // };
 
+
 const getSingleUser = async (req, res) => {
   try {
     const userId = Number(req.params.id);
@@ -498,7 +572,7 @@ const getSingleUser = async (req, res) => {
     }
 
     // Fetch the user record by their ID
-    console.log(userId,"trasjhk");
+    console.log(userId, "trasjhk");
 
 
     const singleUser = await prisma.user.findUnique({
@@ -507,9 +581,12 @@ const getSingleUser = async (req, res) => {
         id: userId,
       },
       include: {
-        designationHistory: {
+         designationHistory: {
           include: {
             designation: true,
+          },
+          orderBy: {
+            startDate: 'desc', // Order by start date in ascending order
           },
         },
         salaryHistory: true,
@@ -521,7 +598,7 @@ const getSingleUser = async (req, res) => {
         shift: true,
         leavePolicy: true,
         weeklyHoliday: true,
-        employmentStatus:true,
+        employmentStatus: true,
         awardHistory: {
           include: {
             award: true,
@@ -547,7 +624,7 @@ const getSingleUser = async (req, res) => {
             shiftTo: true,
             weekNumber: true,
             status: true,
-            location:true,
+            location: true,
             createdAt: true,
             updatedAt: true,
             schedule: {
@@ -558,20 +635,20 @@ const getSingleUser = async (req, res) => {
                 endTime: true,
                 breakTime: true,
                 folderTime: true,
-                shiftDate:true,
+                shiftDate: true,
                 workHour: true,
-                room:true,
+                room: true,
                 //  {
                 //   select: {
                 //     roomName: true,
                 //   },
                 // },
-                
+
               },
             },
           },
         },
-        
+
         room: {
           orderBy: {
             id: "desc",
@@ -597,60 +674,59 @@ const getSingleUser = async (req, res) => {
         },
       },
     });
-    const paidLeaveDays = leaveDays
-  .filter((l) => l.leavecategory === "paid")
-  .reduce((acc, item) => acc + item.leaveDuration, 0);
-console.log(paidLeaveDays,"days");
-const unpaidLeaveDays = 
-leaveDays
-  .filter((l) => l.leavecategory === "unpaid")
-  .reduce((acc, item) => acc + item.leaveDuration, 0);
-// Calculate remaining leave days
-singleUser.paidLeaveDays = paidLeaveDays;
-singleUser.unpaidLeaveDays = unpaidLeaveDays;
-const paidLeaveCount = singleUser.leavePolicy.paidLeaveCount;
-const unpaidLeaveCount = singleUser.leavePolicy.unpaidLeaveCount;
+    // Calculate remaining leave days
+const paidLeaveDays = leaveDays
+.filter((l) => l.leavecategory === "paid")
+.reduce((acc, item) => acc + item.leaveDuration, 0);
 
-// Calculate remaining leave days
-singleUser.leftPaidLeaveDays = (paidLeaveCount - paidLeaveDays).toString();
-singleUser.leftUnpaidLeaveDays = (unpaidLeaveCount - unpaidLeaveDays).toString();
+const unpaidLeaveDays = leaveDays
+.filter((l) => l.leavecategory === "unpaid")
+.reduce((acc, item) => acc + item.leaveDuration, 0);
 
 // Set to null if leavePolicy or respective leave counts are null
 if (!singleUser.leavePolicy) {
-  singleUser.leavePolicy={
-    id:null,
-    name:null,
-    paidLeaveCount:null,
-    status:null,
-    unpaidLeaveCount:null
-
-  }
-  singleUser.paidLeaveDays = null;
-  singleUser.unpaidLeaveDays = null;
-  singleUser.leftPaidLeaveDays = null;
-  singleUser.leftUnpaidLeaveDays =null;
+singleUser.leavePolicy = {
+  id: null,
+  name: null,
+  paidLeaveCount: null,
+  status: null,
+  unpaidLeaveCount: null
+}
+singleUser.paidLeaveDays = null;
+singleUser.unpaidLeaveDays = null;
+singleUser.leftPaidLeaveDays = null;
+singleUser.leftUnpaidLeaveDays = null;
 } else {
-  singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
-  singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
+const paidLeaveCount = singleUser.leavePolicy.paidLeaveCount;
+const unpaidLeaveCount = singleUser.leavePolicy.unpaidLeaveCount;
+
+singleUser.paidLeaveDays = paidLeaveDays;
+singleUser.unpaidLeaveDays = unpaidLeaveDays;
+singleUser.leftPaidLeaveDays = (paidLeaveCount - paidLeaveDays).toString();
+singleUser.leftUnpaidLeaveDays = (unpaidLeaveCount - unpaidLeaveDays).toString();
+
+// Ensure non-negative values
+singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
+singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
 }
 
-    
+
     const roleId = singleUser.reference_id;
 
     if (roleId === null) {
-      singleUser.superviser = null; 
+      singleUser.superviser = null;
     } else {
       const superviser = await prisma.user.findUnique({
         where: {
           id: roleId,
         },
       });
-    
+
       if (superviser) {
         const { password, ...userWithoutPassword } = superviser;
         singleUser.superviser = userWithoutPassword;
       } else {
-        singleUser.superviser = null; 
+        singleUser.superviser = null;
       }
     }
 
@@ -673,7 +749,7 @@ if (!singleUser.leavePolicy) {
       }
     }
 
-    
+
     const { password, ...userWithoutPassword } = singleUser;
 
     return res.status(200).json(userWithoutPassword);
@@ -700,6 +776,22 @@ const updateSingleUser = async (req, res) => {
             leavePolicy:true,
       }
     });
+    if (req.body.employeeId) {
+      const userWithEmployeeId = await prisma.user.findFirst({
+        where: {
+          employeeId: req.body.employeeId,
+          NOT: {
+            id: id, // Exclude the current user from the search
+          },
+        },
+      });
+
+      if (userWithEmployeeId) {
+        return res.status(400).json({
+          message: "Employee ID is already in use by another user.",
+        });
+      }
+    }
     // console.log(existingUser);
     const leavs = req.body.leavePolicyId
     ? await prisma.leavePolicy.findUnique({

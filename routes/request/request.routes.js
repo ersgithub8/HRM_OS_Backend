@@ -5,7 +5,8 @@ const {
   getSinglerequest,
   getAllrequest,
   getSingleuserrequest,
-  swaprequest
+  swaprequest,
+  deleteRequest
   
 } = require("./request.contoller");
 const authorize = require("../../utils/authorize"); 
@@ -17,6 +18,6 @@ requestRoutes.get("/allrequest", authorize("readAll-request"), getAllrequest);
 requestRoutes.get("/:id", authorize("readSingle-request"), getSinglerequest);
 requestRoutes.get("/users/:id", authorize("readSingle-request"), getSingleuserrequest);
 requestRoutes.put("/swapreq/:id", authorize("update-request"), swaprequest);
-
+requestRoutes.delete("/:id", authorize("delete-request"), deleteRequest);
 
 module.exports = requestRoutes;
