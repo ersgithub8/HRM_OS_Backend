@@ -2,11 +2,11 @@
   "name": "hrmosb",
   "version": "1.0.0",
   "description": "hrm os backend",
-  "main": "server.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js",
-    "watch": "nodemon server.js",
+    "start": "nodemon app.js",
+    "watch": "nodemon app.js",
     "precommit": "pretty-quick --staged"
   },
   "repository": {

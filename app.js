@@ -1,291 +1,242 @@
-const rateLimit = require("express-rate-limit");
-const compression = require("compression");
-const express = require("express");
-const helmet = require("helmet");
-const morgan = require("morgan");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const multer = require("multer");
-const path = require("path");
-const { join } = require('path');
-/* variables */
-// express app instance
-const app = express();
-const fileUpload = require('express-fileupload');
-app.use(express.static(path.join(__dirname, "./public")));
-app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    let folder = '';
+const fs = require("fs");
+const https = require("https");
+const app = require("./data");
+const moment = require("moment");
 
-    switch (file.fieldname) {
-      case 'image':
-        folder = 'images';
-        break;
-      case 'firstaid':
-        folder = 'firstaid';
-        break;
-      case 'dbscheck':
-        folder = 'dbscheck';
-        break;
-      case 'safeguard':
-        folder = 'safeguard';
-        break;
-      case 'attachment':
-        folder = 'attachment';
-        break;
-      case 'adminattachment':
-        folder = 'adminattachment';
-        break;
-      case 'userAttachment':
-        folder = 'userattachment';
-        break;
-      case 'contractAttachment':
-        folder = 'contractAttachment';
-        break;
-      default:
-        folder = 'uploads';
+const PORT = process.env.PORT || 5000;
+
+const prisma = require("./utils/prisma");
+const cron = require('node-cron');
+
+const updateUsersFields = async () => {
+  try {
+    // Fetch all users
+    const allUsers = await prisma.user.findMany();
+
+    for (const user of allUsers) {
+      const updatedBankAllowedLeaveValue = '8'; // Convert to string
+      const updatedAnnualAllowedLeaveValue = '20'; // Convert to string
+      const remaingbankallowedleave = '8'; // Convert to string
+      const remainingannualallowedleave = '20'; // Convert to string
+
+      // Update the user fields
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          bankallowedleave: updatedBankAllowedLeaveValue,
+          remaingbankallowedleave: remaingbankallowedleave,  
+          annualallowedleave: updatedAnnualAllowedLeaveValue,
+          remainingannualallowedleave: remainingannualallowedleave  
+        },
+      });
     }
 
-    cb(null, `./uploads/${folder}`); 
-  },
-  filename: function (req, file, cb) {
-    const uniqueIdentifier = Date.now(); 
-    const ext = path.extname(file.originalname);
-    const fileName = `${uniqueIdentifier}${ext}`;
-    cb(null, fileName);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.originalname.match(/\.(mp4|jpeg|jpg|png|pdf|gif)$/)) {
-    cb(null, true);
-  } else {
-    cb(null, false);
+    console.log('User fields updated successfully.');
+  } catch (error) {
+    console.error('Error updating user fields:', error.message);
   }
 };
 
-const uploadimagesimple = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-});
-app.post("/upload", uploadimagesimple.fields([
-  { name: 'image', maxCount: 1 },
-  { name: 'firstaid', maxCount: 1 },
-  { name: 'dbscheck', maxCount: 1 },
-  { name: 'safeguard', maxCount: 1 },
-  { name: 'attachment', maxCount: 1 },
-  { name: 'adminattachment', maxCount: 1 },
-  { name: 'userAttachment', maxCount: 1 },
-  { name: 'contractAttachment', maxCount: 1 },
-]), (req, res) => {
-  console.log("Reached the multiple images route handler");
+// Schedule the cron job to run on August 31st (Month: 8, Day: 31)
+cron.schedule('0 0 31 8 *', updateUsersFields);
 
-  if (req.files) {
-    const files = Object.keys(req.files).reduce((acc, key) => {
-      acc[key] = req.files[key].map((file, index) => {
-        const split = file.path.split("uploads");
-        const path = split[1].replace(/\\/g, "/");
-        const baseUrl = req.protocol + "://localhost:5000"; 
-        const fullPath = baseUrl+"/uploads"+path; 
-        return { path: fullPath };
-      });
-      return acc;
-    }, {});
-
-    return res.status(200).json({
-      files: files,
-      message: "Files successfully uploaded",
-      error: false,
+const createAttendanceOnLeave = async () => {
+  try {
+    const today = new Date();  
+    const databaseRecordDate = new Date("2023-10-18T11:05:01.890Z");
+    today.setHours(databaseRecordDate.getHours(), databaseRecordDate.getMinutes(), databaseRecordDate.getSeconds(), databaseRecordDate.getMilliseconds());
+    
+    console.log(today);
+    const isTodayPublicHoliday = await prisma.publicHoliday.findFirst({
+      where: {
+        date: {
+          equals: today,
+        },
+      },
     });
-  } else {
-    return res.status(400).json({ message: "Image upload failed" });
+    if (isTodayPublicHoliday) {
+      const users = await prisma.user.findMany();
+      for (const user of users) {
+        console.log(`Processing user: ${user.id}`);
+        const attendanceDate = today; 
+        const attendance = await prisma.attendance.findFirst({
+          where: {
+            userId: user.id,
+            date: attendanceDate,
+          },
+        });
+        const currentRemainingLeaves = parseFloat(user.remaingbankallowedleave);
+        const updatedRemainingLeaves = Math.max(currentRemainingLeaves -1, 0);
+        await prisma.user.update({
+          where: {
+            id: user.id, 
+          },
+          data: {
+            remaingbankallowedleave: updatedRemainingLeaves.toString(),
+          },
+        });
+        if (!attendance) {
+          const attendancePromise = prisma.attendance.create({
+            data: {
+              userId: user.id,
+              inTime: null,
+              outTime: null,
+              punchBy: null, 
+              inTimeStatus: null,
+              outTimeStatus: null,
+              comment: null,
+              date: attendanceDate,
+              attendenceStatus: "holiday",
+              ip: null,
+              totalHour: null,
+              createdAt: attendanceDate,
+            },
+          });
+          await attendancePromise;
+          console.log(`Attendance marked for user ${user.id} on ${attendanceDate}`);
+        }
+      }
+
+      console.log("Attendance marked for all users on the public holiday");
+    } else {
+      console.log("Today is not a public holiday. No attendance marked.");
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+};
+
+cron.schedule('59 23 * * *', async () => {
+  await createAttendanceOnLeave();
+  console.log('Cron job ran at 12:01 AM.');
+}, {
+  scheduled: true,
+  timezone: 'America/New_York', 
+});
+
+// Schedule the cron job to run every day at 11:59 PM
+cron.schedule('59 23 * * *', async () => {
+  try {
+    // Fetch all users
+    const users = await prisma.user.findMany({
+      include: {
+        shifts: {
+          include: {
+            schedule: true,
+          },
+        },
+      },
+    });
+
+    // Flag to track if any active schedule is found for any user
+    let anyActiveSchedule = false;
+
+    // Iterate through each user
+    for (const user of users) {
+      const today = moment();
+
+      // Check if attendance is already marked for today
+      const existingAttendance = await prisma.attendance.findFirst({
+        where: {
+          userId: user.id,
+          date: {
+            // Include time information in the comparison
+            gte: today.startOf('day').toDate(),
+            lte: today.endOf('day').toDate(),
+          },
+        },
+      });
+
+      if (existingAttendance) {
+        // Attendance already marked for today, skip this user
+        continue;
+      }
+
+      let scheduleForToday;
+
+      // Iterate through all shifts and schedules to find the schedule for today
+      for (const shift of user.shifts) {
+        scheduleForToday = shift.schedule.find((schedule) => {
+          const scheduleDate = new Date(schedule.shiftDate);
+          return (
+            scheduleDate.setHours(0, 0, 0, 0) === today.set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).toDate().getTime() &&
+            schedule.status
+          );
+        });
+
+        if (scheduleForToday) {
+          // Set the flag to true if an active schedule is found
+          anyActiveSchedule = true;
+          break; // Break the loop if a schedule for today is found
+        }
+      }
+
+      if (scheduleForToday && scheduleForToday.status === true) {
+        // Mark as absent
+        await prisma.attendance.create({
+          data: {
+            userId: user.id,
+            inTime: null,
+            outTime: null,
+            punchBy: 1, 
+            inTimeStatus: null,
+            outTimeStatus: null,
+            comment: 'Absent',
+            date: today.toDate(),
+            attendenceStatus: 'absent',
+            ip: null,
+            totalHour: null,
+            createdAt: today.toDate(),
+          },
+        });
+      } else if (scheduleForToday && scheduleForToday.status === false) {
+        // Mark as holiday
+        await prisma.attendance.create({
+          data: {
+            userId: user.id,
+            inTime: null,
+            outTime: null,
+            punchBy: 1, 
+            inTimeStatus: null,
+            outTimeStatus: null,
+            comment: 'Holiday',
+            date: today.toDate(),
+            attendenceStatus: 'holiday',
+            ip: null,
+            totalHour: null,
+            createdAt: today.toDate(),
+          },
+        });
+      }
+    }
+
+    // Check if no active schedules were found for any user
+    if (!anyActiveSchedule) {
+      console.log('No active schedules found. No actions performed.');
+    } else {
+      console.log('Cron job executed successfully.');
+    }
+  } catch (error) {
+    console.error('Error in cron job:', error.message);
   }
 });
 
-app.get("/", (req, res) => {
-  res.send("Server is Running");
-});
-
-// app.post("/upload/delete", async (req, res) => {
-//   (req, res) => {
-//       try {
-//         fs.unlinkSync("../uploads" + req.body.path);
-//         console.log("image del")
-//       } catch (e) {
-//         console.log("not image");
-//       }
-//     }
-//   });
-
-
-
-
-
-app.use(fileUpload({
-  limit: { fileSize: 50 * 1024 * 1024 ,extended: true},
-}));
-// holds all the allowed origins for cors access
-let allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3000/",
-  "http://localhost:5000",
-  "http://localhost:3001/",
-  "http://4.227.140.35:3000",
-  "http://3.111.150.18:3000",
-  "https://www.wise1ne.com",
-  "http://www.wise1ne.com"
-];
-
-const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-// limit the number of requests from a single IP address
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 2000, // Limit each IP to 20 requests per `window` (here, per 15 minutes)
-  standardHeaders: false, // Disable rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
-/* Middleware */
-// for compressing the response body
-// app.use(compression());
-// app.use(bodyParser.json({limit: '50mb'}));
-// app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-// app.use(express.json());
-// helmet: secure express app by setting various HTTP headers. And serve cross origin resources.
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-// morgan: log requests to console in dev environment
-app.use(morgan("dev"));
-// allows cors access from allowedOrigins array
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        let msg =
-          "The CORS policy for this site does not " +
-          "allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-  })
-);
-
-// parse requests of content-type - application/json
-app.use(express.json({ extended: true }));
-
-/* Routes */
-app.use(
-  "/role-permission",
-  require("./routes/hr/rolePermission/rolePermission.routes")
-);
-app.use(
-  "/transaction",
-  require("./routes/accounting/transaction/transaction.routes")
-);
-app.use("/permission", require("./routes/hr/permission/permission.routes"));
-app.use("/user", limiter, require("./routes/user/user.routes"));
-app.use("/role", require("./routes/hr/role/role.routes"));
-app.use("/designation", require("./routes/hr/designation/designation.routes"));
-app.use("/account", require("./routes/accounting/account/account.routes"));
-app.use("/setting", require("./routes/setting/setting.routes"));
-app.use("/email", require("./routes/email/email.routes"));
-app.use("/department", require("./routes/hr/department/department.routes"));
-app.use("/location", require("./routes/hr/location/location.routes"));
-// app.use("/upload", require("./routes/hr/uploadimage/uploadimg.routes"));
-
-app.use(
-  "/employment-status",
-  require("./routes/hr/employmentStatus/employmentStatus.routes")
-);
-app.use(
-  "/announcement",
-  require("./routes/hr/announcement/announcement.routes")
-);
-app.use(
-  "/leave-application",
-  require("./routes/hr/leaveApplication/leaveApplication.routes")
-);
-app.use("/attendance", require("./routes/hr/attendance/attendance.routes"));
-app.use("/payroll", require("./routes/hr/payroll/payroll.routes"));
-app.use("/education", require("./routes/hr/education/education.routes"));
-app.use(
-  "/salaryHistory",
-  require("./routes/hr/salaryHistory/salaryHistory.routes")
-);
-app.use(
-  "/designationHistory",
-  require("./routes/hr/designationHistory/designationHistory.routes")
-);
-app.use("/dashboard", require("./routes/dashboard/dashboard.routes"));
-app.use("/shift", require("./routes/hr/shift/shift.routes"));
-app.use("/files", require("./routes/files/files.routes"));
-app.use("/leave-policy", require("./routes/hr/leavePolicy/leavePolicy.routes"));
-app.use(
-  "/weekly-holiday",
-  require("./routes/hr/weeklyHoliday/weeklyHoliday.routes")
-);
-app.use(
-  "/public-holiday",
-  require("./routes/hr/publicHoliday/publicHoliday.routes")
-);
-app.use("/award", require("./routes/hr/award/award.routes"));
-app.use(
-  "/awardHistory",
-  require("./routes/hr/awardHistory/awardHistory.routes")
-);
-
-//project management routes
-app.use(
-  "/project",
-  require("./routes/projectManagement/project/project.routes")
-);
-app.use(
-  "/milestone",
-  require("./routes/projectManagement/milestone/milestone.routes")
-);
-app.use("/tasks", require("./routes/projectManagement/tasks/tasks.routes"));
-app.use(
-  "/assigned-task",
-  require("./routes/projectManagement/assignedTask/assignedTask.routes")
-);
-app.use(
-  "/project-team",
-  require("./routes/projectManagement/projectTeam/projectTeam.routes")
-);
-app.use(
-  "/task-status",
-  require("./routes/projectManagement/taskStatus/taskStatus.routes")
-);
-app.use(
-  "/task-priority",
-  require("./routes/projectManagement/priority/priority.routes")
-);
-app.use(
-  "/hirarchy",
-  require("./routes/hr/hirarchy/hirarchy.route")
-);
-app.use(
-  "/training",
-  require("./routes/hr/training/training.routes")
-);
-app.use(
-  "/meeting",
-  require("./routes/meeting/meeting.routes")
-);
-app.use(
-  "/rooms",
-  require("./routes/rooms/rooms.routes")
-);
-app.use("/shifts", require("./routes/shifts/shifts.routes"));
-app.use("/request", require("./routes/request/request.routes"));
-
-
-module.exports = app;
+if (process.env.NODE_ENV === "production") {
+  https
+    .createServer(
+      {
+        key: fs.readFileSync("/etc/letsencrypt/live/lfix.us/privkey.pem"),
+        cert: fs.readFileSync("/etc/letsencrypt/live/lfix.us/fullchain.pem"),
+      },
+      app
+    )
+    .listen(PORT, () => {
+      console.log(`Server is running on production port ${PORT}`);
+    });
+} else {
+  app.listen(PORT, () => {
+    console.log(
+      `Server is running in <${process.env.NODE_ENV}> on port <${PORT}>`
+    );
+  });
+}

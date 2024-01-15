@@ -170,59 +170,6 @@ const createrooms = async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
   };
-
-  // const getroomBylocationId = async (req, res) => {
-  //   try {
-  //     const locationId = Number(req.params.id);
-  //     if (req.query.status === "true"){
-  //     const rooms = await prisma.room.findMany({
-  //       where: {
-  //         locationId: locationId,
-  //       },
-  //       select: {
-  //         id: true,
-  //         roomName: true,
-  //         status: true,
-  //         location: {
-  //           select: {
-  //             id: true,
-  //             locationName: true,
-  //           },
-  //         },
-  //         createdAt: true,
-  //         updatedAt: true,
-  //       },
-  //     });
-  
-  //     return res.status(200).json(rooms);
-  //   }
-  //   const allRooms = await prisma.room.findMany({
-  //     orderBy: [{ id: 'desc' }],
-  //     select: {
-  //       id: true,
-  //       roomName: true,
-  //       status:true,
-  //       location: {
-  //         select: {
-  //           id: true,
-  //           locationName: true,
-  //         },
-  //       },
-  //       user: {
-  //         select: {
-  //           firstName: true,
-  //           lastName: true,
-  //         },
-  //       },
-  //       createdAt: true,
-  //       updatedAt: true,
-  //     },
-  //   });
-  //     return res.status(200).json(allRooms);
-  // } catch (error) {
-  //     return res.status(400).json({ message: error.message });
-  //   }
-  // };
   //get room by locationid
   const getroomBylocationId = async (req, res) => {
     try {

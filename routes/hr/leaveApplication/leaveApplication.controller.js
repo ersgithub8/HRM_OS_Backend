@@ -97,26 +97,27 @@ const createSingleLeave = async (req, res) => {
       let todayDate = new Date();
       var Difference_In_Time2 = leaveFrom.getTime() - todayDate.getTime();
       var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
-      const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
-        leaveDuration === 2 || leaveDuration === 1 ? 5 :
-          leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
-            leaveDuration === 4 || leaveDuration === 2 ? 9 :
-              leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
-                leaveDuration === 6 || leaveDuration === 3 ? 13 :
-                  leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
-                    leaveDuration === 8 || leaveDuration === 4 ? 17 :
-                      leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
-                        leaveDuration === 10 || leaveDuration === 5 ? 21 :
-                          leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
-                            leaveDuration === 12 || leaveDuration === 6 ? 25 :
-                              leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
-                                leaveDuration === 14 || leaveDuration === 7 ? 29 :
-                                  leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
-                                    leaveDuration === 16 || leaveDuration === 8 ? 33 :
-                                      leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
-                                        leaveDuration === 18 || leaveDuration === 9 ? 37 :
-                                          leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
-                                            leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
+      const submitDays = Math.ceil(leaveDuration) * 2 + 1;
+    //   const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
+    //     leaveDuration === 2 || leaveDuration === 1 ? 5 :
+    //       leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
+    //         leaveDuration === 4 || leaveDuration === 2 ? 9 :
+    //           leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
+    //             leaveDuration === 6 || leaveDuration === 3 ? 13 :
+    //               leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
+    //                 leaveDuration === 8 || leaveDuration === 4 ? 17 :
+    //                   leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
+    //                     leaveDuration === 10 || leaveDuration === 5 ? 21 :
+    //                       leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
+    //                         leaveDuration === 12 || leaveDuration === 6 ? 25 :
+    //                           leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
+    //                             leaveDuration === 14 || leaveDuration === 7 ? 29 :
+    //                               leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
+    //                                 leaveDuration === 16 || leaveDuration === 8 ? 33 :
+    //                                   leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
+    //                                     leaveDuration === 18 || leaveDuration === 9 ? 37 :
+    //                                       leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
+    //                                         leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
       if (Difference_In_Days < submitDays) {
         return res.status(400).json({ message: `Please must apply at least  ${submitDays} days before the leave date.` });
       }
@@ -280,26 +281,28 @@ const adminSingleLeave = async (req, res) => {
       let todayDate = new Date();
       var Difference_In_Time2 = leaveFrom.getTime() - todayDate.getTime();
       var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
-      const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
-        leaveDuration === 2 || leaveDuration === 1 ? 5 :
-          leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
-            leaveDuration === 4 || leaveDuration === 2 ? 9 :
-              leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
-                leaveDuration === 6 || leaveDuration === 3 ? 13 :
-                  leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
-                    leaveDuration === 8 || leaveDuration === 4 ? 17 :
-                      leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
-                        leaveDuration === 10 || leaveDuration === 5 ? 21 :
-                          leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
-                            leaveDuration === 12 || leaveDuration === 6 ? 25 :
-                              leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
-                                leaveDuration === 14 || leaveDuration === 7 ? 29 :
-                                  leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
-                                    leaveDuration === 16 || leaveDuration === 8 ? 33 :
-                                      leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
-                                        leaveDuration === 18 || leaveDuration === 9 ? 37 :
-                                          leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
-                                            leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
+      const submitDays = Math.ceil(leaveDuration) * 2 + 1;
+    //   var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
+    //   const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
+    //     leaveDuration === 2 || leaveDuration === 1 ? 5 :
+    //       leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
+    //         leaveDuration === 4 || leaveDuration === 2 ? 9 :
+    //           leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
+    //             leaveDuration === 6 || leaveDuration === 3 ? 13 :
+    //               leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
+    //                 leaveDuration === 8 || leaveDuration === 4 ? 17 :
+    //                   leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
+    //                     leaveDuration === 10 || leaveDuration === 5 ? 21 :
+    //                       leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
+    //                         leaveDuration === 12 || leaveDuration === 6 ? 25 :
+    //                           leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
+    //                             leaveDuration === 14 || leaveDuration === 7 ? 29 :
+    //                               leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
+    //                                 leaveDuration === 16 || leaveDuration === 8 ? 33 :
+    //                                   leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
+    //                                     leaveDuration === 18 || leaveDuration === 9 ? 37 :
+    //                                       leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
+    //                                         leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
 
       console.log(submitDays, "fsgdf");
       if (Difference_In_Days < submitDays) {
@@ -393,148 +396,6 @@ const adminSingleLeave = async (req, res) => {
     }
   }
 };
-// const getAllLeave = async (req, res) => {
-//   const { skip, limit, status } = req.query;
-
-//   let whereClause = {}; // Initialize an empty object for the where clause
-
-//   if (status && status !== "all") {
-//     whereClause.status = status; 
-//   }
-//   if (req.query.query === "all") {
-//     const allLeave = await prisma.leaveApplication.findMany({
-//       orderBy: [
-//         {
-//           id: "desc",
-//         },
-//       ],
-//       include: {
-//         user: {
-//           select: {
-//             firstName: true,
-//             lastName: true,
-//             userName:true,
-//             employeeId:true,
-//             // role:true,
-//             roleId:true,
-//             reference_id:true,
-//           },
-//         },
-//       },
-//     });
-// console.log(allLeave,"kjhj");
-//     // get the id and acceptLeaveBy from all leave array
-//     const acceptLeaveBy = allLeave.map((item) => {
-
-//       return {
-//         ...item,
-//         acceptLeaveBy: item.acceptLeaveBy,
-//       };
-//     });
-
-//     // get the acceptLeaveBy from user table and return the firstName and lastName into acceptLeaveBy and if acceptLeaveBy is null then return null into acceptLeaveBy for that object
-//     const result = await Promise.all(
-//       acceptLeaveBy.map(async (item) => {
-//         if (item.acceptLeaveBy) {
-//           const acceptLeaveBy = await prisma.user.findUnique({
-//             where: {
-//               id: item.acceptLeaveBy,
-//             },
-//             select: {
-//               id: true,
-//               firstName: true,
-//               lastName: true,
-//               userName:true,
-//             employeeId:true,
-//             reference_id:true
-
-//             },
-//           });
-//           return {
-//             ...item,
-//             acceptLeaveBy: acceptLeaveBy,
-//           };
-//         } else {
-//           return {
-//             ...item,
-//             acceptLeaveBy: null,
-//           };
-//         }
-//       })
-//     );
-
-//     return res.status(200).json(result);
-//   } else {
-// const { skip, limit } = getPagination(req.query);
-// try {
-//   const allLeave = await prisma.leaveApplication.findMany({
-// orderBy: [
-//   {
-//     id: "desc",
-//   },
-// ],
-// skip: Number(skip),
-// take: Number(limit),
-// where: {
-//   status: req.query.status,
-// },
-// include: {
-//   user: {
-//     select: {
-//       firstName: true,
-//       lastName: true,
-//       userName:true,
-//     employeeId:true,
-//     reference_id:true
-
-//     },
-//   },
-// },
-//   });
-//       // get the id and acceptLeaveBy from all leave array
-//       const acceptLeaveBy = allLeave.map((item) => {
-//         return {
-//           ...item,
-//           acceptLeaveBy: item.acceptLeaveBy,
-//         };
-//       });
-
-//       // get the acceptLeaveBy from user table and return the firstName and lastName into acceptLeaveBy and if acceptLeaveBy is null then return null into acceptLeaveBy for that object
-//       const result = await Promise.all(
-//         acceptLeaveBy.map(async (item) => {
-//           if (item.acceptLeaveBy) {
-//             const acceptLeaveBy = await prisma.user.findUnique({
-//               where: {
-//                 id: item.acceptLeaveBy,
-//               },
-//               select: {
-//                 id: true,
-//                 firstName: true,
-//                 lastName: true,
-//                 userName:true,
-//             employeeId:true,
-//             reference_id:true
-//               },
-//             });
-//             return {
-//               ...item,
-//               acceptLeaveBy: acceptLeaveBy,
-//             };
-//           } else {
-//             return {
-//               ...item,
-//               acceptLeaveBy: null,
-//             };
-//           }
-//         })
-//       );
-
-//       return res.status(200).json(result);
-//     } catch (error) {
-//       return res.status(400).json({ message: error.message });
-//     }
-//   }
-// };
 const getapprovedAllLeave = async (req, res) => {
   try {
     const today = new Date();
@@ -588,9 +449,6 @@ const getapprovedAllLeave = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
-
-
-
 const getSingleLeave = async (req, res) => {
   try {
     const singleLeaveId = Number(req.params.id);

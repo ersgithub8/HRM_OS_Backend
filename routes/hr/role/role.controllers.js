@@ -130,24 +130,6 @@ const updateSingleRole = async (req, res) => {
     console.log(error.message);
   }
 };
-
-// const deleteSingleRole = async (req, res) => {
-//   try {
-//     const deletedRole = await prisma.role.update({
-//       where: {
-//         id: Number(req.params.id),
-//       },
-//       data: {
-//         status: req.body.status,
-//       },
-//     });
-//     res.status(200).json(deletedRole);
-//   } catch (error) {
-//     res.status(400).json(error.message);
-//     console.log(error.message);
-//   }
-// };
-
 const deleteSingleRole = async (req, res) => {
   const roleId = parseInt(req.params.id);
 

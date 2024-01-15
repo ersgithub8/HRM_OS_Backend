@@ -263,16 +263,29 @@ const updateSingleLocation = async (req, res) => {
 
 const deletedLocation = async (req, res) => {
   try {
-    const deletedLocation = await prisma.location.delete({
+    const locationId = Number(req.params.id);
+    const usersWithLocations = await prisma.user.count({
       where: {
-        id: Number(req.params.id),
+        locationId: locationId,
       },
     });
-    return res.status(200).json({ deletedLocation });
+
+    if (usersWithLocations > 0) {
+      return res.status(400).json({ message: `This location is assigned ${usersWithLocations} users` });
+    }
+    const deletedLocation = await prisma.location.delete({
+      where: {
+        id: locationId,
+      },
+    });
+
+    return res.status(200).json({ message:"Location deleted successfully"});
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ message: error.message });
   }
 };
+
+
 
 module.exports = {
   createSingleLocation,

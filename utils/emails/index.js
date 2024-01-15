@@ -5,20 +5,23 @@ const path = require("path");
 
 //for hosting email
 var transporter = nodemailer.createTransport({
-  host: "mail.wise1ne.com",
+  host: "backend.wise1ne.com",
   port: 465,
   secure: true,
   auth: {
-    user: "wcbchildcare@wise1ne.com",
+    user: "wmbchildcare@backend.wise1ne.com",
     pass: "Alliswell11@",
   },
- 
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
+
 
 
 // console.log(process.env.user);
 const createEmailOption = ({ receipentEmail, subject, body, html }) => ({
-  from: 'wcbchildcare@wise1ne.com',
+  from: 'wmbchildcare@backend.wise1ne.com',
   to: receipentEmail,
   ...(subject && { subject }),
   ...(body && { body }),

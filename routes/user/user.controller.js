@@ -13,87 +13,6 @@ const jwt = require("jsonwebtoken");
 const { isNullOrUndefined } = require("util");
 const secret = process.env.JWT_SECRET;
 
-// const login = async (req, res) => {
-//   try {
-//     const allUser = await prisma.user.findMany();
-//     const user = allUser.find(
-//       (u) =>
-//         u.userName === req.body.userName
-//     );
-
-
-//     if (!user) {
-//       console.log("User not found or password doesn't match");
-//       return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
-//     }
-//     // if (!user.status) {
-//     //   console.log("User not found or password doesn't match");
-//     //   return res.status(400).json({ message: "Authentication failed.Username  is incorrect" });
-//     // }
-//     if (user.applicationStatus === "PENDING") {
-//       console.log("User account is not approved");
-//       return res.status(401).json({ message: "Authentication failed. User account is not approved." });
-//     }
-//     if (user.applicationStatus === "REJECTED") {
-//       console.log("User account is rejected");
-//       return res.status(401).json({ message: "Authentication failed. User account is not approved." });
-//     }
-//     const passwordMatches = bcrypt.compareSync(req.body.password, user.password);
-
-//     if (!passwordMatches) {
-//       console.log("Password doesn't match");
-//       return res.status(400).json({
-//         message: "Authentication failed. Password  is incorrect.",
-//       });
-//     }
-//     // get permission from user roles
-//     const permissions = await prisma.role.findUnique({
-//       where: {
-//         id: user.roleId,
-//       },
-//       include: {
-//         rolePermission: {
-//           include: {
-//             permission: true,
-//           },
-//         },
-//       },
-//     });
-//     // store all permissions name to an array
-//     const permissionNames = permissions.rolePermission.map(
-//       (rp) => rp.permission.name
-//     );
-
-//     if (user) {
-//       const token = jwt.sign(
-//         { sub: user.id, permissions: permissionNames },
-//         secret,
-//         {
-//           expiresIn: "24h",
-//         }
-//       );
-//       const updatedUser = await prisma.user.update({
-//         where: { id: user.id },
-//         data: {
-//           firebaseToken: req.body.firebaseToken || user.firebaseToken,
-//           device: req.body.device || "Android",
-//         },
-//       });
-//       // updatedUser();
-//       const { password, ...userWithoutPassword } = user;
-//       return res.status(200).json({
-//         ...userWithoutPassword,
-//         token,
-//         message:"Login successfully"
-//       });
-//     }
-
-//   } catch (error) {
-// console.log(error)
-//     return res.status(502).json({ message: "Server is not responding. Please try again later." });
-
-//   }
-// };
 const login = async (req, res) => {
   try {
     const allUsers = await prisma.user.findMany();
@@ -163,8 +82,6 @@ const login = async (req, res) => {
     return res.status(502).json({ message: "Server is not responding. Please try again later." });
   }
 };
-
-
 const validate = async (req, res) => {
   try {
     const existingUserByEmail = await prisma.user.findFirst({
@@ -260,7 +177,7 @@ const register = async (req, res) => {
   if (req.body.manualleave) {
     remainingannualallowedleave = req.body.manualleave.toString();
   } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    remainingannualallowedleave = "0";
+    remainingannualallowedleave = "";
   } else {
     remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
   }
@@ -313,7 +230,7 @@ const register = async (req, res) => {
         //leaves section
         bankallowedleave:process.env.totalbankleaves,
         remaingbankallowedleave:process.env.totalremainbank,
-        annualallowedleave:"0",
+        annualallowedleave:"",
         remainingannualallowedleave:remainingannualallowedleave,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
@@ -467,99 +384,6 @@ return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
     return res.status(500).json({ message: error.message });
   }
 };
-
-
-// const getSingleUser = async (req, res) => {
-//   try {
-//     const singleUser = await prisma.user.findUnique({
-//       where: {
-//         id: Number(req.params.id),
-//       },
-//       include: {
-//         designationHistory: {
-//           include: {
-//             designation: true,
-//           },
-//         },
-//         salaryHistory: true,
-//         educations: true,
-//         location: true,
-//         employmentStatus: true,
-//         department: true,
-//         role: true,
-//         shift: true,
-//         leavePolicy: true,
-//         weeklyHoliday: true,
-//         awardHistory: {
-//           include: {
-//             award: true,
-//           },
-//         },
-//         leaveApplication: {
-//           orderBy: {
-//             id: "desc",
-//           },
-//           take: 5,
-//         },
-//         attendance: {
-//           orderBy: {
-//             id: "desc",
-//           },
-//           take: 1,
-//         },
-//       },
-//     });
-
-//     // calculate paid and unpaid leave days for the user for the current year
-//     const leaveDays = await prisma.leaveApplication.findMany({
-//       where: {
-//         userId: Number(req.params.id),
-//         status: "ACCEPTED",
-//         acceptLeaveFrom: {
-//           gte: new Date(new Date().getFullYear(), 0, 1),
-//         },
-//         acceptLeaveTo: {
-//           lte: new Date(new Date().getFullYear(), 11, 31),
-//         },
-//       },
-//     });
-//     const paidLeaveDays = leaveDays
-//       .filter((l) => l.leaveType === "PAID")
-//       .reduce((acc, item) => {
-//         return acc + item.leaveDuration;
-//       }, 0);
-//     const unpaidLeaveDays = leaveDays
-//       .filter((l) => l.leaveType === "UNPAID")
-//       .reduce((acc, item) => {
-//         return acc + item.leaveDuration;
-//       }, 0);
-
-//     singleUser.paidLeaveDays = paidLeaveDays;
-//     singleUser.unpaidLeaveDays = unpaidLeaveDays;
-//     singleUser.leftPaidLeaveDays =
-//       singleUser.leavePolicy.paidLeaveCount - paidLeaveDays;
-//     singleUser.leftUnpaidLeaveDays =
-//       singleUser.leavePolicy.unpaidLeaveCount - unpaidLeaveDays;
-//     const id = parseInt(req.params.id);
-//     // only allow admins and owner to access other user records. use truth table to understand the logic
-//     if (
-//       id !== req.auth.sub &&
-//       !req.auth.permissions.includes("readSingle-user")
-//     ) {
-//       return res
-//         .status(401)
-//         .json({ message: "Unauthorized. You are not an admin" });
-//     }
-
-//     if (!singleUser) return;
-//     const { password, ...userWithoutPassword } = singleUser;
-//     return res.status(200).json(userWithoutPassword);
-//   } catch (error) {
-//     return res.status(502).json({ message: "Server is not responding. Please try again later." });
-//   }
-// };
-
-
 const getSingleUser = async (req, res) => {
   try {
     const userId = Number(req.params.id);
@@ -834,7 +658,7 @@ let annualallowedleave;
       documents: req.body.documents ? req.body.documents : null,
       applicationStatus: req.body.applicationStatus,
       zipCode: req.body.zipCode,
-      
+      image: req.body.image,
       country: req.body.country,
       departmentId: req.body.departmentId,
       roleId: req.body.roleId,
@@ -1126,29 +950,6 @@ const updateSingleStatus = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-// const deleteSingleUser = async (req, res) => {
-//   const id = parseInt(req.params.id);
-//   // only allow admins to delete other user records
-//   if (!req.auth.permissions.includes("delete-user")) {
-//     return res
-//       .status(401)
-//       .json({ message: "Unauthorized. Only admin can delete." });
-//   }
-//   try {
-//     const deleteUser = await prisma.user.update({
-//       where: {
-//         id: Number(req.params.id),
-//       },
-//       data: {
-//         status: req.body.status,
-//       },
-//     });
-//     return res.status(200).json({ message: "User deleted successfully" });
-//   } catch (error) {
-//     return res.status(500).json({ message: error.message });
-//   }
-// };
 const deleteSingleUser = async (req, res) => {
   const userId = parseInt(req.params.id);
   // Check if the user exists
@@ -1219,8 +1020,6 @@ const deleteSingleUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-
 const changepassword = async (req, res) => {
   try {
     const { oldpassword, newpassword, email } = req.body;
@@ -1355,8 +1154,6 @@ const users_otpmatch = async (req, res) => {
     });
   }
 };
-
-
 const users_resetpassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -1403,10 +1200,6 @@ const users_resetpassword = async (req, res) => {
     });
   }
 };
-
-
-
-
 function sendnotifiy(Title, Body, Desc, Token) {
   try {
     const message = {
@@ -1428,9 +1221,6 @@ function sendnotifiy(Title, Body, Desc, Token) {
     console.log("Error:", error);
   }
 }
-
-
-
 module.exports = {
   login,
   register,
