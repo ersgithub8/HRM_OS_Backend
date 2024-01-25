@@ -242,6 +242,7 @@ const addrequest = async (req, res) => {
  const getAllrequest = async (req, res) => {
     try {
       const allRequests = await prisma.request.findMany({
+        orderBy: [{ id: 'desc' }],
         select: {
           id: true,
           FromScheduleId: true,

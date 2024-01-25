@@ -548,9 +548,6 @@ const getSingleLeave = async (req, res) => {
   }
 };
 
-
-
-
 const grantedLeave = async (req, res, next) => {
   try {
     const acceptLeaveFrom = new Date(req.body.acceptLeaveFrom);
@@ -1099,12 +1096,15 @@ const getAllLeave = async (req, res) => {
       array.push(x.id);
     }
     console.log(array);
-    const { skip, limit, status } = req.query;
+    const { skip, limit, status,employeeId } = req.query;
     const leave = await prisma.leaveApplication.findMany({
 
       where: {
         userId: { in: array },
         status: status,
+        user: {
+          employeeId: employeeId,
+        },
       },
       orderBy: [
         {

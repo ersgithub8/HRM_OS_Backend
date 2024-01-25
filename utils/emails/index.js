@@ -4,24 +4,24 @@ const rootPath = require("../rootPath");
 const path = require("path");
 
 //for hosting email
-var transporter = nodemailer.createTransport({
-  host: "backend.wise1ne.com",
+const transporter = nodemailer.createTransport({
+  host: "67.223.119.51",
   port: 465,
   secure: true,
   auth: {
-    user: "wmbchildcare@backend.wise1ne.com",
-    pass: "Alliswell11@",
+    user: "wise1newcb@wise1ne.com",
+    pass: "wK@wg!Po)SYg",
   },
   tls: {
     rejectUnauthorized: false,
   },
+  debug: true, // Add this line for debugging
 });
-
 
 
 // console.log(process.env.user);
 const createEmailOption = ({ receipentEmail, subject, body, html }) => ({
-  from: 'wmbchildcare@backend.wise1ne.com',
+  from: 'wise1newcb@wise1ne.com',
   to: receipentEmail,
   ...(subject && { subject }),
   ...(body && { body }),
@@ -34,7 +34,7 @@ transporter.verify((error, success) => {
     // next(error);
     return; //next(error.message);
   }
-  // console.log("email server is ready");
+  console.log("email server is ready");
 });
 
 const parseEmailTemplate = async (templateType, reqBody, next) => {
