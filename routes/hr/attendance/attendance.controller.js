@@ -1102,9 +1102,9 @@ const search = async (req, res) => {
         endDate.setHours(23, 59, 59);
   console.log(startDate);
   console.log(endDate,"en");
-        if (isNaN(startDate) || isNaN(endDate)) {
-          return res.status(400).json({ message: "Invalid date parameters." });
-        }
+        // if (isNaN(startDate) || isNaN(endDate)) {
+        //   return res.status(400).json({ message: "Invalid date parameters." });
+        // }
         const users = await prisma.user.findUnique({
           where: {
             id:parseInt(id)
