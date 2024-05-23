@@ -5,86 +5,252 @@ const { schedule } = require("node-cron");
 const e = require("cors");
 const admin = require("firebase-admin");
 var FCM = require("fcm-node");
+// const createShift = async (req, res) => {
+//   try {
+//     const userId = req.body.userId;
+    // const shiftDate = moment(req.body.shiftFrom).format('YYYY-MM-DD');
+    // const user = await prisma.user.findUnique({
+    //   where: {
+    //     id: userId,
+    //   },
+    //   include: {
+    //     shifts: {
+    //       include: {
+    //         schedule: true,
+    //       },
+    //     },
+    //   },
+    // });
+    // // console.log(user);
+    // if (user) {
+    //   // Iterate over the user's shifts and schedules to check for existing shiftDate and status
+    //   for (const shift of user.shifts) {
+    //     for (const schedule of shift.schedule) {
+    //       const scheduleDate = moment(schedule.shiftDate).format('YYYY-MM-DD');
+    //       // console.log(scheduleDate);
+    //       if (scheduleDate === shiftDate && schedule.status === true) {
+    //         return res.status(400).json({ message: "User already has a shift for this date" });
+    //       }
+    //     }
+    //   }
+    // }
+    
+//     const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
+//     const totalMinutes = timeDiff / (1000 * 60);
+//     const hours = Math.floor(totalMinutes / 60);
+//     const minutes = totalMinutes % 60;
+//     const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+
+//     let displayValue;
+//     if (workHour < 1) {
+//       displayValue = `${minutes} min`;
+//     } else {
+//       displayValue = `${workHour} hr`;
+//     }
+
+//     const createShiftData = {
+//       name: req.body.name,
+//       shiftFrom: new Date(req.body.shiftFrom),
+//       shiftTo: new Date(req.body.shiftTo),
+//       weekNumber: req.body.weekNumber,
+//       userId: req.body.userId,
+//       locationId: req.body.locationId,
+//       assignedBy: req.auth.sub,
+//       status: req.body.status,
+//       generalInfo: req.body.generalInfo,
+//       schedule: req.body.schedule ? {
+//         create: req.body.schedule.map((e) => {
+//           const scheduleData = {
+//             day: e.day,
+//             shiftDate: e.shiftDate,
+//             startTime: e.startTime ? new Date(e.startTime) : null,
+//             endTime: e.endTime ? new Date(e.endTime) : null,
+//             breakTime: e.breakTime ? e.breakTime : null,
+//             roomId: e.roomId ? e.roomId : null,
+//             folderTime: e.folderTime ? e.folderTime : null,
+//             status: e.status
+
+//           };
+
+          // if (e.startTime && e.endTime) {
+          //   const timeDiff = moment(e.endTime).diff(moment(e.startTime));
+          //   const totalMinutes = timeDiff / (1000 * 60);
+          //   const hours = Math.floor(totalMinutes / 60);
+          //   const minutes = totalMinutes % 60;
+          //   const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+          //   scheduleData.workHour = workHour;
+          // } else {
+          //   scheduleData.workHour = null;
+          // }
+
+//           return scheduleData;
+//         }),
+//       } : {},
+//     };
+
+//     const createShiftResult = await prisma.shifts.create({
+//       data: createShiftData,
+//     });
+//     const Title = 'Shift added';
+//     const Body = 'Your shift has been added';
+//     const Desc = 'Shift marked notification';
+//     const Token = user.firebaseToken;
+//     // const Device = user.device;
+//     console.log(Title, Body, Desc, Token);
+//     sendnotifiy(Title, Body, Desc, Token);
+//     return res.status(200).json({ createShift: createShiftResult, message: "Shift created successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(400).json({ message: 'Failed to create shift' });
+//   }
+// };
 const createShift = async (req, res) => {
   try {
-    const userId = req.body.userId;
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      include: {
-        shifts: {
-          include: {
-            schedule: true,
+    // Extract necessary data from the request
+    const { userId, shiftFrom, shiftTo, name, weekNumber, locationId, status, generalInfo, schedule } = req.body;
+    // Check if userIds is an array or a single user ID
+    const userIdArray = Array.isArray(userId) ? userId : [userId];
+    if (userIdArray.length === 0) {
+      return res.status(400).json({ message: "Plase select at least one user" });
+    }
+    // Iterate over the user IDs
+    for (const userId of userIdArray) {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          shifts: {
+            include: {
+              schedule: true,
+            },
           },
         },
-      },
-    });
-    const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: `User with ID  not found` });
+      }     
+      // Initialize an array to store user names with shifts on the specified date
+const conflictingUserNames = [];
+
+// Iterate over the user's shifts and schedules to check for existing shiftDate and status
+for (const shift of user.shifts) {
+  for (const schedule of shift.schedule) {
+    const scheduleDate = moment(schedule.shiftDate).format('YYYY-MM-DD');
+    // Extract only the date part from shiftFrom
+    const shiftFromDate = moment(shiftFrom).format('YYYY-MM-DD');
+    // Check if the scheduleDate matches the shiftFromDate and schedule status is true
+    if (scheduleDate === shiftFromDate && schedule.status === true) {
+      // Add the user's name to the array
+      conflictingUserNames.push(user.firstName);
+      // Break out of the inner loop as we found a conflict for the current user
+      break;
+    }
+  }
+}
+
+// Check if there are conflicting users
+if (conflictingUserNames.length > 0) {
+  // Construct the error message with the names of conflicting users
+  const errorMessage = `Users ${conflictingUserNames.join(', ')} already have shifts for this date`;
+  return res.status(400).json({ message: errorMessage });
+}
+
+
+      
+      
+    }
+
+    // Calculate work hour based on start and end time
+    const timeDiff = moment(shiftTo).diff(moment(shiftFrom));
     const totalMinutes = timeDiff / (1000 * 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+    const workHour = parseFloat(`${hours<12?'0':''}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
 
-    let displayValue;
-    if (workHour < 1) {
-      displayValue = `${minutes} min`;
-    } else {
-      displayValue = `${workHour} hr`;
-    }
-
+    // Create shift data object
     const createShiftData = {
-      name: req.body.name,
-      shiftFrom: new Date(req.body.shiftFrom),
-      shiftTo: new Date(req.body.shiftTo),
-      weekNumber: req.body.weekNumber,
-      userId: req.body.userId,
-      locationId: req.body.locationId,
+      name,
+      shiftFrom: new Date(shiftFrom),
+      shiftTo: new Date(shiftTo),
+      weekNumber,
+      locationId,
       assignedBy: req.auth.sub,
-      status: req.body.status,
-      generalInfo: req.body.generalInfo,
-      schedule: req.body.schedule ? {
-        create: req.body.schedule.map((e) => {
-          const scheduleData = {
-            day: e.day,
-            shiftDate: e.shiftDate,
-            startTime: e.startTime ? new Date(e.startTime) : null,
-            endTime: e.endTime ? new Date(e.endTime) : null,
-            breakTime: e.breakTime ? e.breakTime : null,
-            roomId: e.roomId ? e.roomId : null,
-            folderTime: e.folderTime ? e.folderTime : null,
-            status: e.status
-
-          };
-
-          if (e.startTime && e.endTime) {
-            const timeDiff = moment(e.endTime).diff(moment(e.startTime));
-            const totalMinutes = timeDiff / (1000 * 60);
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-            scheduleData.workHour = workHour;
-          } else {
-            scheduleData.workHour = null;
+      status,
+      generalInfo,
+      schedule: schedule
+        ? {
+            create: schedule.map((e) => {
+              const scheduleData = {
+                day: e.day,
+                shiftDate: e.shiftDate,
+                startTime: e.startTime ? new Date(e.startTime) : null,
+                endTime: e.endTime ? new Date(e.endTime) : null,
+                breakTime: e.breakTime || null,
+                roomId: e.roomId || null,
+                folderTime: e.folderTime || null,
+                status: e.status,
+                workHour: e.startTime && e.endTime ? workHour : null, // Update workHour
+              };
+              if (e.startTime && e.endTime) {
+                const timeDiff = moment(e.endTime).diff(moment(e.startTime));
+                const totalMinutes = timeDiff / (1000 * 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                const workHour = parseFloat(`${hours<12?'0':''}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+                scheduleData.workHour = workHour;
+              } else {
+                scheduleData.workHour = null;
+              }
+              return scheduleData;
+            }),
           }
-
-          return scheduleData;
-        }),
-      } : {},
+        : {},
     };
 
-    const createShiftResult = await prisma.shifts.create({
-      data: createShiftData,
+    // Create shifts for each user
+    const createShiftResults = await Promise.all(
+      userIdArray.map(async (userId) => {
+        const result = await prisma.shifts.create({
+          data: { ...createShiftData, userId },
+        });
+        return result;
+      })
+    );
+    // const user = await prisma.user.findMany({ where: { status: true } })
+    // // console.log(user);
+    // const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
+    // const newTokens = tokenArray.filter(item => item !== null)
+   
+    //   const Title = 'Shift added';
+    //   const Body = 'Your shift has been added';
+    //   const Desc = 'Shift marked notification';
+    //   // const Token = user.firebaseToken;
+    //   sendNotify(Title, Body, Desc, newTokens);
+   
+    const usersForNotification = await prisma.user.findMany({
+      where: {
+        id: {
+          in: userIdArray,
+        },
+        status: true,
+      },
     });
-    const Title = 'Shift added';
-    const Body = 'Your shift has been added';
-    const Desc = 'Shift marked notification';
-    const Token = user.firebaseToken;
-    // const Device = user.device;
-    console.log(Title, Body, Desc, Token);
-    sendnotifiy(Title, Body, Desc, Token);
-    return res.status(200).json({ createShift: createShiftResult, message: "Shift created successfully" });
+    
+    // Extract Firebase tokens for users in userIdArray
+    const tokensForNotification = usersForNotification
+      .map((user) => user.firebaseToken)
+      .filter((token) => token !== null);
+    
+    // Send notifications only to users with tokens
+    if (tokensForNotification.length > 0) {
+      const Title = 'Shift added';
+      const Body = 'Your shift has been added';
+      const Desc = 'Shift marked notification';
+      sendNotify(Title, Body, Desc, tokensForNotification);
+    }
+    return res.status(200).json({ createShift: createShiftResults, message: 'Shifts created successfully' });
   } catch (error) {
     console.error(error);
     return res.status(400).json({ message: 'Failed to create shift' });
@@ -568,7 +734,7 @@ const updateSingleShift = async (req, res) => {
     const Token = user.firebaseToken;
     // const Device = user.device;
     console.log(Title, Body, Desc, Token);
-    sendnotifiy(Title, Body, Desc, Token);
+    sendNotify(Title, Body, Desc, Token);
     return res.status(200).json({
       updatedShift,
       message: "Shift updated succssfully"
@@ -720,25 +886,34 @@ const swapSingleShiftRequest = async (req, res) => {
     return res.status(400).json({ message: 'Failed to update schedule items' });
   }
 };
-function sendnotifiy(Title, Body, Desc, Token) {
+async function sendNotify(title, body, desc, tokens) {
   try {
-    const message = {
+    const messages = tokens.map((token) => ({
       notification: {
-        title: Title,
-        body: Body,
+        title: title,
+        body: body,
       },
-      token: Token,
-    };
-    admin
-      .messaging()
-      .send(message)
-      .then((response) => { console.log("Notification Send ....") })
-      .catch((error) => {
-        console.log("Error sending notification:", error);
-      });
+      token: token,
+    }));
+
+    const sendPromises = messages.map((message) =>
+      admin.messaging().send(message)
+    );
+
+    const results = await Promise.allSettled(sendPromises);
+
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        console.log(`Notification sent to token ${tokens[index]}`);
+      } else {
+        console.log(
+          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+        );
+      }
+    });
 
   } catch (error) {
-    console.log("Error:", error);
+    console.error("Error sending notifications:", error);
   }
 }
 module.exports = {

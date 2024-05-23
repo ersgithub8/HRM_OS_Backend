@@ -66,6 +66,17 @@ model user {
   applicationStatus           String               @default("PENDING")
   createdAt                   DateTime             @default(now())
   updatedAt                   DateTime             @updatedAt
+  address1                    String?
+  companyname1                String?
+  designation1                String?
+  emp_email                   String?
+  emp_email1                  String?
+  emp_name                    String?
+  emp_name1                   String?
+  emp_telno                   String?
+  emp_telno1                  String?
+  end_date1                   DateTime?
+  joining_date1               DateTime?
   attendance                  attendance[]
   awardHistory                awardHistory[]
   designationHistory          designationHistory[]
@@ -535,7 +546,6 @@ model room {
 
 model shifts {
   id          Int        @id @default(autoincrement())
-  name        String?
   locationId  Int?
   shiftFrom   DateTime?
   shiftTo     DateTime?
@@ -546,6 +556,7 @@ model shifts {
   status      Boolean    @default(true)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  name        String?
   schedule    Schedule[]
   location    location?  @relation(fields: [locationId], references: [id])
   user        user?      @relation(fields: [userId], references: [id])

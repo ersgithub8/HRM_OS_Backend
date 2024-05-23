@@ -207,6 +207,29 @@ const updateSingleLeavePolicy = async (req, res) => {
   }
 };
 
+// const deleteSingleLeavePolicy = async (req, res) => {
+//   try {
+//     const deletedLeavePolicy = await prisma.leavePolicy.delete({
+//       where: {
+//         id: parseInt(req.params.id),
+//       },
+//     });
+//     const updatedUsers = await prisma.user.updateMany({
+//       where: {
+//         leavePolicyId: leavePolicyId,
+//       },
+//       data: {
+//         annualallowedleave: null,
+//         remainingannualallowedleave: null,
+//       },
+//     });
+// console.log(updatedUsers);
+//     return res.status(200).json({deletedLeavePolicy,updatedUsers
+//     });
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message });
+//   }
+// };
 const deleteSingleLeavePolicy = async (req, res) => {
   try {
     const deletedLeavePolicy = await prisma.leavePolicy.delete({
@@ -214,17 +237,18 @@ const deleteSingleLeavePolicy = async (req, res) => {
         id: parseInt(req.params.id),
       },
     });
-    const updatedUsers = await prisma.user.updateMany({
-      where: {
-        leavePolicyId: leavePolicyId,
-      },
-      data: {
-        annualallowedleave: null,
-        remainingannualallowedleave: null,
-      },
-    });
+    // const updatedUsers = await prisma.user.updateMany({
+    //   where: {
+    //     leavePolicyId: leavePolicyId,
+    //   },
+    //   data: {
+    //     annualallowedleave: null,
+    //     remainingannualallowedleave: null,
+    //   },
+    // });
 
-    return res.status(200).json({deletedLeavePolicy,updatedUsers
+    return res.status(200).json({deletedLeavePolicy
+    // ,updatedUsers
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });

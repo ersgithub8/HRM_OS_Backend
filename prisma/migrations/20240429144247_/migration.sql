@@ -58,6 +58,17 @@ CREATE TABLE "user" (
     "applicationStatus" TEXT NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "address1" TEXT,
+    "companyname1" TEXT,
+    "designation1" TEXT,
+    "emp_email" TEXT,
+    "emp_email1" TEXT,
+    "emp_name" TEXT,
+    "emp_name1" TEXT,
+    "emp_telno" TEXT,
+    "emp_telno1" TEXT,
+    "end_date1" TIMESTAMP(3),
+    "joining_date1" TIMESTAMP(3),
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -554,7 +565,6 @@ CREATE TABLE "room" (
 -- CreateTable
 CREATE TABLE "shifts" (
     "id" SERIAL NOT NULL,
-    "name" TEXT,
     "locationId" INTEGER,
     "shiftFrom" TIMESTAMP(3),
     "shiftTo" TIMESTAMP(3),
@@ -565,6 +575,7 @@ CREATE TABLE "shifts" (
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "name" TEXT,
 
     CONSTRAINT "shifts_pkey" PRIMARY KEY ("id")
 );

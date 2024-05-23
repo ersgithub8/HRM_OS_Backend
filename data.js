@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const path = require("path");
 const { join } = require('path');
+const fs=require("fs")
 const app = express();
 app.use(express.static(path.join(__dirname, "./public")));
 app.use(express.urlencoded({ extended: true }));
@@ -22,7 +23,9 @@ let allowedOrigins = [
   "http://4.227.140.35:3000",
   "http://3.111.150.18:3000",
   "https://www.wise1ne.com",
-  "http://www.wise1ne.com"
+  "https://www.wise1ne.com",
+  "https://www.app.wise1ne.com/",
+  "https://app.wise1ne.com/",
 ];
 
 const admin = require("firebase-admin");
@@ -94,10 +97,10 @@ const storage = multer.diskStorage({
         folder = 'uploads';
     }
 
-    cb(null, `./uploads/${folder}`); 
+    cb(null, `./uploads/${folder}`);
   },
   filename: function (req, file, cb) {
-    const uniqueIdentifier = Date.now(); 
+    const uniqueIdentifier = Date.now();
     const ext = path.extname(file.originalname);
     const fileName = `${uniqueIdentifier}${ext}`;
     cb(null, fileName);
@@ -105,7 +108,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.originalname.match(/\.(mp4|jpeg|jpg|png|pdf|gif)$/)) {
+  if (file.originalname.match(/\.(mp4|jpeg|jpg|png|pdf|gif|svg|txt|docs|csv|rtf|webp|zip)$/)) {
     cb(null, true);
   } else {
     cb(null, false);
@@ -151,7 +154,39 @@ app.post("/upload", uploadimagesimple.fields([
     return res.status(400).json({ message: "Image upload failed" });
   }
 });
+app.delete('/delete/:fileType', async (req, res) => {
+  const { fileType } = req.params;
 
+  if (!['image', 'firstaid', 'dbscheck', 'safeguard', 'attachment', 'adminattachment', 'userAttachment', 'contractAttachment'].includes(fileType)) {
+    return res.status(400).json({ message: 'Invalid file type', error: true });
+  }
+
+  try {
+    const filePath = req.body.filePath; // Assuming you pass the file path in the request body
+
+    // Ensure the file path is within the "uploads" directory
+    // if (!filePath.startsWith('./uploads')) {
+    //   return res.status(400).json({ message: 'Invalid file path', error: true });
+    // }
+
+    // Check if the file exists
+    await fs.promises.access(filePath, fs.constants.F_OK);
+
+
+    // Delete the file
+    await fs.promises.unlink(filePath, fs.constants.F_OK);
+
+
+    return res.status(200).json({ message: 'File deleted successfully', error: false });
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'ENOENT') {
+      return res.status(404).json({ message: 'File not found', error: true });
+    } else {
+      return res.status(500).json({ message: 'Failed to delete the file', error: true });
+    }
+  }
+});
 /* Routes */
 app.use(
   "/role-permission",

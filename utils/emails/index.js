@@ -3,19 +3,19 @@ const ejs = require("ejs");
 const rootPath = require("../rootPath");
 const path = require("path");
 
-//for hosting email
+const forgotPasswordFilePath = path.join(__dirname, "templates");
+
 const transporter = nodemailer.createTransport({
-  host: "67.223.119.51",
-  port: 465,
-  secure: true,
+  host: "mail.wise1ne.com",
+  port: 587,
+  secure: false,
   auth: {
     user: "wise1newcb@wise1ne.com",
     pass: "wK@wg!Po)SYg",
   },
   tls: {
     rejectUnauthorized: false,
-  },
-  debug: true, // Add this line for debugging
+  }
 });
 
 
@@ -86,7 +86,7 @@ const parseEmailTemplate = async (templateType, reqBody, next) => {
 
   if (!template) return next("target template not exist");
 
-  template = path.join(rootPath, "utils", "emails", "templates", template);
+  template = path.join(forgotPasswordFilePath, template);
 
   const html = await ejs.renderFile(template, reqBody);
 
@@ -107,16 +107,20 @@ const sendEmail = async (templateType, reqData, next) => {
       subject: template.subject,
     });
     console.log("mail: " + mailOption);
-
+    
     const sendInfo = await transporter.sendMail(mailOption);
 
     if (sendInfo) {
       console.log(
         `${templateType} email send successfully to ${reqData.email}`
       );
+      return `${templateType} email send successfully to ${reqData.email}`;
+    }else{
+      return "Email not sent";
     }
   } catch (error) {
     console.log(error.message);
+    return error.message;
   }
 };
 

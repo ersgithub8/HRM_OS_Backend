@@ -211,8 +211,19 @@ const register = async (req, res) => {
         joining_date:req.body.joining_date,
         end_date:req.body.end_date,
         address:req.body.address,
+        emp_name:req.body.emp_name,
+        emp_email:req.body.emp_email,
+        emp_telno:req.body.emp_telno,
         reference_contact:req.body.reference_contact,
         referencecontacttwo:req.body.referencecontacttwo,
+        companyname1:req.body.companyname1,
+        designation1:req.body.designation1,
+        joining_date1:req.body.joining_date1,
+        end_date1:req.body.end_date1,
+        address1:req.body.address1,
+        emp_name1:req.body.emp_name1,
+        emp_email1:req.body.emp_email1,
+        emp_telno1:req.body.emp_telno1,
         street: req.body.street ? req.body.street:null,
         city: req.body.city ? req.body.city : null,
         state: req.body.state ? req.body.state : null,
@@ -268,10 +279,10 @@ const register = async (req, res) => {
       },
     });
     const { password, ...userWithoutPassword } = createUser;
-    return res.status(200).json({userWithoutPassword,
-    message:"User register successfully"});
+    return res.status(200).json({ userWithoutPassword, message: "User registered successfully" });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error(error);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -671,7 +682,11 @@ let annualallowedleave;
       remainingannualallowedleave:remainingannualallowedleave,
       annualallowedleave:annualallowedleave,
       contractAttachment: req.body.contractAttachment||null,
-
+      firstaid: req.body.firstaid,
+      dbscheck: req.body.dbscheck,
+      dbschecktext: req.body.dbschecktext,
+      contractAttachment: req.body.contractAttachment,
+      safeguarding: req.body.safeguarding,
     };
 
     if (req.auth.permissions.includes("update-user")) {
@@ -737,6 +752,7 @@ let annualallowedleave;
       const Desc = 'Application notification';
       sendnotifiy(Title, Body,Desc, Token);
     }
+    
     return res.status(200).json({
       userWithoutPassword,
       message: "User  updated successfully",
@@ -832,6 +848,88 @@ const updateSingleUserprofile = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+const updateSingleUserdocument = async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+    return res.status(401).json({
+      message: "Unauthorized. You can only edit your own record.",
+    });
+  }
+
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+
+    // Initialize an array to track the updated fields
+    const updatedFields = [];
+
+    let updateData = {
+      image: req.body.image,
+      firstaid: req.body.firstaid,
+      dbscheck: req.body.dbscheck,
+      safeguarding: req.body.safeguarding,
+      contractAttachment: req.body.contractAttachment,
+    };
+
+    // Check each field for updates and add to the updatedFields array
+  // Check each field for updates and add to the updatedFields array
+if (req.body.image !== undefined) updatedFields.push("Image");
+if (req.body.firstaid !== undefined) updatedFields.push("Firstaid document");
+if (req.body.dbscheck !== undefined) updatedFields.push("Dbs document");
+if (req.body.safeguarding !== undefined) updatedFields.push("Safeguarding document");
+if (req.body.contractAttachment !== undefined) updatedFields.push("ContractAttachment document");
+
+
+    if (req.auth.permissions.includes("update-user")) {
+      updateData = {
+        ...updateData,
+        userName: req.body.userName || existingUser.userName,
+        phone: req.body.phone || existingUser.phone,
+        zipCode: req.body.zipCode || existingUser.zipCode,
+        joinDate: req.body.joinDate || existingUser.joinDate,
+        leaveDate: req.body.leaveDate || existingUser.leaveDate,
+      };
+ 
+      // owner can change only password
+      updateData.password = req.body.password;
+    
+    }
+
+    const updateUser = await prisma.user.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: updateData,
+    });
+
+    const { password, ...userWithoutPassword } = updateUser;
+
+    // Construct the message based on the updatedFields array
+    const message = updatedFields.length > 0
+      ? `${updatedFields.join(', ')} deleted successfully`
+      : 'No fields deleted';
+
+    return res.status(200).json({
+      userWithoutPassword,
+      message,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
 const updateSingleUserphone = async (req, res) => {
   const id = parseInt(req.params.id);
 
@@ -1072,10 +1170,21 @@ const changepassword = async (req, res) => {
 
 const users_forgot_password = async (req, res) => {
   try {
-    const { email } = req.body;
+    // const { email } = req.body;
+    if (req.body.email === "") {
+      return res.status(404).json({
+        message: "Email is required.",
+        error: true,
+      });
+    }
+  
+    if (req.body.email) {
+      let a = req.body.email.toLowerCase();
+      req.body.email = a;
+    }
 
     const user = await prisma.user.findUnique({
-      where: { email: email },
+      where: { email: req.body.email },
     });
 
     if (!user) {
@@ -1086,7 +1195,7 @@ const users_forgot_password = async (req, res) => {
     const resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
 
     await prisma.user.update({
-      where: { email: email }, // Use email to identify the user
+      where: { email: req.body.email }, // Use email to identify the user
       data: {
         resetPasswordToken: resetPasswordToken,
         resetPasswordExpires: resetPasswordExpires,
@@ -1094,7 +1203,7 @@ const users_forgot_password = async (req, res) => {
     });
 
     // Call your sendEmail function here
-    await sendEmail("requestForgotPassword", {
+    let dd = await sendEmail("requestForgotPassword", {
       token: resetPasswordToken, // Use resetPasswordToken here
       email: req.body.email, // Use email from req.body here
       firstName: user.firstName,
@@ -1102,7 +1211,7 @@ const users_forgot_password = async (req, res) => {
 
     });
 
-    return res.status(200).json({ message: 'OTP code is send to your email', email: user.email });
+    return res.status(200).json({ message: 'OTP code is send to your email', email: user.email, dd });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Something went wrong' });
@@ -1111,13 +1220,23 @@ const users_forgot_password = async (req, res) => {
 
 const users_otpmatch = async (req, res) => {
   try {
-    const { email, resetPasswordToken, password } = req.body;
-
+    const {resetPasswordToken, password } = req.body;
+    if (req.body.email === "") {
+      return res.status(404).json({
+        message: "Email is required.",
+        error: true,
+      });
+    }
+  
+    if (req.body.email) {
+      let a = req.body.email.toLowerCase();
+      req.body.email = a;
+    }
     // Check if the reset password token is still valid (expires in the future)
     const user = await prisma.user.findFirst({
       where: {
-        email: email,
-        resetPasswordToken: resetPasswordToken,
+        email: req.body.email,
+        resetPasswordToken:resetPasswordToken,
         resetPasswordExpires: {
           gte: new Date(), // Ensure the field is a date type in your database
         },
@@ -1136,7 +1255,7 @@ const users_otpmatch = async (req, res) => {
 
     // Update the user's password and reset token/expiry
     await prisma.user.update({
-      where: { email: email },
+      where: { email: req.body.email },
       data: {
         resetPasswordToken: resetPasswordToken,
 
@@ -1156,12 +1275,23 @@ const users_otpmatch = async (req, res) => {
 };
 const users_resetpassword = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
+    const {password } = req.body;
+    if (req.body.email === "") {
+      return res.status(404).json({
+        message: "Email is required.",
+        error: true,
+      });
+    }
+  
+    if (req.body.email) {
+      let a = req.body.email.toLowerCase();
+      req.body.email = a;
+    }
+    
     // Check if the reset password token is still valid (expires in the future)
     const user = await prisma.user.findFirst({
       where: {
-        email: email,
+        email: req.body.email,
         resetPasswordExpires: {
           gte: new Date(), // Ensure the field is a date type in your database
         },
@@ -1180,7 +1310,7 @@ const users_resetpassword = async (req, res) => {
 
     // Update the user's password and reset token/expiry
     await prisma.user.update({
-      where: { email: email },
+      where: { email: req.body.email },
       data: {
         password: hashedPassword,
         resetPasswordToken: null,
@@ -1236,4 +1366,5 @@ module.exports = {
   updateSingleUserphone,
   validate,
   updateSingleStatus,
+  updateSingleUserdocument
 };

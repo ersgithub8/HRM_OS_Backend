@@ -14,7 +14,8 @@ const {
   updateSingleUserprofile,
   updateSingleUserphone,
   validate,
-  updateSingleStatus
+  updateSingleStatus,
+  updateSingleUserdocument
 } = require("./user.controller.js");
 const userRoutes = express.Router();
 
@@ -35,6 +36,7 @@ userRoutes.post("/forgot", users_forgot_password); // public route
 userRoutes.post("/otp", users_otpmatch); // public route
 userRoutes.post("/restpassword", users_resetpassword); // public route
 userRoutes.put("/status/:id", authorize("update-user"), updateSingleStatus);
+userRoutes.put("/doc/:id", authorize("update-user"), updateSingleUserdocument); // authenticated users can update their own and updateUser
 
 
 

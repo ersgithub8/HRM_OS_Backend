@@ -118,47 +118,101 @@ const createmeeting = async (req, res) => {
 const getAllMeeting = async (req, res) => {
   try {
     const { date } = req.query;
-    const meetingDate = new Date(date);
-    const meetings = await prisma.meeting.findMany({
-      where: {
-        meetingdate: meetingDate,
-      },
-      select: {
-        id: true,
-        meetingdate: true,
-        startTime: true,
-        endTime: true,
-        meetingType: true,
-        meetingLink: true,
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-            employeeId: true,
-            department: true,
-          },
-        },
-        department: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        location: {
-          select: {
-            id: true,
-            locationName: true,
-          },
-        },
-        assignedBy: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
 
-    return res.status(200).json(meetings);
+    if (date) {
+      // If date query parameter is provided, return meetings for that specific date
+      const meetingDate = new Date(date);
+      const meetings = await prisma.meeting.findMany({
+        
+        where: {
+          meetingdate: meetingDate,
+        },
+        orderBy: [
+          {
+            id: "desc",
+          },
+        ],
+        select: {
+          id: true,
+          meetingdate: true,
+          startTime: true,
+          endTime: true,
+          meetingType: true,
+          meetingLink: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+              employeeId: true,
+              department: true,
+            },
+          },
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          location: {
+            select: {
+              id: true,
+              locationName: true,
+            },
+          },
+          assignedBy: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      
+      return res.status(200).json(meetings);
+    } else {
+      // If no date query parameter is provided, return all meetings
+      const meetings = await prisma.meeting.findMany({
+        orderBy: [
+          {
+            id: "desc",
+          },
+        ],
+        select: {
+          id: true,
+          meetingdate: true,
+          startTime: true,
+          endTime: true,
+          meetingType: true,
+          meetingLink: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+              employeeId: true,
+              department: true,
+            },
+          },
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          location: {
+            select: {
+              id: true,
+              locationName: true,
+            },
+          },
+          assignedBy: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      
+      return res.status(200).json(meetings);
+    }
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }

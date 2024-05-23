@@ -263,10 +263,10 @@ async function main() {
       },
     });
   }
-  const adminHash = await bcrypt.hash("admin", saltRounds);
+  const adminHash = await bcrypt.hash("asdf1234", saltRounds);
   await prisma.user.create({
     data: {
-      firstName: "HRM1",
+      firstName: "HRM",
       lastName: "Wise1ne",
       userName: "admin",
       email:"admin@gmail.com",

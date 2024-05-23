@@ -101,23 +101,42 @@ const getSingleEmployment = async (req, res) => {
 
 const deletedEmployment = async (req, res) => {
   try {
-    const deletedEmployment = await prisma.employmentStatus.update({
+    const deletedEmployment = await prisma.employmentStatus.delete({
       where: {
         id: Number(req.params.id),
       },
-      data: {
-        status: req.body.status,
-      },
+      // data: {
+      //   status: req.body.status,
+      // },
     });
-    return res.status(200).json(deletedEmployment);
+    return res.status(200).json({message:"Employment deleted successfully"});
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
-
+const updateEmployment = async (req, res) => {
+  try {
+    const updateEmployment = await prisma.employmentStatus.update({
+      where: {
+        id: Number(req.params.id),
+      },
+      data: {
+        name:req.body.name,
+        colourValue:req.body.colourValue,
+        description:req.body.description,
+        // status: req.body.status,
+      },
+    });
+    return res.status(200).json({updateEmployment,
+    message:"Employment status updated successfully"});
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
 module.exports = {
   createSingleEmployment,
   getAllEmployment,
   getSingleEmployment,
   deletedEmployment,
+  updateEmployment,
 };

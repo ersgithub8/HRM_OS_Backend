@@ -8,17 +8,50 @@ const addrequest = async (req, res) => {
   try {
     const { FromScheduleId, ToScheduleId, userId } = req.body;
 
-     const fromSchedule = await prisma.schedule.findUnique({
+    //  const fromSchedule = await prisma.schedule.findUnique({
+    //   where: { id: FromScheduleId },
+    //   include: {
+    //     shifts: {
+    //       include: {
+    //         user: true,
+    //       },
+    //     },
+    //   },
+
+      
+    // });
+
+    // const toSchedule = await prisma.schedule.findUnique({
+    //   where: { id: ToScheduleId },
+    //   include: {
+    //     shifts: {
+    //       include: {
+    //         user: true,
+    //       },
+    //     },
+    //   },
+
+      
+    // });
+   
+
+    const fromSchedule = await prisma.schedule.findUnique({
       where: { id: FromScheduleId },
       include: {
         shifts: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                location: true, // Assuming 'location' is a field in the 'user' model
+                firebaseToken: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
-
-      
     });
 
     const toSchedule = await prisma.schedule.findUnique({
@@ -26,16 +59,34 @@ const addrequest = async (req, res) => {
       include: {
         shifts: {
           include: {
-            user: true,
+            user: {
+              select: {
+                id: true,
+                location: true, // Assuming 'location' is a field in the 'user' model
+                firebaseToken: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
-
-      
     });
     const fromUser = fromSchedule.shifts.user;
     const toUser = toSchedule.shifts.user;
+console.log(fromSchedule.shifts.user.location,"from");
+console.log(toSchedule.shifts.user.location,"to");
 
+console.log(fromUser.location.latitude, fromUser.location.longitude, "from");
+console.log(toUser.location.latitude, toUser.location.longitude, "to");
+
+if (
+  fromUser.location.latitude !== toUser.location.latitude ||
+  fromUser.location.longitude !== toUser.location.longitude
+) {
+  return res.status(400).json({ message: "Request not created locations are different." });
+}
+// return
     const fromStartDate = new Date(fromSchedule.startTime);
     const fromEndDate = new Date(fromSchedule.endTime);
     const toStartDate = new Date(toSchedule.startTime);

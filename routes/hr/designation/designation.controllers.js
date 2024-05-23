@@ -67,7 +67,23 @@ const getAllDesignation = async (req, res) => {
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
-  } else {
+  }else if (req.query.status === 'true') { // Note the comparison to 'true' as a string
+    try {
+      // Get all designations with status set to true
+      const allDesignation = await prisma.designation.findMany({
+        where: {
+          status: true,
+        },
+        orderBy: {
+          id: "desc",
+        },
+      });
+      return res.status(200).json(allDesignation);
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
+   else {
     const { skip, limit } = getPagination(req.query);
     try {
       // get all designation paginated
