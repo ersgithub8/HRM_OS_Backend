@@ -2,7 +2,7 @@ const prisma = require("../../utils/prisma");
 const sendEmail = require("../../utils/emails")
 require("dotenv").config();
 const crypto = require("crypto");
-const hirarchy=require("../hr/hirarchy/hirarchy.controller")
+const hirarchy = require("../hr/hirarchy/hirarchy.controller")
 const moment = require('moment');
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
@@ -22,7 +22,7 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Authentication failed. Username is incorrect." });
     }
 
-     if (user.applicationStatus === "PENDING") {
+    if (user.applicationStatus === "PENDING") {
       return res.status(401).json({ message: "Authentication failed. User account is not approved." });
     }
     if (user.applicationStatus === "REJECTED") {
@@ -120,7 +120,7 @@ const validate = async (req, res) => {
     //   return res.status(400).json({ message: "EmployeeId already exists." });
     // }
     return res.status(200).json({
-      message:"Validate successfully"
+      message: "Validate successfully"
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -165,24 +165,32 @@ const register = async (req, res) => {
     //   return res.status(400).json({ message: "EmployeeId already exists." });
     // }
     const leavs = req.body.leavePolicyId
-    ? await prisma.leavePolicy.findUnique({
+      ? await prisma.leavePolicy.findUnique({
         where: {
           id: req.body.leavePolicyId,
         },
       })
-    : null;
-  
-  let remainingannualallowedleave;
-  
-  if (req.body.manualleave) {
-    remainingannualallowedleave = req.body.manualleave.toString();
-  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    remainingannualallowedleave = "";
-  } else {
-    remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-  }
+      : null;
+
+    let remainingannualallowedleave;
+
+    if (req.body.manualleave) {
+      remainingannualallowedleave = req.body.manualleave.toString();
+    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+      remainingannualallowedleave = "";
+    } else {
+      remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+    }
     const join_date = new Date();
     const leave_date = req.body.leaveDate ? req.body.leaveDate : null;
+
+    const allPublicHoliday = await prisma.publicHoliday.findMany({
+      orderBy: [
+        {
+          id: "desc",
+        },
+      ],
+    });
 
     const hash = await bcrypt.hash(req.body.password, saltRounds);
     const createUser = await prisma.user.create({
@@ -190,30 +198,30 @@ const register = async (req, res) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         userName: req.body.userName,
-        firebaseToken:req.body.firebaseToken,
+        firebaseToken: req.body.firebaseToken,
         password: hash,
         email: req.body.email,
         phone: req.body.phone,
         dob: req.body.dob,
-        applicationStatus:req.body.applicationStatus,
-        emergencycontact:req.body.emergencycontact,
-        nicno:req.body.nicno,
-        identitystatus:req.body.identitystatus,
-        firstaid:req.body.firstaid,
-        firstaidtext:req.body.firstaidtext,
-        dbscheck:req.body.dbscheck,
-        dbschecktext:req.body.dbschecktext,
-        safeguarding:req.body.safeguarding,
-        safeguardingtext:req.body.safeguardingtext,
+        applicationStatus: req.body.applicationStatus,
+        emergencycontact: req.body.emergencycontact,
+        nicno: req.body.nicno,
+        identitystatus: req.body.identitystatus,
+        firstaid: req.body.firstaid,
+        firstaidtext: req.body.firstaidtext,
+        dbscheck: req.body.dbscheck,
+        dbschecktext: req.body.dbschecktext,
+        safeguarding: req.body.safeguarding,
+        safeguardingtext: req.body.safeguardingtext,
         // manualleave:manualleave,
-        companyname:req.body.companyname,
-        designation:req.body.designation,
-        joining_date:req.body.joining_date,
-        end_date:req.body.end_date,
-        address:req.body.address,
-        reference_contact:req.body.reference_contact,
-        referencecontacttwo:req.body.referencecontacttwo,
-        street: req.body.street ? req.body.street:null,
+        companyname: req.body.companyname,
+        designation: req.body.designation,
+        joining_date: req.body.joining_date,
+        end_date: req.body.end_date,
+        address: req.body.address,
+        reference_contact: req.body.reference_contact,
+        referencecontacttwo: req.body.referencecontacttwo,
+        street: req.body.street ? req.body.street : null,
         city: req.body.city ? req.body.city : null,
         state: req.body.state ? req.body.state : null,
         zipCode: req.body.zipCode ? req.body.zipCode : null,
@@ -228,10 +236,10 @@ const register = async (req, res) => {
         departmentId: req.body.departmentId ? req.body.departmentId : null,
         roleId: req.body.roleId,
         //leaves section
-        bankallowedleave:process.env.totalbankleaves,
-        remaingbankallowedleave:process.env.totalremainbank,
-        annualallowedleave:"",
-        remainingannualallowedleave:remainingannualallowedleave,
+        bankallowedleave: JSON.stringify(allPublicHoliday.length),
+        remaingbankallowedleave: JSON.stringify(allPublicHoliday.length),
+        annualallowedleave: "",
+        remainingannualallowedleave: remainingannualallowedleave,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
@@ -268,8 +276,10 @@ const register = async (req, res) => {
       },
     });
     const { password, ...userWithoutPassword } = createUser;
-    return res.status(200).json({userWithoutPassword,
-    message:"User register successfully"});
+    return res.status(200).json({
+      userWithoutPassword,
+      message: "User register successfully"
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -281,7 +291,7 @@ const getAllUser = async (req, res) => {
 
     const allUser = await prisma.user.findMany({
       include: {
-         designationHistory: {
+        designationHistory: {
           include: {
             designation: true,
           },
@@ -312,9 +322,9 @@ const getAllUser = async (req, res) => {
             schedule: {
               where: {
                 shiftDate: {
-  gte: date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
-  lt: moment(date).endOf('day').format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
-},
+                  gte: date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+                  lt: moment(date).endOf('day').format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+                },
                 status: true,
               },
               select: {
@@ -346,39 +356,39 @@ const getAllUser = async (req, res) => {
       },
     });
 
-  const formattedSchedule = allUser.map((user) => {
-  const { password, shifts = [], ...userWithoutPassword } = user;
+    const formattedSchedule = allUser.map((user) => {
+      const { password, shifts = [], ...userWithoutPassword } = user;
 
-  const formattedShifts = shifts.map((shift) => {
-    const formattedSchedule = (shift.schedule || []).map((s) => ({
-      day: s.day,
-      shiftDate: moment(s.shiftDate).format("MM/DD/YYYY"),
-      workHour: s.workHour,
-      room: {
-        id: s.room.id,
-        locationId: s.room.locationId,
-        userId: s.room.userId,
-        roomName: s.room.roomName,
-        status: s.room.status,
-        createdAt: s.room.createdAt,
-        updatedAt: s.room.updatedAt,
-      },
-      status: s.status,
-    }));
+      const formattedShifts = shifts.map((shift) => {
+        const formattedSchedule = (shift.schedule || []).map((s) => ({
+          day: s.day,
+          shiftDate: moment(s.shiftDate).format("MM/DD/YYYY"),
+          workHour: s.workHour,
+          room: {
+            id: s.room.id,
+            locationId: s.room.locationId,
+            userId: s.room.userId,
+            roomName: s.room.roomName,
+            status: s.room.status,
+            createdAt: s.room.createdAt,
+            updatedAt: s.room.updatedAt,
+          },
+          status: s.status,
+        }));
 
-    return {
-      ...shift,
-      schedule: formattedSchedule,
-    };
-  });
+        return {
+          ...shift,
+          schedule: formattedSchedule,
+        };
+      });
 
-  return {
-    ...userWithoutPassword,
-    shifts: formattedShifts,
-  };
-});
+      return {
+        ...userWithoutPassword,
+        shifts: formattedShifts,
+      };
+    });
 
-return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
+    return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
 
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -405,7 +415,7 @@ const getSingleUser = async (req, res) => {
         id: userId,
       },
       include: {
-         designationHistory: {
+        designationHistory: {
           include: {
             designation: true,
           },
@@ -482,6 +492,8 @@ const getSingleUser = async (req, res) => {
       },
     });
 
+    console.log("Single User .....", singleUser);
+
     // Check if the user record exists
     if (!singleUser) {
       return res.status(404).json({ message: "User not found." });
@@ -499,40 +511,40 @@ const getSingleUser = async (req, res) => {
       },
     });
     // Calculate remaining leave days
-const paidLeaveDays = leaveDays
-.filter((l) => l.leavecategory === "paid")
-.reduce((acc, item) => acc + item.leaveDuration, 0);
+    const paidLeaveDays = leaveDays
+      .filter((l) => l.leavecategory === "paid")
+      .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-const unpaidLeaveDays = leaveDays
-.filter((l) => l.leavecategory === "unpaid")
-.reduce((acc, item) => acc + item.leaveDuration, 0);
+    const unpaidLeaveDays = leaveDays
+      .filter((l) => l.leavecategory === "unpaid")
+      .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-// Set to null if leavePolicy or respective leave counts are null
-if (!singleUser.leavePolicy) {
-singleUser.leavePolicy = {
-  id: null,
-  name: null,
-  paidLeaveCount: null,
-  status: null,
-  unpaidLeaveCount: null
-}
-singleUser.paidLeaveDays = null;
-singleUser.unpaidLeaveDays = null;
-singleUser.leftPaidLeaveDays = null;
-singleUser.leftUnpaidLeaveDays = null;
-} else {
-const paidLeaveCount = singleUser.leavePolicy.paidLeaveCount;
-const unpaidLeaveCount = singleUser.leavePolicy.unpaidLeaveCount;
+    // Set to null if leavePolicy or respective leave counts are null
+    if (!singleUser.leavePolicy) {
+      singleUser.leavePolicy = {
+        id: null,
+        name: null,
+        paidLeaveCount: null,
+        status: null,
+        unpaidLeaveCount: null
+      }
+      singleUser.paidLeaveDays = null;
+      singleUser.unpaidLeaveDays = null;
+      singleUser.leftPaidLeaveDays = null;
+      singleUser.leftUnpaidLeaveDays = null;
+    } else {
+      const paidLeaveCount = singleUser.leavePolicy.paidLeaveCount;
+      const unpaidLeaveCount = singleUser.leavePolicy.unpaidLeaveCount;
 
-singleUser.paidLeaveDays = paidLeaveDays;
-singleUser.unpaidLeaveDays = unpaidLeaveDays;
-singleUser.leftPaidLeaveDays = (paidLeaveCount - paidLeaveDays).toString();
-singleUser.leftUnpaidLeaveDays = (unpaidLeaveCount - unpaidLeaveDays).toString();
+      singleUser.paidLeaveDays = paidLeaveDays;
+      singleUser.unpaidLeaveDays = unpaidLeaveDays;
+      singleUser.leftPaidLeaveDays = (paidLeaveCount - paidLeaveDays).toString();
+      singleUser.leftUnpaidLeaveDays = (unpaidLeaveCount - unpaidLeaveDays).toString();
 
-// Ensure non-negative values
-singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
-singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
-}
+      // Ensure non-negative values
+      singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
+      singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
+    }
 
 
     const roleId = singleUser.reference_id;
@@ -576,6 +588,21 @@ singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
 
     const { password, ...userWithoutPassword } = singleUser;
 
+    const bankLeaves = await prisma.publicHoliday.findMany({
+      orderBy: [
+        {
+          id: "desc",
+        },
+      ],
+    });
+
+    const today = new Date();
+    const upcomingLeaves = bankLeaves.filter(item => new Date(item.date) > today);
+
+    userWithoutPassword["totalBankLeaves"] = bankLeaves.length;
+    userWithoutPassword["remainingBankLeaves"] = upcomingLeaves.length;
+
+
     return res.status(200).json(userWithoutPassword);
   } catch (error) {
     console.log(error);
@@ -596,8 +623,8 @@ const updateSingleUser = async (req, res) => {
       where: {
         id: id,
       },
-      include:{
-            leavePolicy:true,
+      include: {
+        leavePolicy: true,
       }
     });
     if (req.body.employeeId) {
@@ -618,29 +645,29 @@ const updateSingleUser = async (req, res) => {
     }
     // console.log(existingUser);
     const leavs = req.body.leavePolicyId
-    ? await prisma.leavePolicy.findUnique({
+      ? await prisma.leavePolicy.findUnique({
         where: {
           id: req.body.leavePolicyId,
         },
       })
-    : null;
-  let remainingannualallowedleave;
-  
-  if (req.body.manualleave) {
-    remainingannualallowedleave = req.body.manualleave.toString();
-  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    remainingannualallowedleave = "0";
-  } else {
-    remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-  }
-let annualallowedleave;
-  if (req.body.manualleave) {
-    annualallowedleave = req.body.manualleave.toString();
-  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    annualallowedleave = "0";
-  } else {
-    annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-  }
+      : null;
+    let remainingannualallowedleave;
+
+    if (req.body.manualleave) {
+      remainingannualallowedleave = req.body.manualleave.toString();
+    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+      remainingannualallowedleave = "0";
+    } else {
+      remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+    }
+    let annualallowedleave;
+    if (req.body.manualleave) {
+      annualallowedleave = req.body.manualleave.toString();
+    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+      annualallowedleave = "0";
+    } else {
+      annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+    }
 
     // return
     if (!existingUser) {
@@ -662,15 +689,15 @@ let annualallowedleave;
       country: req.body.country,
       departmentId: req.body.departmentId,
       roleId: req.body.roleId,
-      reference_id:req.body.reference_id,
-      referenceid_two:req.body.referenceid_two,
+      reference_id: req.body.reference_id,
+      referenceid_two: req.body.referenceid_two,
       shiftId: req.body.shiftId,
       locationId: req.body.locationId,
       leavePolicyId: req.body.leavePolicyId,
       weeklyHolidayId: req.body.weeklyHolidayId,
-      remainingannualallowedleave:remainingannualallowedleave,
-      annualallowedleave:annualallowedleave,
-      contractAttachment: req.body.contractAttachment||null,
+      remainingannualallowedleave: remainingannualallowedleave,
+      annualallowedleave: annualallowedleave,
+      contractAttachment: req.body.contractAttachment || null,
 
     };
 
@@ -704,11 +731,11 @@ let annualallowedleave;
         reference_id: req.body.reference_id || existingUser.reference_id,
         referenceid_two: req.body.referenceid_two || existingUser.referenceid_two,
         dob: req.body.dob || existingUser.dob,
-        reference_contact:req.body.reference_contact || existingUser.reference_contact,
-        bankallowedleave:req.body.bankallowedleave || existingUser.bankallowedleave,
-        remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
-        annualallowedleave:annualallowedleave,
-        remainingannualallowedleave:remainingannualallowedleave,
+        reference_contact: req.body.reference_contact || existingUser.reference_contact,
+        bankallowedleave: req.body.bankallowedleave || existingUser.bankallowedleave,
+        remaingbankallowedleave: req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
+        annualallowedleave: annualallowedleave,
+        remainingannualallowedleave: remainingannualallowedleave,
 
 
 
@@ -728,14 +755,13 @@ let annualallowedleave;
     });
 
     const { password, ...userWithoutPassword } = updateUser;
-    
-    if(existingUser.status && req.body.applicationStatus)
-    {
+
+    if (existingUser.status && req.body.applicationStatus) {
       const Title = req.body.applicationStatus;
       const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your application request has been ' + req.body.applicationStatus;
       const Token = existingUser.firebaseToken;
       const Desc = 'Application notification';
-      sendnotifiy(Title, Body,Desc, Token);
+      sendnotifiy(Title, Body, Desc, Token);
     }
     return res.status(200).json({
       userWithoutPassword,
@@ -758,7 +784,7 @@ function sendnotifiy(Title, Body, Desc, Token) {
     admin
       .messaging()
       .send(message)
-      .then((response) => {console.log("Notification Send ....") })
+      .then((response) => { console.log("Notification Send ....") })
       .catch((error) => {
         console.log("Error sending notification:", error);
       });
@@ -1212,7 +1238,7 @@ function sendnotifiy(Title, Body, Desc, Token) {
     admin
       .messaging()
       .send(message)
-      .then((response) => {console.log("Notification Send ....") })
+      .then((response) => { console.log("Notification Send ....") })
       .catch((error) => {
         console.log("Error sending notification:", error);
       });
