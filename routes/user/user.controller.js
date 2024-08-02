@@ -1,9 +1,9 @@
 const prisma = require("../../utils/prisma");
-const sendEmail = require("../../utils/emails")
+const sendEmail = require("../../utils/emails");
 require("dotenv").config();
 const crypto = require("crypto");
-const hirarchy=require("../hr/hirarchy/hirarchy.controller")
-const moment = require('moment');
+const hirarchy = require("../hr/hirarchy/hirarchy.controller");
+const moment = require("moment");
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const _ = require("lodash");
@@ -16,23 +16,34 @@ const secret = process.env.JWT_SECRET;
 const login = async (req, res) => {
   try {
     const allUsers = await prisma.user.findMany();
-    const user = allUsers.find((u) => u.userName === req.body.userName);
+    const user = allUsers.find((u) => u.email === req.body.email);
 
     if (!user) {
-      return res.status(400).json({ message: "Authentication failed. Username is incorrect." });
+      return res
+        .status(400)
+        .json({ message: "Authentication failed. Email is incorrect." });
     }
 
-     if (user.applicationStatus === "PENDING") {
-      return res.status(401).json({ message: "Authentication failed. User account is not approved." });
+    if (user.applicationStatus === "PENDING") {
+      return res.status(401).json({
+        message: "Authentication failed. User account is not approved.",
+      });
     }
     if (user.applicationStatus === "REJECTED") {
-      return res.status(401).json({ message: "Authentication failed. Your application has been rejected." });
+      return res.status(401).json({
+        message: "Authentication failed. Your application has been rejected.",
+      });
     }
 
-    const passwordMatches = bcrypt.compareSync(req.body.password, user.password);
+    const passwordMatches = bcrypt.compareSync(
+      req.body.password,
+      user.password
+    );
 
     if (!passwordMatches) {
-      return res.status(400).json({ message: "Authentication failed. Password is incorrect." });
+      return res
+        .status(400)
+        .json({ message: "Authentication failed. Password is incorrect." });
     }
 
     // Update Firebase token and device information
@@ -79,7 +90,9 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(502).json({ message: "Server is not responding. Please try again later." });
+    return res
+      .status(502)
+      .json({ message: "Server is not responding. Please try again later." });
   }
 };
 const validate = async (req, res) => {
@@ -120,7 +133,7 @@ const validate = async (req, res) => {
     //   return res.status(400).json({ message: "EmployeeId already exists." });
     // }
     return res.status(200).json({
-      message:"Validate successfully"
+      message: "Validate successfully",
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -135,16 +148,16 @@ const register = async (req, res) => {
       },
     });
 
-    const existingUserByPhone = await prisma.user.findFirst({
-      where: {
-        phone: req.body.phone,
-      },
-    });
-    const existingUserByuserName = await prisma.user.findFirst({
-      where: {
-        userName: req.body.userName,
-      },
-    });
+    // const existingUserByPhone = await prisma.user.findFirst({
+    //   where: {
+    //     phone: req.body.phone,
+    //   },
+    // });
+    // const existingUserByuserName = await prisma.user.findFirst({
+    //   where: {
+    //     userName: req.body.userName,
+    //   },
+    // });
     // const existingUserByEmployeeId = await prisma.user.findFirst({
     //   where: {
     //     employeeId: req.body.employeeId,
@@ -155,76 +168,83 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Email already exists." });
     }
 
-    if (existingUserByPhone) {
-      return res.status(400).json({ message: "Phone number already exists." });
-    }
-    if (existingUserByuserName) {
-      return res.status(400).json({ message: "UserName already exists." });
-    }
+    // if (existingUserByPhone) {
+    //   return res.status(400).json({ message: "Phone number already exists." });
+    // }
+    // if (existingUserByuserName) {
+    //   return res.status(400).json({ message: "UserName already exists." });
+    // }
     // if (existingUserByEmployeeId) {
     //   return res.status(400).json({ message: "EmployeeId already exists." });
     // }
     const leavs = req.body.leavePolicyId
-    ? await prisma.leavePolicy.findUnique({
-        where: {
-          id: req.body.leavePolicyId,
-        },
-      })
-    : null;
-  
-  let remainingannualallowedleave;
-  
-  if (req.body.manualleave) {
-    remainingannualallowedleave = req.body.manualleave.toString();
-  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    remainingannualallowedleave = "";
-  } else {
-    remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-  }
+      ? await prisma.leavePolicy.findUnique({
+          where: {
+            id: req.body.leavePolicyId,
+          },
+        })
+      : null;
+
+    let remainingannualallowedleave;
+
+    if (req.body.manualleave) {
+      remainingannualallowedleave = req.body.manualleave.toString();
+    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+      remainingannualallowedleave = "";
+    } else {
+      remainingannualallowedleave = leavs
+        ? leavs.paidLeaveCount.toString()
+        : null;
+    }
     const join_date = new Date();
     const leave_date = req.body.leaveDate ? req.body.leaveDate : null;
-
+    const splitEmail = req.body.email?.split("@");
+    const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
+    splitEmail[0] += randomFourDigit;
+    let userID = splitEmail[0];
+    let userNames = userID.replace(/[0-9]/g, "");
     const hash = await bcrypt.hash(req.body.password, saltRounds);
     const createUser = await prisma.user.create({
       data: {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        userName: req.body.userName,
-        firebaseToken:req.body.firebaseToken,
+        userName: userNames,
+        firebaseToken: req.body.firebaseToken,
         password: hash,
         email: req.body.email,
         phone: req.body.phone,
         dob: req.body.dob,
-        applicationStatus:req.body.applicationStatus,
-        emergencycontact:req.body.emergencycontact,
-        nicno:req.body.nicno,
-        identitystatus:req.body.identitystatus,
-        firstaid:req.body.firstaid,
-        firstaidtext:req.body.firstaidtext,
-        dbscheck:req.body.dbscheck,
-        dbschecktext:req.body.dbschecktext,
-        safeguarding:req.body.safeguarding,
-        safeguardingtext:req.body.safeguardingtext,
+        applicationStatus: req.body.applicationStatus,
+        emergencycontact: req.body.emergencycontact,
+        nicno: req.body.nicno,
+        identitystatus: req.body.identitystatus,
+        firstaid: req.body.firstaid,
+        firstaidtext: req.body.firstaidtext,
+        dbscheck: req.body.dbscheck,
+        dbschecktext: req.body.dbschecktext,
+        safeguarding: req.body.safeguarding,
+        safeguardingtext: req.body.safeguardingtext,
         // manualleave:manualleave,
-        companyname:req.body.companyname,
-        designation:req.body.designation,
-        joining_date:req.body.joining_date,
-        end_date:req.body.end_date,
-        address:req.body.address,
-        emp_name:req.body.emp_name,
-        emp_email:req.body.emp_email,
-        emp_telno:req.body.emp_telno,
-        reference_contact:req.body.reference_contact,
-        referencecontacttwo:req.body.referencecontacttwo,
-        companyname1:req.body.companyname1,
-        designation1:req.body.designation1,
-        joining_date1:req.body.joining_date1,
-        end_date1:req.body.end_date1,
-        address1:req.body.address1,
-        emp_name1:req.body.emp_name1,
-        emp_email1:req.body.emp_email1,
-        emp_telno1:req.body.emp_telno1,
-        street: req.body.street ? req.body.street:null,
+        designation: req.body.designation,
+        address: req.body.address,
+        companyname: req.body.companyname,
+        emp_name: req.body.emp_name,
+        emp_email: req.body.emp_email,
+        emp_telno: req.body.emp_telno,
+        joining_date: req.body.joining_date,
+        end_date: req.body.end_date,
+
+        reference_contact: req.body.reference_contact,
+        referencecontacttwo: req.body.referencecontacttwo,
+        companyname1: req.body.companyname1,
+        designation1: req.body.designation1,
+        joining_date1: req.body.joining_date1,
+        end_date1: req.body.end_date1,
+        address1: req.body.address1,
+        emp_name1: req.body.emp_name1,
+        emp_email1: req.body.emp_email1,
+        emp_telno1: req.body.emp_telno1,
+        street: req.body.street ? req.body.street : null,
         city: req.body.city ? req.body.city : null,
         state: req.body.state ? req.body.state : null,
         zipCode: req.body.zipCode ? req.body.zipCode : null,
@@ -235,51 +255,67 @@ const register = async (req, res) => {
         bloodGroup: req.body.bloodGroup ? req.body.bloodGroup : null,
         image: req.body.image ? req.body.image : null,
         documents: req.body.documents ? req.body.documents : null,
-        employmentStatusId: req.body.employmentStatusId ? req.body.employmentStatusId : null,
+        employmentStatusId: req.body.employmentStatusId
+          ? req.body.employmentStatusId
+          : null,
         departmentId: req.body.departmentId ? req.body.departmentId : null,
         roleId: req.body.roleId,
         //leaves section
-        bankallowedleave:process.env.totalbankleaves,
-        remaingbankallowedleave:process.env.totalremainbank,
-        annualallowedleave:"",
-        remainingannualallowedleave:remainingannualallowedleave,
+        bankallowedleave: process.env.totalbankleaves,
+        remaingbankallowedleave: process.env.totalremainbank,
+        annualallowedleave: "",
+        remainingannualallowedleave: remainingannualallowedleave,
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
         leavePolicyId: req.body.leavePolicyId ? req.body.leavePolicyId : null,
-        weeklyHolidayId: req.body.weeklyHolidayId ? req.body.weeklyHolidayId : null,
-        designationHistory: req.body.designationId ? {
-          create: {
-            designationId: req.body.designationId,
-            startDate: new Date(),
-            endDate: req.body.designationEndDate ? new Date(req.body.designationEndDate) : null,
-            comment: req.body.designationComment,
-          },
-        } : {},
-        salaryHistory: req.body.salary ? {
-          create: {
-            salary: req.body.salary,
-            startDate: new Date(req.body.salaryStartDate),
-            endDate: req.body.salaryEndDate ? new Date(req.body.salaryEndDate) : null,
-            comment: req.body.salaryComment,
-          },
-        } : {},
-        educations: req.body.educations ? {
-          create: req.body.educations.map((e) => {
-            return {
-              degree: e.degree,
-              institution: e.institution,
-              fieldOfStudy: e.fieldOfStudy,
-              result: e.result,
-              startDate: new Date(e.studyStartDate),
-              endDate: new Date(e.studyEndDate),
-            };
-          }),
-        } : {},
+        weeklyHolidayId: req.body.weeklyHolidayId
+          ? req.body.weeklyHolidayId
+          : null,
+        designationHistory: req.body.designationId
+          ? {
+              create: {
+                designationId: req.body.designationId,
+                startDate: new Date(),
+                endDate: req.body.designationEndDate
+                  ? new Date(req.body.designationEndDate)
+                  : null,
+                comment: req.body.designationComment,
+              },
+            }
+          : {},
+        salaryHistory: req.body.salary
+          ? {
+              create: {
+                salary: req.body.salary,
+                startDate: new Date(req.body.salaryStartDate),
+                endDate: req.body.salaryEndDate
+                  ? new Date(req.body.salaryEndDate)
+                  : null,
+                comment: req.body.salaryComment,
+              },
+            }
+          : {},
+        educations: req.body.educations
+          ? {
+              create: req.body.educations.map((e) => {
+                return {
+                  degree: e.degree,
+                  institution: e.institution,
+                  fieldOfStudy: e.fieldOfStudy,
+                  result: e.result,
+                  startDate: new Date(e.studyStartDate),
+                  endDate: new Date(e.studyEndDate),
+                };
+              }),
+            }
+          : {},
       },
     });
     const { password, ...userWithoutPassword } = createUser;
-    return res.status(200).json({ userWithoutPassword, message: "User registered successfully" });
+    return res
+      .status(200)
+      .json({ userWithoutPassword, message: "User registered successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Something went wrong" });
@@ -288,16 +324,16 @@ const register = async (req, res) => {
 
 const getAllUser = async (req, res) => {
   try {
-    const date = moment().startOf('day');
+    const date = moment().startOf("day");
 
     const allUser = await prisma.user.findMany({
       include: {
-         designationHistory: {
+        designationHistory: {
           include: {
             designation: true,
           },
           orderBy: {
-            startDate: 'desc', // Order by start date in ascending order
+            startDate: "desc", // Order by start date in ascending order
           },
         },
         salaryHistory: true,
@@ -323,9 +359,11 @@ const getAllUser = async (req, res) => {
             schedule: {
               where: {
                 shiftDate: {
-  gte: date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
-  lt: moment(date).endOf('day').format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
-},
+                  gte: date.format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+                  lt: moment(date)
+                    .endOf("day")
+                    .format("YYYY-MM-DDTHH:mm:ss.SSSZ"),
+                },
                 status: true,
               },
               select: {
@@ -357,40 +395,39 @@ const getAllUser = async (req, res) => {
       },
     });
 
-  const formattedSchedule = allUser.map((user) => {
-  const { password, shifts = [], ...userWithoutPassword } = user;
+    const formattedSchedule = allUser.map((user) => {
+      const { password, shifts = [], ...userWithoutPassword } = user;
 
-  const formattedShifts = shifts.map((shift) => {
-    const formattedSchedule = (shift.schedule || []).map((s) => ({
-      day: s.day,
-      shiftDate: moment(s.shiftDate).format("MM/DD/YYYY"),
-      workHour: s.workHour,
-      room: {
-        id: s.room.id,
-        locationId: s.room.locationId,
-        userId: s.room.userId,
-        roomName: s.room.roomName,
-        status: s.room.status,
-        createdAt: s.room.createdAt,
-        updatedAt: s.room.updatedAt,
-      },
-      status: s.status,
-    }));
+      const formattedShifts = shifts.map((shift) => {
+        const formattedSchedule = (shift.schedule || []).map((s) => ({
+          day: s.day,
+          shiftDate: moment(s.shiftDate).format("MM/DD/YYYY"),
+          workHour: s.workHour,
+          room: {
+            id: s.room.id,
+            locationId: s.room.locationId,
+            userId: s.room.userId,
+            roomName: s.room.roomName,
+            status: s.room.status,
+            createdAt: s.room.createdAt,
+            updatedAt: s.room.updatedAt,
+          },
+          status: s.status,
+        }));
 
-    return {
-      ...shift,
-      schedule: formattedSchedule,
-    };
-  });
+        return {
+          ...shift,
+          schedule: formattedSchedule,
+        };
+      });
 
-  return {
-    ...userWithoutPassword,
-    shifts: formattedShifts,
-  };
-});
+      return {
+        ...userWithoutPassword,
+        shifts: formattedShifts,
+      };
+    });
 
-return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
-
+    return res.status(200).json(formattedSchedule.sort((a, b) => b.id - a.id));
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -403,25 +440,25 @@ const getSingleUser = async (req, res) => {
       userId !== req.auth.sub &&
       !req.auth.permissions.includes("readSingle-user")
     ) {
-      return res.status(401).json({ message: "Unauthorized. You are not an admin" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. You are not an admin" });
     }
 
     // Fetch the user record by their ID
     console.log(userId, "trasjhk");
 
-
     const singleUser = await prisma.user.findUnique({
-
       where: {
         id: userId,
       },
       include: {
-         designationHistory: {
+        designationHistory: {
           include: {
             designation: true,
           },
           orderBy: {
-            startDate: 'desc', // Order by start date in ascending order
+            startDate: "desc", // Order by start date in ascending order
           },
         },
         salaryHistory: true,
@@ -451,7 +488,8 @@ const getSingleUser = async (req, res) => {
           },
           take: 1,
         },
-        shifts: {  // Retrieve user's shifts with schedules
+        shifts: {
+          // Retrieve user's shifts with schedules
           select: {
             id: true,
             name: true,
@@ -478,7 +516,6 @@ const getSingleUser = async (req, res) => {
                 //     roomName: true,
                 //   },
                 // },
-
               },
             },
           },
@@ -510,41 +547,47 @@ const getSingleUser = async (req, res) => {
       },
     });
     // Calculate remaining leave days
-const paidLeaveDays = leaveDays
-.filter((l) => l.leavecategory === "paid")
-.reduce((acc, item) => acc + item.leaveDuration, 0);
+    const paidLeaveDays = leaveDays
+      .filter((l) => l.leavecategory === "paid")
+      .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-const unpaidLeaveDays = leaveDays
-.filter((l) => l.leavecategory === "unpaid")
-.reduce((acc, item) => acc + item.leaveDuration, 0);
+    const unpaidLeaveDays = leaveDays
+      .filter((l) => l.leavecategory === "unpaid")
+      .reduce((acc, item) => acc + item.leaveDuration, 0);
 
-// Set to null if leavePolicy or respective leave counts are null
-if (!singleUser.leavePolicy) {
-singleUser.leavePolicy = {
-  id: null,
-  name: null,
-  paidLeaveCount: null,
-  status: null,
-  unpaidLeaveCount: null
-}
-singleUser.paidLeaveDays = null;
-singleUser.unpaidLeaveDays = null;
-singleUser.leftPaidLeaveDays = null;
-singleUser.leftUnpaidLeaveDays = null;
-} else {
-const paidLeaveCount = singleUser.leavePolicy.paidLeaveCount;
-const unpaidLeaveCount = singleUser.leavePolicy.unpaidLeaveCount;
+    // Set to null if leavePolicy or respective leave counts are null
+    if (!singleUser.leavePolicy) {
+      singleUser.leavePolicy = {
+        id: null,
+        name: null,
+        paidLeaveCount: null,
+        status: null,
+        unpaidLeaveCount: null,
+      };
+      singleUser.paidLeaveDays = null;
+      singleUser.unpaidLeaveDays = null;
+      singleUser.leftPaidLeaveDays = null;
+      singleUser.leftUnpaidLeaveDays = null;
+    } else {
+      const paidLeaveCount = singleUser.leavePolicy.paidLeaveCount;
+      const unpaidLeaveCount = singleUser.leavePolicy.unpaidLeaveCount;
 
-singleUser.paidLeaveDays = paidLeaveDays;
-singleUser.unpaidLeaveDays = unpaidLeaveDays;
-singleUser.leftPaidLeaveDays = (paidLeaveCount - paidLeaveDays).toString();
-singleUser.leftUnpaidLeaveDays = (unpaidLeaveCount - unpaidLeaveDays).toString();
+      singleUser.paidLeaveDays = paidLeaveDays;
+      singleUser.unpaidLeaveDays = unpaidLeaveDays;
+      singleUser.leftPaidLeaveDays = (
+        paidLeaveCount - paidLeaveDays
+      ).toString();
+      singleUser.leftUnpaidLeaveDays = (
+        unpaidLeaveCount - unpaidLeaveDays
+      ).toString();
 
-// Ensure non-negative values
-singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
-singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
-}
-
+      // Ensure non-negative values
+      singleUser.leftPaidLeaveDays = Math.max(0, singleUser.leftPaidLeaveDays);
+      singleUser.leftUnpaidLeaveDays = Math.max(
+        0,
+        singleUser.leftUnpaidLeaveDays
+      );
+    }
 
     const roleId = singleUser.reference_id;
 
@@ -572,25 +615,26 @@ singleUser.leftUnpaidLeaveDays = Math.max(0, singleUser.leftUnpaidLeaveDays);
     } else {
       const superviser2 = await prisma.user.findUnique({
         where: {
-          id: roleId2,  // Corrected roleId2 usage here
+          id: roleId2, // Corrected roleId2 usage here
         },
       });
 
       if (superviser2) {
         const { password, ...userWithoutPassword } = superviser2;
-        singleUser.superviser2 = userWithoutPassword;  // Corrected superviser2 assignment here
+        singleUser.superviser2 = userWithoutPassword; // Corrected superviser2 assignment here
       } else {
         singleUser.superviser2 = null;
       }
     }
-
 
     const { password, ...userWithoutPassword } = singleUser;
 
     return res.status(200).json(userWithoutPassword);
   } catch (error) {
     console.log(error);
-    return res.status(502).json({ message: "Server is not responding. Please try again later." });
+    return res
+      .status(502)
+      .json({ message: "Server is not responding. Please try again later." });
   }
 };
 const updateSingleUser = async (req, res) => {
@@ -607,9 +651,9 @@ const updateSingleUser = async (req, res) => {
       where: {
         id: id,
       },
-      include:{
-            leavePolicy:true,
-      }
+      include: {
+        leavePolicy: true,
+      },
     });
     if (req.body.employeeId) {
       const userWithEmployeeId = await prisma.user.findFirst({
@@ -629,29 +673,31 @@ const updateSingleUser = async (req, res) => {
     }
     // console.log(existingUser);
     const leavs = req.body.leavePolicyId
-    ? await prisma.leavePolicy.findUnique({
-        where: {
-          id: req.body.leavePolicyId,
-        },
-      })
-    : null;
-  let remainingannualallowedleave;
-  
-  if (req.body.manualleave) {
-    remainingannualallowedleave = req.body.manualleave.toString();
-  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    remainingannualallowedleave = "0";
-  } else {
-    remainingannualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-  }
-let annualallowedleave;
-  if (req.body.manualleave) {
-    annualallowedleave = req.body.manualleave.toString();
-  } else if (!req.body.leavePolicyId&&!req.body.manualleave) {
-    annualallowedleave = "0";
-  } else {
-    annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-  }
+      ? await prisma.leavePolicy.findUnique({
+          where: {
+            id: req.body.leavePolicyId,
+          },
+        })
+      : null;
+    let remainingannualallowedleave;
+
+    if (req.body.manualleave) {
+      remainingannualallowedleave = req.body.manualleave.toString();
+    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+      remainingannualallowedleave = "0";
+    } else {
+      remainingannualallowedleave = leavs
+        ? leavs.paidLeaveCount.toString()
+        : null;
+    }
+    let annualallowedleave;
+    if (req.body.manualleave) {
+      annualallowedleave = req.body.manualleave.toString();
+    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+      annualallowedleave = "0";
+    } else {
+      annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+    }
 
     // return
     if (!existingUser) {
@@ -673,20 +719,36 @@ let annualallowedleave;
       country: req.body.country,
       departmentId: req.body.departmentId,
       roleId: req.body.roleId,
-      reference_id:req.body.reference_id,
-      referenceid_two:req.body.referenceid_two,
+      reference_id: req.body.reference_id,
+      referenceid_two: req.body.referenceid_two,
       shiftId: req.body.shiftId,
       locationId: req.body.locationId,
       leavePolicyId: req.body.leavePolicyId,
       weeklyHolidayId: req.body.weeklyHolidayId,
-      remainingannualallowedleave:remainingannualallowedleave,
-      annualallowedleave:annualallowedleave,
-      contractAttachment: req.body.contractAttachment||null,
+      remainingannualallowedleave: remainingannualallowedleave,
+      annualallowedleave: annualallowedleave,
+      contractAttachment: req.body.contractAttachment || null,
       firstaid: req.body.firstaid,
       dbscheck: req.body.dbscheck,
       dbschecktext: req.body.dbschecktext,
       contractAttachment: req.body.contractAttachment,
       safeguarding: req.body.safeguarding,
+      designation: req.body.designation,
+      address: req.body.address,
+      companyname: req.body.companyname,
+      emp_name: req.body.emp_name,
+      emp_email: req.body.emp_email,
+      emp_telno: req.body.emp_telno,
+      joining_date: req.body.joining_date,
+      end_date: req.body.end_date,
+      companyname1: req.body.companyname1,
+      designation1: req.body.designation1,
+      joining_date1: req.body.joining_date1,
+      end_date1: req.body.end_date1,
+      address1: req.body.address1,
+      emp_name1: req.body.emp_name1,
+      emp_email1: req.body.emp_email1,
+      emp_telno1: req.body.emp_telno1,
     };
 
     if (req.auth.permissions.includes("update-user")) {
@@ -701,34 +763,53 @@ let annualallowedleave;
         leaveDate: req.body.leaveDate || existingUser.leaveDate,
         employmentStatusId:
           req.body.employmentStatusId || existingUser.employmentStatusId,
-        emergencycontact: req.body.emergencycontact || existingUser.emergencycontact,
+        emergencycontact:
+          req.body.emergencycontact || existingUser.emergencycontact,
         nicno: req.body.nicno || existingUser.nicno,
         identitystatus: req.body.identitystatus || existingUser.identitystatus,
         firstaid: req.body.firstaid || existingUser.firstaid,
         firstaidtext: req.body.firstaidtext || existingUser.firstaidtext,
         dbscheck: req.body.dbscheck || existingUser.dbscheck,
         dbschecktext: req.body.dbschecktext || existingUser.dbschecktext,
-        contractAttachment: req.body.contractAttachment || existingUser.contractAttachment,
+        contractAttachment:
+          req.body.contractAttachment || existingUser.contractAttachment,
         safeguarding: req.body.safeguarding || existingUser.safeguarding,
-        safeguardingtext: req.body.safeguardingtext || existingUser.safeguardingtext,
+        safeguardingtext:
+          req.body.safeguardingtext || existingUser.safeguardingtext,
         companyname: req.body.companyname || existingUser.companyname,
         designation: req.body.designation || existingUser.designation,
         joining_date: req.body.joining_date || existingUser.joining_date,
         end_date: req.body.end_date || existingUser.end_date,
         address: req.body.address || existingUser.address,
         reference_id: req.body.reference_id || existingUser.reference_id,
-        referenceid_two: req.body.referenceid_two || existingUser.referenceid_two,
+        referenceid_two:
+          req.body.referenceid_two || existingUser.referenceid_two,
         dob: req.body.dob || existingUser.dob,
-        reference_contact:req.body.reference_contact || existingUser.reference_contact,
-        bankallowedleave:req.body.bankallowedleave || existingUser.bankallowedleave,
-        remaingbankallowedleave:req.body.remaingbankallowedleave || existingUser.remaingbankallowedleave,
-        annualallowedleave:annualallowedleave,
-        remainingannualallowedleave:remainingannualallowedleave,
-
-
-
-
-
+        reference_contact:
+          req.body.reference_contact || existingUser.reference_contact,
+        bankallowedleave:
+          req.body.bankallowedleave || existingUser.bankallowedleave,
+        remaingbankallowedleave:
+          req.body.remaingbankallowedleave ||
+          existingUser.remaingbankallowedleave,
+        annualallowedleave: annualallowedleave,
+        remainingannualallowedleave: remainingannualallowedleave,
+        designation: req.body.designation || existingUser.designation,
+        address: req.body.address || existingUser.address,
+        companyname: req.body.companyname || existingUser.companyname,
+        emp_name: req.body.emp_name || existingUser.emp_name,
+        emp_email: req.body.emp_email || existingUser.emp_email,
+        emp_telno: req.body.emp_telno || existingUser.emp_telno,
+        joining_date: req.body.joining_date || existingUser.joining_date,
+        end_date: req.body.end_date || existingUser.end_date,
+        companyname1: req.body.companyname1 || existingUser.companyname1,
+        designation1: req.body.designation1 || existingUser.designation1,
+        joining_date1: req.body.joining_date1 || existingUser.joining_date1,
+        end_date1: req.body.end_date1 || existingUser.end_date1,
+        address1: req.body.address1 || existingUser.address1,
+        emp_name1: req.body.emp_name1 || existingUser.emp_name1,
+        emp_email1: req.body.emp_email1 || existingUser.emp_email,
+        emp_telno1: req.body.emp_telno1 || existingUser.emp_telno1,
       };
     } else {
       // owner can change only password
@@ -743,16 +824,21 @@ let annualallowedleave;
     });
 
     const { password, ...userWithoutPassword } = updateUser;
-    
-    if(existingUser.status && req.body.applicationStatus)
-    {
+
+    if (existingUser.status && req.body.applicationStatus) {
       const Title = req.body.applicationStatus;
-      const Body = existingUser.firstName + " " + existingUser.lastName + "  " + 'Your application request has been ' + req.body.applicationStatus;
+      const Body =
+        existingUser.firstName +
+        " " +
+        existingUser.lastName +
+        "  " +
+        "Your application request has been " +
+        req.body.applicationStatus;
       const Token = existingUser.firebaseToken;
-      const Desc = 'Application notification';
-      sendnotifiy(Title, Body,Desc, Token);
+      const Desc = "Application notification";
+      sendnotifiy(Title, Body, Desc, Token);
     }
-    
+
     return res.status(200).json({
       userWithoutPassword,
       message: "User  updated successfully",
@@ -774,11 +860,12 @@ function sendnotifiy(Title, Body, Desc, Token) {
     admin
       .messaging()
       .send(message)
-      .then((response) => {console.log("Notification Send ....") })
+      .then((response) => {
+        console.log("Notification Send ....");
+      })
       .catch((error) => {
         console.log("Error sending notification:", error);
       });
-
   } catch (error) {
     console.log("Error:", error);
   }
@@ -812,7 +899,7 @@ const updateSingleUserprofile = async (req, res) => {
       city: req.body.city,
       state: req.body.state,
       country: req.body.country,
-      street: req.body.street
+      street: req.body.street,
     };
 
     if (req.auth.permissions.includes("update-user")) {
@@ -825,8 +912,7 @@ const updateSingleUserprofile = async (req, res) => {
         joinDate: req.body.joinDate || existingUser.joinDate,
         leaveDate: req.body.leaveDate || existingUser.leaveDate,
       };
-    }
-    else {
+    } else {
       // owner can change only password
       updateData.password = req.body.password;
     }
@@ -841,7 +927,7 @@ const updateSingleUserprofile = async (req, res) => {
     const { password, ...userWithoutPassword } = updateUser;
     return res.status(200).json({
       userWithoutPassword,
-      message: "User profile updated successfully"
+      message: "User profile updated successfully",
     });
   } catch (error) {
     console.log(error.message);
@@ -882,13 +968,15 @@ const updateSingleUserdocument = async (req, res) => {
     };
 
     // Check each field for updates and add to the updatedFields array
-  // Check each field for updates and add to the updatedFields array
-if (req.body.image !== undefined) updatedFields.push("Image");
-if (req.body.firstaid !== undefined) updatedFields.push("Firstaid document");
-if (req.body.dbscheck !== undefined) updatedFields.push("Dbs document");
-if (req.body.safeguarding !== undefined) updatedFields.push("Safeguarding document");
-if (req.body.contractAttachment !== undefined) updatedFields.push("ContractAttachment document");
-
+    // Check each field for updates and add to the updatedFields array
+    if (req.body.image !== undefined) updatedFields.push("Image");
+    if (req.body.firstaid !== undefined)
+      updatedFields.push("Firstaid document");
+    if (req.body.dbscheck !== undefined) updatedFields.push("Dbs document");
+    if (req.body.safeguarding !== undefined)
+      updatedFields.push("Safeguarding document");
+    if (req.body.contractAttachment !== undefined)
+      updatedFields.push("ContractAttachment document");
 
     if (req.auth.permissions.includes("update-user")) {
       updateData = {
@@ -899,10 +987,9 @@ if (req.body.contractAttachment !== undefined) updatedFields.push("ContractAttac
         joinDate: req.body.joinDate || existingUser.joinDate,
         leaveDate: req.body.leaveDate || existingUser.leaveDate,
       };
- 
+
       // owner can change only password
       updateData.password = req.body.password;
-    
     }
 
     const updateUser = await prisma.user.update({
@@ -915,9 +1002,10 @@ if (req.body.contractAttachment !== undefined) updatedFields.push("ContractAttac
     const { password, ...userWithoutPassword } = updateUser;
 
     // Construct the message based on the updatedFields array
-    const message = updatedFields.length > 0
-      ? `${updatedFields.join(', ')} deleted successfully`
-      : 'No fields deleted';
+    const message =
+      updatedFields.length > 0
+        ? `${updatedFields.join(", ")} deleted successfully`
+        : "No fields deleted";
 
     return res.status(200).json({
       userWithoutPassword,
@@ -928,7 +1016,6 @@ if (req.body.contractAttachment !== undefined) updatedFields.push("ContractAttac
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 const updateSingleUserphone = async (req, res) => {
   const id = parseInt(req.params.id);
@@ -988,7 +1075,7 @@ const updateSingleUserphone = async (req, res) => {
     const { password, ...userWithoutPassword } = updateUser;
     return res.status(200).json({
       userWithoutPassword,
-      message: "Phonenumber updated successfully"
+      message: "Phonenumber updated successfully",
     });
   } catch (error) {
     console.log(error.message);
@@ -1030,7 +1117,6 @@ const updateSingleStatus = async (req, res) => {
       updateData.password = req.body.password;
     }
 
-
     const updateUser = await prisma.user.update({
       where: {
         id: Number(req.params.id),
@@ -1041,7 +1127,7 @@ const updateSingleStatus = async (req, res) => {
     const { password, ...userWithoutPassword } = updateUser;
     return res.status(200).json({
       userWithoutPassword,
-      message: "Phonenumber updated successfully"
+      message: "Phonenumber updated successfully",
     });
   } catch (error) {
     console.log(error.message);
@@ -1124,7 +1210,7 @@ const changepassword = async (req, res) => {
 
     if (!oldpassword || !newpassword) {
       return res.status(400).json({
-        message: 'Please provide both old and new passwords.',
+        message: "Please provide both old and new passwords.",
         error: true,
       });
     }
@@ -1134,7 +1220,7 @@ const changepassword = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        message: 'User Not Found.',
+        message: "User Not Found.",
         error: true,
       });
     }
@@ -1143,7 +1229,7 @@ const changepassword = async (req, res) => {
 
     if (!isPasswordMatch) {
       return res.status(401).json({
-        message: 'Old password is incorrect.',
+        message: "Old password is incorrect.",
         error: true,
       });
     }
@@ -1156,13 +1242,13 @@ const changepassword = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: 'Password Changed Successfully',
+      message: "Password Changed Successfully",
       error: false,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: 'Something went wrong',
+      message: "Something went wrong",
       error: true,
     });
   }
@@ -1177,7 +1263,7 @@ const users_forgot_password = async (req, res) => {
         error: true,
       });
     }
-  
+
     if (req.body.email) {
       let a = req.body.email.toLowerCase();
       req.body.email = a;
@@ -1188,10 +1274,10 @@ const users_forgot_password = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const resetPasswordToken = crypto.randomBytes(3).toString('hex');
+    const resetPasswordToken = crypto.randomBytes(3).toString("hex");
     const resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
 
     await prisma.user.update({
@@ -1208,26 +1294,29 @@ const users_forgot_password = async (req, res) => {
       email: req.body.email, // Use email from req.body here
       firstName: user.firstName,
       lastName: user.lastName,
-
     });
 
-    return res.status(200).json({ message: 'OTP code is send to your email', email: user.email, dd });
+    return res.status(200).json({
+      message: "OTP code is send to your email",
+      email: user.email,
+      dd,
+    });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Something went wrong' });
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
 
 const users_otpmatch = async (req, res) => {
   try {
-    const {resetPasswordToken, password } = req.body;
+    const { resetPasswordToken, password } = req.body;
     if (req.body.email === "") {
       return res.status(404).json({
         message: "Email is required.",
         error: true,
       });
     }
-  
+
     if (req.body.email) {
       let a = req.body.email.toLowerCase();
       req.body.email = a;
@@ -1236,7 +1325,7 @@ const users_otpmatch = async (req, res) => {
     const user = await prisma.user.findFirst({
       where: {
         email: req.body.email,
-        resetPasswordToken:resetPasswordToken,
+        resetPasswordToken: resetPasswordToken,
         resetPasswordExpires: {
           gte: new Date(), // Ensure the field is a date type in your database
         },
@@ -1258,7 +1347,6 @@ const users_otpmatch = async (req, res) => {
       where: { email: req.body.email },
       data: {
         resetPasswordToken: resetPasswordToken,
-
       },
     });
 
@@ -1275,19 +1363,19 @@ const users_otpmatch = async (req, res) => {
 };
 const users_resetpassword = async (req, res) => {
   try {
-    const {password } = req.body;
+    const { password } = req.body;
     if (req.body.email === "") {
       return res.status(404).json({
         message: "Email is required.",
         error: true,
       });
     }
-  
+
     if (req.body.email) {
       let a = req.body.email.toLowerCase();
       req.body.email = a;
     }
-    
+
     // Check if the reset password token is still valid (expires in the future)
     const user = await prisma.user.findFirst({
       where: {
@@ -1314,8 +1402,7 @@ const users_resetpassword = async (req, res) => {
       data: {
         password: hashedPassword,
         resetPasswordToken: null,
-        resetPasswordExpires: undefined
-
+        resetPasswordExpires: undefined,
       },
     });
 
@@ -1342,11 +1429,12 @@ function sendnotifiy(Title, Body, Desc, Token) {
     admin
       .messaging()
       .send(message)
-      .then((response) => {console.log("Notification Send ....") })
+      .then((response) => {
+        console.log("Notification Send ....");
+      })
       .catch((error) => {
         console.log("Error sending notification:", error);
       });
-
   } catch (error) {
     console.log("Error:", error);
   }
@@ -1366,5 +1454,5 @@ module.exports = {
   updateSingleUserphone,
   validate,
   updateSingleStatus,
-  updateSingleUserdocument
+  updateSingleUserdocument,
 };

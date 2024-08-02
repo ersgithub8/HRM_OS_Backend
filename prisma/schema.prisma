@@ -12,8 +12,8 @@ model user {
   firstName                   String?
   lastName                    String?
   firebaseToken               String?
-  device                      String               @default("Android")
-  userName                    String               @unique
+  device                      String?              @default("Android")
+  userName                    String?              @unique
   password                    String
   email                       String?              @unique
   phone                       String?              @unique
@@ -29,10 +29,10 @@ model user {
   dbschecktext                String?
   safeguarding                String?
   safeguardingtext            String?
-  bankallowedleave            String               @default("8")
-  remaingbankallowedleave     String               @default("8")
-  annualallowedleave          String               @default("20")
-  remainingannualallowedleave String               @default("20")
+  bankallowedleave            String?              @default("8")
+  remaingbankallowedleave     String?              @default("8")
+  annualallowedleave          String?              @default("20")
+  remainingannualallowedleave String?              @default("20")
   companyname                 String?
   designation                 String?
   joining_date                DateTime?
@@ -102,11 +102,11 @@ model user {
 model education {
   id           Int       @id @default(autoincrement())
   userId       Int
-  degree       String
-  institution  String
-  fieldOfStudy String
-  result       String
-  startDate    DateTime
+  degree       String?
+  institution  String?
+  fieldOfStudy String?
+  result       String?
+  startDate    DateTime?
   endDate      DateTime?
   status       Boolean   @default(true)
   createdAt    DateTime  @default(now())
