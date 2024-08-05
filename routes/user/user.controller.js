@@ -208,7 +208,7 @@ const register = async (req, res) => {
       data: {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        userName: userNames,
+        userName: req.body.userName ? req.body.userName : userNames,
         firebaseToken: req.body.firebaseToken,
         password: hash,
         email: req.body.email,

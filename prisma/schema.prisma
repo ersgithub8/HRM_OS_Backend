@@ -13,7 +13,7 @@ model user {
   lastName                    String?
   firebaseToken               String?
   device                      String?              @default("Android")
-  userName                    String?              @unique
+  userName                    String?
   password                    String
   email                       String?              @unique
   phone                       String?              @unique
