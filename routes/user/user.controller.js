@@ -16,24 +16,24 @@ const secret = process.env.JWT_SECRET;
 const login = async (req, res) => {
   try {
     const allUsers = await prisma.user.findMany();
-    const user = allUsers.find((u) => u.email === req.body.email);
 
+    const user = allUsers.find((u) => u.email === req.body.email);
     if (!user) {
       return res
         .status(400)
         .json({ message: "Authentication failed. Email is incorrect." });
     }
 
-    if (user.applicationStatus === "PENDING") {
-      return res.status(401).json({
-        message: "Authentication failed. User account is not approved.",
-      });
-    }
-    if (user.applicationStatus === "REJECTED") {
-      return res.status(401).json({
-        message: "Authentication failed. Your application has been rejected.",
-      });
-    }
+    // if (user.applicationStatus === "PENDING") {
+    //   return res.status(401).json({
+    //     message: "Authentication failed. User account is not approved.",
+    //   });
+    // }
+    // if (user.applicationStatus === "REJECTED") {
+    //   return res.status(401).json({
+    //     message: "Authentication failed. Your application has been rejected.",
+    //   });
+    // }
 
     const passwordMatches = bcrypt.compareSync(
       req.body.password,
@@ -58,26 +58,34 @@ const login = async (req, res) => {
     const { password, ...userWithoutPassword } = updatedUser;
 
     // get permission from user roles
-    const permissions = await prisma.role.findUnique({
-      where: {
-        id: user.roleId,
-      },
-      include: {
-        rolePermission: {
-          include: {
-            permission: true,
-          },
-        },
-      },
-    });
+    // const permissions = await prisma.role.findUnique({
+    //   where: {
+    //     id: user.roleId,
+    //   },
+    //   include: {
+    //     rolePermission: {
+    //       include: {
+    //         permission: true,
+    //       },
+    //     },
+    //   },
+    // });
 
-    // store all permissions name to an array
-    const permissionNames = permissions.rolePermission.map(
-      (rp) => rp.permission.name
-    );
+    // // store all permissions name to an array
+    // const permissionNames = permissions.rolePermission.map(
+    //   (rp) => rp.permission.name
+    // );
+
+    // const token = jwt.sign(
+    //   { sub: user.id, permissions: permissionNames },
+    //   secret,
+    //   {
+    //     expiresIn: "24h",
+    //   }
+    // );
 
     const token = jwt.sign(
-      { sub: user.id, permissions: permissionNames },
+      { sub: user.id },
       secret,
       {
         expiresIn: "24h",
@@ -179,10 +187,10 @@ const register = async (req, res) => {
     // }
     const leavs = req.body.leavePolicyId
       ? await prisma.leavePolicy.findUnique({
-          where: {
-            id: req.body.leavePolicyId,
-          },
-        })
+        where: {
+          id: req.body.leavePolicyId,
+        },
+      })
       : null;
 
     let remainingannualallowedleave;
@@ -274,41 +282,41 @@ const register = async (req, res) => {
           : null,
         designationHistory: req.body.designationId
           ? {
-              create: {
-                designationId: req.body.designationId,
-                startDate: new Date(),
-                endDate: req.body.designationEndDate
-                  ? new Date(req.body.designationEndDate)
-                  : null,
-                comment: req.body.designationComment,
-              },
-            }
+            create: {
+              designationId: req.body.designationId,
+              startDate: new Date(),
+              endDate: req.body.designationEndDate
+                ? new Date(req.body.designationEndDate)
+                : null,
+              comment: req.body.designationComment,
+            },
+          }
           : {},
         salaryHistory: req.body.salary
           ? {
-              create: {
-                salary: req.body.salary,
-                startDate: new Date(req.body.salaryStartDate),
-                endDate: req.body.salaryEndDate
-                  ? new Date(req.body.salaryEndDate)
-                  : null,
-                comment: req.body.salaryComment,
-              },
-            }
+            create: {
+              salary: req.body.salary,
+              startDate: new Date(req.body.salaryStartDate),
+              endDate: req.body.salaryEndDate
+                ? new Date(req.body.salaryEndDate)
+                : null,
+              comment: req.body.salaryComment,
+            },
+          }
           : {},
         educations: req.body.educations
           ? {
-              create: req.body.educations.map((e) => {
-                return {
-                  degree: e.degree,
-                  institution: e.institution,
-                  fieldOfStudy: e.fieldOfStudy,
-                  result: e.result,
-                  startDate: new Date(e.studyStartDate),
-                  endDate: new Date(e.studyEndDate),
-                };
-              }),
-            }
+            create: req.body.educations.map((e) => {
+              return {
+                degree: e.degree,
+                institution: e.institution,
+                fieldOfStudy: e.fieldOfStudy,
+                result: e.result,
+                startDate: new Date(e.studyStartDate),
+                endDate: new Date(e.studyEndDate),
+              };
+            }),
+          }
           : {},
       },
     });
@@ -436,14 +444,14 @@ const getSingleUser = async (req, res) => {
   try {
     const userId = Number(req.params.id);
 
-    if (
-      userId !== req.auth.sub &&
-      !req.auth.permissions.includes("readSingle-user")
-    ) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized. You are not an admin" });
-    }
+    // if (
+    //   userId !== req.auth.sub &&
+    //   !req.auth.permissions.includes("readSingle-user")
+    // ) {
+    //   return res
+    //     .status(401)
+    //     .json({ message: "Unauthorized. You are not an admin" });
+    // }
 
     // Fetch the user record by their ID
     console.log(userId, "trasjhk");
@@ -640,11 +648,11 @@ const getSingleUser = async (req, res) => {
 const updateSingleUser = async (req, res) => {
   const id = parseInt(req.params.id);
 
-  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
-    return res.status(401).json({
-      message: "Unauthorized. You can only edit your own record.",
-    });
-  }
+  // if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+  //   return res.status(401).json({
+  //     message: "Unauthorized. You can only edit your own record.",
+  //   });
+  // }
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -674,10 +682,10 @@ const updateSingleUser = async (req, res) => {
     // console.log(existingUser);
     const leavs = req.body.leavePolicyId
       ? await prisma.leavePolicy.findUnique({
-          where: {
-            id: req.body.leavePolicyId,
-          },
-        })
+        where: {
+          id: req.body.leavePolicyId,
+        },
+      })
       : null;
     let remainingannualallowedleave;
 
@@ -874,11 +882,11 @@ function sendnotifiy(Title, Body, Desc, Token) {
 const updateSingleUserprofile = async (req, res) => {
   const id = parseInt(req.params.id);
 
-  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
-    return res.status(401).json({
-      message: "Unauthorized. You can only edit your own record.",
-    });
-  }
+  // if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+  //   return res.status(401).json({
+  //     message: "Unauthorized. You can only edit your own record.",
+  //   });
+  // }
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -1204,6 +1212,70 @@ const deleteSingleUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+const deletePermanentUser = async (req, res) => {
+  const userId = parseInt(req.params.id);
+  // Check if the user exists
+  const userExists = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!userExists) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  try {
+    // Delete related data from foreign tables
+    await prisma.attendance.deleteMany({
+      where: { userId: userId },
+    });
+
+    await prisma.leaveApplication.deleteMany({
+      where: { userId: userId },
+    });
+    await prisma.salaryHistory.deleteMany({
+      where: {
+        userId: userId,
+      },
+    });
+    await prisma.designationHistory.deleteMany({
+      where: {
+        userId: userId,
+      },
+    });
+
+    await prisma.payslip.deleteMany({
+      where: { userId: userId },
+    });
+
+    await prisma.education.deleteMany({
+      where: { userId: userId },
+    });
+    await prisma.awardHistory.deleteMany({
+      where: { userId: userId },
+    });
+    // await prisma.leavePolicy.deleteMany({
+    //   where: { userId: userId },
+    // });
+    // await prisma.weeklyHoliday.deleteMany({
+    //   where: { userId: userId },
+    // });
+    await prisma.project.deleteMany({
+      where: { projectManagerId: userId },
+    });
+    await prisma.projectTeamMember.deleteMany({
+      where: { userId: userId },
+    });
+    // Delete the user
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 const changepassword = async (req, res) => {
   try {
     const { oldpassword, newpassword, email } = req.body;
@@ -1455,4 +1527,5 @@ module.exports = {
   validate,
   updateSingleStatus,
   updateSingleUserdocument,
+  deletePermanentUser
 };

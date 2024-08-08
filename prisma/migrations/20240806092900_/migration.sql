@@ -4,8 +4,8 @@ CREATE TABLE "user" (
     "firstName" TEXT,
     "lastName" TEXT,
     "firebaseToken" TEXT,
-    "device" TEXT NOT NULL DEFAULT 'Android',
-    "userName" TEXT NOT NULL,
+    "device" TEXT DEFAULT 'Android',
+    "userName" TEXT,
     "password" TEXT NOT NULL,
     "email" TEXT,
     "phone" TEXT,
@@ -21,10 +21,10 @@ CREATE TABLE "user" (
     "dbschecktext" TEXT,
     "safeguarding" TEXT,
     "safeguardingtext" TEXT,
-    "bankallowedleave" TEXT NOT NULL DEFAULT '8',
-    "remaingbankallowedleave" TEXT NOT NULL DEFAULT '8',
-    "annualallowedleave" TEXT NOT NULL DEFAULT '20',
-    "remainingannualallowedleave" TEXT NOT NULL DEFAULT '20',
+    "bankallowedleave" TEXT DEFAULT '8',
+    "remaingbankallowedleave" TEXT DEFAULT '8',
+    "annualallowedleave" TEXT DEFAULT '20',
+    "remainingannualallowedleave" TEXT DEFAULT '20',
     "companyname" TEXT,
     "designation" TEXT,
     "joining_date" TIMESTAMP(3),
@@ -77,11 +77,11 @@ CREATE TABLE "user" (
 CREATE TABLE "education" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
-    "degree" TEXT NOT NULL,
-    "institution" TEXT NOT NULL,
-    "fieldOfStudy" TEXT NOT NULL,
-    "result" TEXT NOT NULL,
-    "startDate" TIMESTAMP(3) NOT NULL,
+    "degree" TEXT,
+    "institution" TEXT,
+    "fieldOfStudy" TEXT,
+    "result" TEXT,
+    "startDate" TIMESTAMP(3),
     "endDate" TIMESTAMP(3),
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -624,9 +624,6 @@ CREATE TABLE "_meetingTouser" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "user_userName_key" ON "user"("userName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
