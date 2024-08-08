@@ -1152,11 +1152,11 @@ const deleteSingleUser = async (req, res) => {
   }
 
   // Check if the requesting user has permission to delete
-  if (!req.auth.permissions.includes("delete-user")) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized. Only admin can delete." });
-  }
+  // if (!req.auth.permissions.includes("delete-user")) {
+  //   return res
+  //     .status(401)
+  //     .json({ message: "Unauthorized. Only admin can delete." });
+  // }
 
   try {
     // Delete related data from foreign tables
