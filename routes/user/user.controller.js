@@ -183,10 +183,10 @@ const register = async (req, res) => {
     // }
     const leavs = req.body.leavePolicyId
       ? await prisma.leavePolicy.findUnique({
-          where: {
-            id: req.body.leavePolicyId,
-          },
-        })
+        where: {
+          id: req.body.leavePolicyId,
+        },
+      })
       : null;
 
     let remainingannualallowedleave;
@@ -279,41 +279,41 @@ const register = async (req, res) => {
           : null,
         designationHistory: req.body.designationId
           ? {
-              create: {
-                designationId: req.body.designationId,
-                startDate: new Date(),
-                endDate: req.body.designationEndDate
-                  ? new Date(req.body.designationEndDate)
-                  : null,
-                comment: req.body.designationComment,
-              },
-            }
+            create: {
+              designationId: req.body.designationId,
+              startDate: new Date(),
+              endDate: req.body.designationEndDate
+                ? new Date(req.body.designationEndDate)
+                : null,
+              comment: req.body.designationComment,
+            },
+          }
           : {},
         salaryHistory: req.body.salary
           ? {
-              create: {
-                salary: req.body.salary,
-                startDate: new Date(req.body.salaryStartDate),
-                endDate: req.body.salaryEndDate
-                  ? new Date(req.body.salaryEndDate)
-                  : null,
-                comment: req.body.salaryComment,
-              },
-            }
+            create: {
+              salary: req.body.salary,
+              startDate: new Date(req.body.salaryStartDate),
+              endDate: req.body.salaryEndDate
+                ? new Date(req.body.salaryEndDate)
+                : null,
+              comment: req.body.salaryComment,
+            },
+          }
           : {},
         educations: req.body.educations
           ? {
-              create: req.body.educations.map((e) => {
-                return {
-                  degree: e.degree,
-                  institution: e.institution,
-                  fieldOfStudy: e.fieldOfStudy,
-                  result: e.result,
-                  startDate: new Date(e.studyStartDate),
-                  endDate: new Date(e.studyEndDate),
-                };
-              }),
-            }
+            create: req.body.educations.map((e) => {
+              return {
+                degree: e.degree,
+                institution: e.institution,
+                fieldOfStudy: e.fieldOfStudy,
+                result: e.result,
+                startDate: new Date(e.studyStartDate),
+                endDate: new Date(e.studyEndDate),
+              };
+            }),
+          }
           : {},
       },
     });
@@ -679,10 +679,10 @@ const updateSingleUser = async (req, res) => {
     // console.log(existingUser);
     const leavs = req.body.leavePolicyId
       ? await prisma.leavePolicy.findUnique({
-          where: {
-            id: req.body.leavePolicyId,
-          },
-        })
+        where: {
+          id: req.body.leavePolicyId,
+        },
+      })
       : null;
     let remainingannualallowedleave;
 
