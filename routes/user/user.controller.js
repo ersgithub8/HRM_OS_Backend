@@ -24,16 +24,16 @@ const login = async (req, res) => {
         .json({ message: "Authentication failed. Email is incorrect." });
     }
 
-    // if (user.applicationStatus === "PENDING") {
-    //   return res.status(401).json({
-    //     message: "Authentication failed. User account is not approved.",
-    //   });
-    // }
-    // if (user.applicationStatus === "REJECTED") {
-    //   return res.status(401).json({
-    //     message: "Authentication failed. Your application has been rejected.",
-    //   });
-    // }
+    if (user.applicationStatus === "PENDING") {
+      return res.status(401).json({
+        message: "Authentication failed. User account is not approved.",
+      });
+    }
+    if (user.applicationStatus === "REJECTED") {
+      return res.status(401).json({
+        message: "Authentication failed. Your application has been rejected.",
+      });
+    }
 
     const passwordMatches = bcrypt.compareSync(
       req.body.password,
@@ -58,35 +58,35 @@ const login = async (req, res) => {
     const { password, ...userWithoutPassword } = updatedUser;
 
     // get permission from user roles
-    // const permissions = await prisma.role.findUnique({
-    //   where: {
-    //     id: user.roleId,
-    //   },
-    //   include: {
-    //     rolePermission: {
-    //       include: {
-    //         permission: true,
-    //       },
-    //     },
-    //   },
-    // });
-
-    // // store all permissions name to an array
-    // const permissionNames = permissions.rolePermission.map(
-    //   (rp) => rp.permission.name
-    // );
-
-    // const token = jwt.sign(
-    //   { sub: user.id, permissions: permissionNames },
-    //   secret,
-    //   {
-    //     expiresIn: "24h",
-    //   }
-    // );
-
-    const token = jwt.sign({ sub: user.id }, secret, {
-      expiresIn: "24h",
+    const permissions = await prisma.role.findUnique({
+      where: {
+        id: user.roleId,
+      },
+      include: {
+        rolePermission: {
+          include: {
+            permission: true,
+          },
+        },
+      },
     });
+
+    // store all permissions name to an array
+    const permissionNames = permissions.rolePermission.map(
+      (rp) => rp.permission.name
+    );
+
+    const token = jwt.sign(
+      { sub: user.id, permissions: permissionNames },
+      secret,
+      {
+        expiresIn: "24h",
+      }
+    );
+
+    // const token = jwt.sign({ sub: user.id }, secret, {
+    //   expiresIn: "24h",
+    // });
 
     return res.status(200).json({
       ...userWithoutPassword,
@@ -183,10 +183,10 @@ const register = async (req, res) => {
     // }
     const leavs = req.body.leavePolicyId
       ? await prisma.leavePolicy.findUnique({
-        where: {
-          id: req.body.leavePolicyId,
-        },
-      })
+          where: {
+            id: req.body.leavePolicyId,
+          },
+        })
       : null;
 
     let remainingannualallowedleave;
@@ -279,41 +279,41 @@ const register = async (req, res) => {
           : null,
         designationHistory: req.body.designationId
           ? {
-            create: {
-              designationId: req.body.designationId,
-              startDate: new Date(),
-              endDate: req.body.designationEndDate
-                ? new Date(req.body.designationEndDate)
-                : null,
-              comment: req.body.designationComment,
-            },
-          }
+              create: {
+                designationId: req.body.designationId,
+                startDate: new Date(),
+                endDate: req.body.designationEndDate
+                  ? new Date(req.body.designationEndDate)
+                  : null,
+                comment: req.body.designationComment,
+              },
+            }
           : {},
         salaryHistory: req.body.salary
           ? {
-            create: {
-              salary: req.body.salary,
-              startDate: new Date(req.body.salaryStartDate),
-              endDate: req.body.salaryEndDate
-                ? new Date(req.body.salaryEndDate)
-                : null,
-              comment: req.body.salaryComment,
-            },
-          }
+              create: {
+                salary: req.body.salary,
+                startDate: new Date(req.body.salaryStartDate),
+                endDate: req.body.salaryEndDate
+                  ? new Date(req.body.salaryEndDate)
+                  : null,
+                comment: req.body.salaryComment,
+              },
+            }
           : {},
         educations: req.body.educations
           ? {
-            create: req.body.educations.map((e) => {
-              return {
-                degree: e.degree,
-                institution: e.institution,
-                fieldOfStudy: e.fieldOfStudy,
-                result: e.result,
-                startDate: new Date(e.studyStartDate),
-                endDate: new Date(e.studyEndDate),
-              };
-            }),
-          }
+              create: req.body.educations.map((e) => {
+                return {
+                  degree: e.degree,
+                  institution: e.institution,
+                  fieldOfStudy: e.fieldOfStudy,
+                  result: e.result,
+                  startDate: new Date(e.studyStartDate),
+                  endDate: new Date(e.studyEndDate),
+                };
+              }),
+            }
           : {},
       },
     });
@@ -441,14 +441,14 @@ const getSingleUser = async (req, res) => {
   try {
     const userId = Number(req.params.id);
 
-    // if (
-    //   userId !== req.auth.sub &&
-    //   !req.auth.permissions.includes("readSingle-user")
-    // ) {
-    //   return res
-    //     .status(401)
-    //     .json({ message: "Unauthorized. You are not an admin" });
-    // }
+    if (
+      userId !== req.auth.sub &&
+      !req.auth.permissions.includes("readSingle-user")
+    ) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. You are not an admin" });
+    }
 
     // Fetch the user record by their ID
     console.log(userId, "trasjhk");
@@ -645,11 +645,11 @@ const getSingleUser = async (req, res) => {
 const updateSingleUser = async (req, res) => {
   const id = parseInt(req.params.id);
 
-  // if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
-  //   return res.status(401).json({
-  //     message: "Unauthorized. You can only edit your own record.",
-  //   });
-  // }
+  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+    return res.status(401).json({
+      message: "Unauthorized. You can only edit your own record.",
+    });
+  }
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -679,10 +679,10 @@ const updateSingleUser = async (req, res) => {
     // console.log(existingUser);
     const leavs = req.body.leavePolicyId
       ? await prisma.leavePolicy.findUnique({
-        where: {
-          id: req.body.leavePolicyId,
-        },
-      })
+          where: {
+            id: req.body.leavePolicyId,
+          },
+        })
       : null;
     let remainingannualallowedleave;
 
@@ -754,6 +754,8 @@ const updateSingleUser = async (req, res) => {
       emp_name1: req.body.emp_name1,
       emp_email1: req.body.emp_email1,
       emp_telno1: req.body.emp_telno1,
+      // visaStatus: req.body.visaStatus,
+      // visaExpiry: req.body.visaExpiry,
     };
 
     if (req.auth.permissions.includes("update-user")) {
@@ -880,11 +882,11 @@ function sendnotifiy(Title, Body, Desc, Token) {
 const updateSingleUserprofile = async (req, res) => {
   const id = parseInt(req.params.id);
 
-  // if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
-  //   return res.status(401).json({
-  //     message: "Unauthorized. You can only edit your own record.",
-  //   });
-  // }
+  if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+    return res.status(401).json({
+      message: "Unauthorized. You can only edit your own record.",
+    });
+  }
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -1152,11 +1154,11 @@ const deleteSingleUser = async (req, res) => {
   }
 
   // Check if the requesting user has permission to delete
-  // if (!req.auth.permissions.includes("delete-user")) {
-  //   return res
-  //     .status(401)
-  //     .json({ message: "Unauthorized. Only admin can delete." });
-  // }
+  if (!req.auth.permissions.includes("delete-user")) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized. Only admin can delete." });
+  }
 
   try {
     // Delete related data from foreign tables

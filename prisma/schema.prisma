@@ -76,7 +76,7 @@ model user {
   emp_telno1                  String?
   end_date1                   DateTime?
   joining_date1               DateTime?
-  visaExpiry                  DateTime?
+  visaExpiry                  String?
   visaStatus                  String?
   attendance                  attendance[]
   awardHistory                awardHistory[]
