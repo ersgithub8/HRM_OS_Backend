@@ -3,7 +3,6 @@ const prisma = require("../../../utils/prisma");
 const admin = require("firebase-admin");
 var FCM = require("fcm-node");
 
-
 const createSingleLeave = async (req, res) => {
   if (req.query.query === "deletemany") {
     try {
@@ -21,11 +20,10 @@ const createSingleLeave = async (req, res) => {
     }
   } else {
     try {
-
       const leaveFrom = new Date(req.body.leaveFrom);
       // leaveFrom.setHours(0,0,0,0)
       const leaveTo = new Date(req.body.leaveTo);
-      leaveTo.setHours(23, 59, 59, 59)
+      leaveTo.setHours(23, 59, 59, 59);
       const user = await prisma.user.findUnique({
         where: {
           id: parseInt(req.body.userId),
@@ -51,9 +49,12 @@ const createSingleLeave = async (req, res) => {
         },
       });
 
-
       if (overlappingLeaveCount >= 2) {
-        return res.status(400).json({ message: "2 Leaves are already approved for the same date." });
+        return res
+          .status(400)
+          .json({
+            message: "2 Leaves are already approved for the same date.",
+          });
       }
 
       const training = await prisma.training.findMany({
@@ -62,89 +63,102 @@ const createSingleLeave = async (req, res) => {
             {
               AND: [
                 { leaveFrom: { lte: new Date(leaveTo) } },
-                { leaveTo: { gte: new Date(leaveFrom) } }
-              ]
-            }
-          ]
-        }
+                { leaveTo: { gte: new Date(leaveFrom) } },
+              ],
+            },
+          ],
+        },
       });
 
       if (training.length > 0) {
-        return res.status(400).json({ message: "You can't apply for leave on a training day." });
+        return res
+          .status(400)
+          .json({ message: "You can't apply for leave on a training day." });
       }
 
-
       if ([0, 1, 8].includes(leaveFrom.getMonth())) {
-        return res.status(400).json({ message: "Leaves are not allowed in Jan, Feb, & Sep." });
+        return res
+          .status(400)
+          .json({ message: "Leaves are not allowed in Jan, Feb, & Sep." });
       }
       var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime();
 
       var leaveDuration = Math.round(Difference_In_Time / (1000 * 3600 * 24));
       if (leaveFrom.toDateString() === leaveTo.toDateString()) {
-        if (req.body.daytype === 'FULL') {
+        if (req.body.daytype === "FULL") {
           leaveDuration = leaveDuration;
-        } else if (req.body.daytype === 'HALF') {
+        } else if (req.body.daytype === "HALF") {
           leaveDuration = leaveDuration / 2;
         }
       } else {
-        if (req.body.daytype === 'HALF') {
+        if (req.body.daytype === "HALF") {
           leaveDuration = leaveDuration / 2;
         }
       }
       if (user.remainingannualallowedleave < leaveDuration) {
-        return res.status(400).json({ message: "Not enough remaining annual leave." });
+        return res
+          .status(400)
+          .json({ message: "Not enough remaining annual leave." });
       }
       let todayDate = new Date();
       var Difference_In_Time2 = leaveFrom.getTime() - todayDate.getTime();
-      var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
+      var Difference_In_Days = Math.round(
+        Difference_In_Time2 / (1000 * 3600 * 24)
+      );
       const submitDays = Math.ceil(leaveDuration) * 2 + 1;
-    //   const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
-    //     leaveDuration === 2 || leaveDuration === 1 ? 5 :
-    //       leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
-    //         leaveDuration === 4 || leaveDuration === 2 ? 9 :
-    //           leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
-    //             leaveDuration === 6 || leaveDuration === 3 ? 13 :
-    //               leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
-    //                 leaveDuration === 8 || leaveDuration === 4 ? 17 :
-    //                   leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
-    //                     leaveDuration === 10 || leaveDuration === 5 ? 21 :
-    //                       leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
-    //                         leaveDuration === 12 || leaveDuration === 6 ? 25 :
-    //                           leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
-    //                             leaveDuration === 14 || leaveDuration === 7 ? 29 :
-    //                               leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
-    //                                 leaveDuration === 16 || leaveDuration === 8 ? 33 :
-    //                                   leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
-    //                                     leaveDuration === 18 || leaveDuration === 9 ? 37 :
-    //                                       leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
-    //                                         leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
+      //   const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
+      //     leaveDuration === 2 || leaveDuration === 1 ? 5 :
+      //       leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
+      //         leaveDuration === 4 || leaveDuration === 2 ? 9 :
+      //           leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
+      //             leaveDuration === 6 || leaveDuration === 3 ? 13 :
+      //               leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
+      //                 leaveDuration === 8 || leaveDuration === 4 ? 17 :
+      //                   leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
+      //                     leaveDuration === 10 || leaveDuration === 5 ? 21 :
+      //                       leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
+      //                         leaveDuration === 12 || leaveDuration === 6 ? 25 :
+      //                           leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
+      //                             leaveDuration === 14 || leaveDuration === 7 ? 29 :
+      //                               leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
+      //                                 leaveDuration === 16 || leaveDuration === 8 ? 33 :
+      //                                   leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
+      //                                     leaveDuration === 18 || leaveDuration === 9 ? 37 :
+      //                                       leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
+      //                                         leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
       if (Difference_In_Days < submitDays) {
-        return res.status(400).json({ message: `Please must apply at least  ${submitDays} days before the leave date.` });
+        return res
+          .status(400)
+          .json({
+            message: `Please must apply at least  ${submitDays} days before the leave date.`,
+          });
       }
       const existingLeave = await prisma.leaveApplication.findFirst({
         where: {
           userId: parseInt(req.body.userId),
           leaveFrom: { lte: leaveTo },
           leaveTo: { gte: leaveFrom },
-          status: "APPROVED"
+          status: "APPROVED",
         },
       });
 
       if (existingLeave) {
-        return res.status(400).json({ message: "Your leave is already approved for same day." });
+        return res
+          .status(400)
+          .json({ message: "Your leave is already approved for same day." });
       }
       const leaveType = req.body.leaveType; // Get the leaveType from the request
 
       let leavecategory;
       if (
-        leaveType === 'CompassionateLeave(deductible)' ||
-        leaveType === 'BereavementLeave(deductible)' ||
-        leaveType === 'ParentalLeave(deductible)' ||
-        leaveType === 'PaternityLeave(deductible-if-paid)'
+        leaveType === "CompassionateLeave(deductible)" ||
+        leaveType === "BereavementLeave(deductible)" ||
+        leaveType === "ParentalLeave(deductible)" ||
+        leaveType === "PaternityLeave(deductible-if-paid)"
       ) {
-        leavecategory = 'paid'; // Set leavecategory to 'paid'
+        leavecategory = "paid"; // Set leavecategory to 'paid'
       } else {
-        leavecategory = 'unpaid'; // Set leavecategory to 'unpaid'
+        leavecategory = "unpaid"; // Set leavecategory to 'unpaid'
       }
       const createdLeave = await prisma.leaveApplication.create({
         data: {
@@ -165,11 +179,18 @@ const createSingleLeave = async (req, res) => {
           attachment: req.body.attachment ? req.body.attachment : null,
         },
       });
-      if (req.body.daytype === 'HALF') {
+      if (req.body.daytype === "HALF") {
         leaveDuration = leaveDuration;
       }
-      let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
-      if (req.body.leaveType === 'CompassionateLeave(deductible)' || req.body.leaveType === 'BereavementLeave(deductible)' || req.body.leaveType === 'ParentalLeave(deductible)' || req.body.leaveType === 'PaternityLeave(deductible-if-paid)') {
+      let remainingannualallowedleave = (
+        user.remainingannualallowedleave - leaveDuration
+      ).toString();
+      if (
+        req.body.leaveType === "CompassionateLeave(deductible)" ||
+        req.body.leaveType === "BereavementLeave(deductible)" ||
+        req.body.leaveType === "ParentalLeave(deductible)" ||
+        req.body.leaveType === "PaternityLeave(deductible-if-paid)"
+      ) {
         await prisma.user.update({
           where: {
             id: parseInt(req.body.userId),
@@ -181,10 +202,12 @@ const createSingleLeave = async (req, res) => {
       }
       return res.status(200).json({
         createdLeave,
-        message: "Your leave application is submitted successfully."
+        message: "Your leave application is submitted successfully.",
       });
     } catch (error) {
-      return res.status(400).json({ message: "Failed to submit leave application." });
+      return res
+        .status(400)
+        .json({ message: "Failed to submit leave application." });
     }
   }
 };
@@ -205,11 +228,10 @@ const adminSingleLeave = async (req, res) => {
     }
   } else {
     try {
-
       const leaveFrom = new Date(req.body.leaveFrom);
       // leaveFrom.setHours(0,0,0,0)
       const leaveTo = new Date(req.body.leaveTo);
-      leaveTo.setHours(23, 59, 59, 59)
+      leaveTo.setHours(23, 59, 59, 59);
 
       const user = await prisma.user.findUnique({
         where: {
@@ -236,9 +258,12 @@ const adminSingleLeave = async (req, res) => {
         },
       });
 
-
       if (overlappingLeaveCount >= 2) {
-        return res.status(400).json({ message: "2 Leaves are already approved for the same date." });
+        return res
+          .status(400)
+          .json({
+            message: "2 Leaves are already approved for the same date.",
+          });
       }
 
       const training = await prisma.training.findMany({
@@ -247,104 +272,118 @@ const adminSingleLeave = async (req, res) => {
             {
               AND: [
                 { leaveFrom: { lte: new Date(leaveTo) } },
-                { leaveTo: { gte: new Date(leaveFrom) } }
-              ]
-            }
-          ]
-        }
+                { leaveTo: { gte: new Date(leaveFrom) } },
+              ],
+            },
+          ],
+        },
       });
 
       if (training.length > 0) {
-        return res.status(400).json({ message: "You can't apply for leave on a training day." });
+        return res
+          .status(400)
+          .json({ message: "You can't apply for leave on a training day." });
       }
       if ([0, 1, 8].includes(leaveFrom.getMonth())) {
-        return res.status(400).json({ message: "Leaves are not allowed in Jan, Feb, & Sep." });
+        return res
+          .status(400)
+          .json({ message: "Leaves are not allowed in Jan, Feb, & Sep." });
       }
       var Difference_In_Time = leaveTo.getTime() - leaveFrom.getTime();
 
       var leaveDuration = Math.round(Difference_In_Time / (1000 * 3600 * 24));
       if (leaveFrom.toDateString() === leaveTo.toDateString()) {
         // Single-day leave
-        if (req.body.daytype === 'FULL') {
+        if (req.body.daytype === "FULL") {
           leaveDuration = leaveDuration; // One-day full leave
-        } else if (req.body.daytype === 'HALF') {
+        } else if (req.body.daytype === "HALF") {
           leaveDuration = leaveDuration / 2; // One-day half leave
         }
       } else {
-        if (req.body.daytype === 'HALF') {
+        if (req.body.daytype === "HALF") {
           leaveDuration = leaveDuration / 2; // Adjust for half-day leave
         }
       }
       if (user.remainingannualallowedleave < leaveDuration) {
-        return res.status(400).json({ message: "Not enough remaining annual leave." });
+        return res
+          .status(400)
+          .json({ message: "Not enough remaining annual leave." });
       }
       let todayDate = new Date();
       var Difference_In_Time2 = leaveFrom.getTime() - todayDate.getTime();
-      var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
+      var Difference_In_Days = Math.round(
+        Difference_In_Time2 / (1000 * 3600 * 24)
+      );
       const submitDays = Math.ceil(leaveDuration) * 2 + 1;
-    //   var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
-    //   const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
-    //     leaveDuration === 2 || leaveDuration === 1 ? 5 :
-    //       leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
-    //         leaveDuration === 4 || leaveDuration === 2 ? 9 :
-    //           leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
-    //             leaveDuration === 6 || leaveDuration === 3 ? 13 :
-    //               leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
-    //                 leaveDuration === 8 || leaveDuration === 4 ? 17 :
-    //                   leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
-    //                     leaveDuration === 10 || leaveDuration === 5 ? 21 :
-    //                       leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
-    //                         leaveDuration === 12 || leaveDuration === 6 ? 25 :
-    //                           leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
-    //                             leaveDuration === 14 || leaveDuration === 7 ? 29 :
-    //                               leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
-    //                                 leaveDuration === 16 || leaveDuration === 8 ? 33 :
-    //                                   leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
-    //                                     leaveDuration === 18 || leaveDuration === 9 ? 37 :
-    //                                       leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
-    //                                         leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
+      //   var Difference_In_Days = Math.round(Difference_In_Time2 / (1000 * 3600 * 24));
+      //   const submitDays = leaveDuration === 1 || leaveDuration === 0.5 ? 3 :
+      //     leaveDuration === 2 || leaveDuration === 1 ? 5 :
+      //       leaveDuration === 3 || leaveDuration === 1.5 ? 7 :
+      //         leaveDuration === 4 || leaveDuration === 2 ? 9 :
+      //           leaveDuration === 5 || leaveDuration === 2.5 ? 11 :
+      //             leaveDuration === 6 || leaveDuration === 3 ? 13 :
+      //               leaveDuration === 7 || leaveDuration === 3.5 ? 15 :
+      //                 leaveDuration === 8 || leaveDuration === 4 ? 17 :
+      //                   leaveDuration === 9 || leaveDuration === 4.5 ? 19 :
+      //                     leaveDuration === 10 || leaveDuration === 5 ? 21 :
+      //                       leaveDuration === 11 || leaveDuration === 5.5 ? 23 :
+      //                         leaveDuration === 12 || leaveDuration === 6 ? 25 :
+      //                           leaveDuration === 13 || leaveDuration === 6.5 ? 27 :
+      //                             leaveDuration === 14 || leaveDuration === 7 ? 29 :
+      //                               leaveDuration === 15 || leaveDuration === 7.5 ? 31 :
+      //                                 leaveDuration === 16 || leaveDuration === 8 ? 33 :
+      //                                   leaveDuration === 17 || leaveDuration === 8.5 ? 35 :
+      //                                     leaveDuration === 18 || leaveDuration === 9 ? 37 :
+      //                                       leaveDuration === 19 || leaveDuration === 9.5 ? 39 :
+      //                                         leaveDuration === 20 || leaveDuration === 10 ? 41 : 0;
 
       console.log(submitDays, "fsgdf");
       if (Difference_In_Days < submitDays) {
-        return res.status(400).json({ message: `Please must apply at least  ${submitDays} days before the leave date.` });
+        return res
+          .status(400)
+          .json({
+            message: `Please must apply at least  ${submitDays} days before the leave date.`,
+          });
       }
       const existingLeave = await prisma.leaveApplication.findFirst({
         where: {
           user: {
-            employeeId: (req.body.employeeId).toString()
+            employeeId: req.body.employeeId.toString(),
           },
           leaveFrom: { lte: leaveTo },
           leaveTo: { gte: leaveFrom },
-          status: "APPROVED"
+          status: "APPROVED",
         },
       });
 
       if (existingLeave) {
-        return res.status(400).json({ message: "Your leave is already approved for same day." });
+        return res
+          .status(400)
+          .json({ message: "Your leave is already approved for same day." });
       }
       const leaveType = req.body.leaveType; // Get the leaveType from the request
 
       let leavecategory;
       if (
-        leaveType === 'CompassionateLeave(deductible)' ||
-        leaveType === 'BereavementLeave(deductible)' ||
-        leaveType === 'ParentalLeave(deductible)' ||
-        leaveType === 'PaternityLeave(deductible-if-paid)'
+        leaveType === "CompassionateLeave(deductible)" ||
+        leaveType === "BereavementLeave(deductible)" ||
+        leaveType === "ParentalLeave(deductible)" ||
+        leaveType === "PaternityLeave(deductible-if-paid)"
       ) {
-        leavecategory = 'paid'; // Set leavecategory to 'paid'
+        leavecategory = "paid"; // Set leavecategory to 'paid'
       } else {
-        leavecategory = 'unpaid'; // Set leavecategory to 'unpaid'
+        leavecategory = "unpaid"; // Set leavecategory to 'unpaid'
       }
       let status;
 
       if (user.roleId === 5) {
-        status = 'PENDING';
+        status = "PENDING";
       } else if (user.roleId === 1 || user.roleId === 6 || user.roleId === 4) {
-        status = 'PENDING';
+        status = "PENDING";
       } else if (user.roleId === 3) {
-        status = 'APPROVED';
+        status = "APPROVED";
       } else {
-        status = 'PENDING'; // Set a default status if none of the conditions match
+        status = "PENDING"; // Set a default status if none of the conditions match
       }
       const createdLeave = await prisma.leaveApplication.create({
         data: {
@@ -370,13 +409,20 @@ const adminSingleLeave = async (req, res) => {
       });
       console.log(createdLeave);
 
-      if (req.body.daytype === 'HALF') {
+      if (req.body.daytype === "HALF") {
         leaveDuration = leaveDuration;
       }
       console.log(leaveDuration);
-      let remainingannualallowedleave = (user.remainingannualallowedleave - leaveDuration).toString();
+      let remainingannualallowedleave = (
+        user.remainingannualallowedleave - leaveDuration
+      ).toString();
 
-      if (req.body.leaveType === 'CompassionateLeave(deductible)' || req.body.leaveType === 'BereavementLeave(deductible)' || req.body.leaveType === 'ParentalLeave(deductible)' || req.body.leaveType === 'PaternityLeave(deductible-if-paid)') {
+      if (
+        req.body.leaveType === "CompassionateLeave(deductible)" ||
+        req.body.leaveType === "BereavementLeave(deductible)" ||
+        req.body.leaveType === "ParentalLeave(deductible)" ||
+        req.body.leaveType === "PaternityLeave(deductible-if-paid)"
+      ) {
         await prisma.user.update({
           where: {
             employeeId: req.body.employeeId,
@@ -389,30 +435,46 @@ const adminSingleLeave = async (req, res) => {
 
       return res.status(200).json({
         createdLeave,
-        message: "Your leave application is submitted successfully."
+        message: "Your leave application is submitted successfully.",
       });
     } catch (error) {
-      return res.status(400).json({ message:"Failed to Submit leave application." });
+      return res
+        .status(400)
+        .json({ message: "Failed to Submit leave application." });
     }
   }
 };
 const getapprovedAllLeave = async (req, res) => {
   try {
     const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-    const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      0,
+      0,
+      0
+    );
+    const todayEnd = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + 1,
+      0,
+      0,
+      0
+    );
 
     const todayApproved = await prisma.leaveApplication.findMany({
       where: {
-        status: 'APPROVED',
+        status: "APPROVED",
         OR: [
           {
-            createdAt: { gte: todayStart, lt: todayEnd }
+            createdAt: { gte: todayStart, lt: todayEnd },
           },
           {
-            updatedAt: { gte: todayStart, lt: todayEnd }
-          }
-        ]
+            updatedAt: { gte: todayStart, lt: todayEnd },
+          },
+        ],
       },
       include: {
         user: {
@@ -484,7 +546,6 @@ const getSingleLeave = async (req, res) => {
         select: {
           firstName: true,
           lastName: true,
-
         },
       });
     }
@@ -492,7 +553,7 @@ const getSingleLeave = async (req, res) => {
     // Fetch all approved leave applications within the same date range
     const todayApproved = await prisma.leaveApplication.findMany({
       where: {
-        status: 'APPROVED',
+        status: "APPROVED",
         OR: [
           {
             leaveFrom: {
@@ -510,7 +571,7 @@ const getSingleLeave = async (req, res) => {
             firstName: true,
             lastName: true,
             employeeId: true,
-            department: true
+            department: true,
           },
         },
       },
@@ -529,20 +590,15 @@ const getSingleLeave = async (req, res) => {
         };
       })
     );
-    const approvedLeaveCount = approvedLeaveApplications.length
-
-
+    const approvedLeaveCount = approvedLeaveApplications.length;
 
     const result = {
       ...singleLeave,
       approvedLeaveCount: approvedLeaveCount,
       approvedLeaveApplications: approvedLeaveApplications,
-
     };
 
     return res.status(200).json(result);
-
-
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -564,15 +620,17 @@ const grantedLeave = async (req, res, next) => {
         user: true,
       },
     });
-    const leaveDuration = existingLeave.leaveDuration
+    const leaveDuration = existingLeave.leaveDuration;
 
     if (!existingLeave) {
-      return res.status(404).json({ message: 'Leave application not found.' });
+      return res.status(404).json({ message: "Leave application not found." });
     }
 
-    if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
+    if (existingLeave.status === "PENDING" && req.body.status === "APPROVED") {
       // If status was changed from 'REJECTED' to 'APPROVED', deduct the leave duration from remaining leaves
-      const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+      const currentRemainingLeaves = parseFloat(
+        existingLeave.user.remainingannualallowedleave
+      );
       // await prisma.user.update({
       //   where: {
       //     id: existingLeave.user.id,
@@ -581,19 +639,31 @@ const grantedLeave = async (req, res, next) => {
       //     remainingannualallowedleave: currentRemainingLeaves ? currentRemainingLeaves.toString() : '',
       //   },
       // });
-      const Title = 'Leave Approved';
-      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been approved.';
-      const Desc = 'Leave approval notification';
+      const Title = "Leave Approved";
+      const Body =
+        existingLeave.user.firstName +
+        " " +
+        existingLeave.user.lastName +
+        "  " +
+        "Your leave request has been approved.";
+      const Desc = "Leave approval notification";
       const Token = existingLeave.user.firebaseToken;
       // const Device = existingLeave.user.device;
       console.log(Title, Body, Desc, Token);
       sendnotifiy(Title, Body, Desc, Token);
-    }
-    else if (existingLeave.status === 'PENDING' && req.body.status === 'REJECTED') {
+    } else if (
+      existingLeave.status === "PENDING" &&
+      req.body.status === "REJECTED"
+    ) {
       if (existingLeave.leaveDuration) {
-        if (existingLeave.leavecategory === 'paid') {
-          const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-          const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.leaveDuration, 0);
+        if (existingLeave.leavecategory === "paid") {
+          const currentRemainingLeaves = parseFloat(
+            existingLeave.user.remainingannualallowedleave
+          );
+          const updatedRemainingLeaves = Math.max(
+            currentRemainingLeaves + existingLeave.leaveDuration,
+            0
+          );
           await prisma.user.update({
             where: {
               id: existingLeave.user.id,
@@ -602,9 +672,10 @@ const grantedLeave = async (req, res, next) => {
               remainingannualallowedleave: updatedRemainingLeaves.toString(),
             },
           });
-        }
-        else {
-          const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+        } else {
+          const currentRemainingLeaves = parseFloat(
+            existingLeave.user.remainingannualallowedleave
+          );
           const updatedRemainingLeaves = Math.max(currentRemainingLeaves, 0);
           await prisma.user.update({
             where: {
@@ -612,20 +683,32 @@ const grantedLeave = async (req, res, next) => {
             },
             data: {
               remainingannualallowedleave: updatedRemainingLeaves.toString(),
-
             },
           });
         }
-        const Title = 'Leave Rejected';
-        const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been rejected.';
-        const Desc = 'Leave rejection notification';
+        const Title = "Leave Rejected";
+        const Body =
+          existingLeave.user.firstName +
+          " " +
+          existingLeave.user.lastName +
+          "  " +
+          "Your leave request has been rejected.";
+        const Desc = "Leave rejection notification";
         const Token = existingLeave.user.firebaseToken;
         sendnotifiy(Title, Body, Desc, Token);
       }
-    } else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
-      if (existingLeave.leavecategory === 'paid') {
-        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-        const updatedRemainingLeaves = Math.max(currentRemainingLeaves + existingLeave.leaveDuration, 0);
+    } else if (
+      existingLeave.status === "APPROVED" &&
+      req.body.status === "REJECTED"
+    ) {
+      if (existingLeave.leavecategory === "paid") {
+        const currentRemainingLeaves = parseFloat(
+          existingLeave.user.remainingannualallowedleave
+        );
+        const updatedRemainingLeaves = Math.max(
+          currentRemainingLeaves + existingLeave.leaveDuration,
+          0
+        );
 
         await prisma.user.update({
           where: {
@@ -635,9 +718,10 @@ const grantedLeave = async (req, res, next) => {
             remainingannualallowedleave: updatedRemainingLeaves.toString(),
           },
         });
-      }
-      else {
-        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+      } else {
+        const currentRemainingLeaves = parseFloat(
+          existingLeave.user.remainingannualallowedleave
+        );
         const updatedRemainingLeaves = Math.max(currentRemainingLeaves, 0);
 
         await prisma.user.update({
@@ -649,16 +733,28 @@ const grantedLeave = async (req, res, next) => {
           },
         });
       }
-      const Title = 'Leave Rejected';
-      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been rejected.';
-      const Desc = 'Leave rejection notification';
+      const Title = "Leave Rejected";
+      const Body =
+        existingLeave.user.firstName +
+        " " +
+        existingLeave.user.lastName +
+        "  " +
+        "Your leave request has been rejected.";
+      const Desc = "Leave rejection notification";
       const Token = existingLeave.user.firebaseToken;
       sendnotifiy(Title, Body, Desc, Token);
-    } else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
-      if (existingLeave.leavecategory === 'paid') {
-        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
-        const updatedRemainingLeaves = Math.max(currentRemainingLeaves - existingLeave.leaveDuration, 0);
-
+    } else if (
+      existingLeave.status === "REJECTED" &&
+      req.body.status === "APPROVED"
+    ) {
+      if (existingLeave.leavecategory === "paid") {
+        const currentRemainingLeaves = parseFloat(
+          existingLeave.user.remainingannualallowedleave
+        );
+        const updatedRemainingLeaves = Math.max(
+          currentRemainingLeaves - existingLeave.leaveDuration,
+          0
+        );
 
         await prisma.user.update({
           where: {
@@ -668,12 +764,12 @@ const grantedLeave = async (req, res, next) => {
             remainingannualallowedleave: updatedRemainingLeaves.toString(),
           },
         });
-      }
-      else {
-        const currentRemainingLeaves = parseFloat(existingLeave.user.remainingannualallowedleave);
+      } else {
+        const currentRemainingLeaves = parseFloat(
+          existingLeave.user.remainingannualallowedleave
+        );
         const updatedRemainingLeaves = Math.max(currentRemainingLeaves, 0);
 
-
         await prisma.user.update({
           where: {
             id: existingLeave.user.id,
@@ -684,9 +780,14 @@ const grantedLeave = async (req, res, next) => {
         });
       }
 
-      const Title = 'Leave Approved';
-      const Body = existingLeave.user.firstName + " " + existingLeave.user.lastName + "  " + 'Your leave request has been approved.';
-      const Desc = 'Leave approval notification';
+      const Title = "Leave Approved";
+      const Body =
+        existingLeave.user.firstName +
+        " " +
+        existingLeave.user.lastName +
+        "  " +
+        "Your leave request has been approved.";
+      const Desc = "Leave approval notification";
       const Token = existingLeave.user.firebaseToken;
       // const Device = existingLeave.user.device;
       sendnotifiy(Title, Body, Desc, Token);
@@ -702,40 +803,45 @@ const grantedLeave = async (req, res, next) => {
         acceptLeaveFrom: acceptLeaveFrom ? acceptLeaveFrom : undefined,
         acceptLeaveTo: acceptLeaveTo ? acceptLeaveTo : undefined,
         leaveDuration: leaveDuration !== undefined ? leaveDuration : 0,
-        reviewComment: req.body.reviewComment ? req.body.reviewComment : undefined,
+        reviewComment: req.body.reviewComment
+          ? req.body.reviewComment
+          : undefined,
         status: req.body.status,
       },
     });
-    if (existingLeave.status === 'PENDING' && req.body.status === 'APPROVED') {
+    if (existingLeave.status === "PENDING" && req.body.status === "APPROVED") {
       req.body.userId = existingLeave.user.id;
       req.body.grantedLeave = grantedLeave;
       req.body.fromleave = true;
       next();
-    }
-    else if (existingLeave.status === 'REJECTED' && req.body.status === 'APPROVED') {
+    } else if (
+      existingLeave.status === "REJECTED" &&
+      req.body.status === "APPROVED"
+    ) {
       req.body.userId = existingLeave.user.id;
       req.body.grantedLeave = grantedLeave;
       req.body.fromleave = true;
       next();
-    }
-    else if (existingLeave.status === 'APPROVED' && req.body.status === 'REJECTED') {
-    //   req.body.status = 'REJECTED';
+    } else if (
+      existingLeave.status === "APPROVED" &&
+      req.body.status === "REJECTED"
+    ) {
+      //   req.body.status = 'REJECTED';
       req.body.userId = existingLeave.user.id;
       req.body.grantedLeave = grantedLeave;
       req.body.fromleave = true;
       next();
-    }
-    else {
+    } else {
       return res.status(200).json({
         grantedLeave,
-        message: 'Application status is updated',
+        message: "Application status is updated",
       });
     }
-
-
   } catch (error) {
     console.log("Errorrrrrrr", error);
-    return res.status(400).json({ message: 'Failed to update application status' });
+    return res
+      .status(400)
+      .json({ message: "Failed to update application status" });
   }
 };
 
@@ -754,7 +860,8 @@ const getLeaveByUserId = async (req, res) => {
           select: {
             annualallowedleave: true,
             remainingannualallowedleave: true,
-
+            bankallowedleave: true,
+            remaingbankallowedleave: true,
           },
         },
       },
@@ -775,7 +882,7 @@ const getLeaveByUserId = async (req, res) => {
           approvedBy: approvedByUser,
         };
       })
-    )
+    );
     let AcqiredpaidLeave = 0;
     let AcqiredunpaidLeave = 0;
     let paidLeavePending = 0;
@@ -837,12 +944,14 @@ const deleteSingleLeave = async (req, res) => {
     });
     return res.status(200).json({
       deletedLeaveApplication,
-      message: "Leave application deleted successfully."
+      message: "Leave application deleted successfully.",
     });
   } catch (error) {
-    return res.status(400).json({ message: "Failed to delete leave application. " });
+    return res
+      .status(400)
+      .json({ message: "Failed to delete leave application. " });
   }
-}
+};
 const todayLeaveState = async (req, res) => {
   try {
     const today = new Date();
@@ -858,13 +967,27 @@ const todayLeaveState = async (req, res) => {
           },
           {
             updatedAt: { gte: startOfWeek, lt: endOfWeek },
-          }
-        ]
+          },
+        ],
       },
     });
     const todays = new Date();
-    const startOfToday = new Date(todays.getFullYear(), todays.getMonth(), todays.getDate(), 0, 0, 0);
-    const endOfToday = new Date(todays.getFullYear(), todays.getMonth(), todays.getDate(), 23, 59, 59);
+    const startOfToday = new Date(
+      todays.getFullYear(),
+      todays.getMonth(),
+      todays.getDate(),
+      0,
+      0,
+      0
+    );
+    const endOfToday = new Date(
+      todays.getFullYear(),
+      todays.getMonth(),
+      todays.getDate(),
+      23,
+      59,
+      59
+    );
 
     const todayLeaves = await prisma.leaveApplication.findMany({
       where: {
@@ -884,28 +1007,37 @@ const todayLeaveState = async (req, res) => {
     };
 
     const dayNameMapping = {
-      'Monday': 'Mon',
-      'Tuesday': 'Tue',
-      'Wednesday': 'Wed',
-      'Thursday': 'Thu',
-      'Friday': 'Fri',
-      'Saturday': 'Sat',
-      'Sunday': 'Sun',
+      Monday: "Mon",
+      Tuesday: "Tue",
+      Wednesday: "Wed",
+      Thursday: "Thu",
+      Friday: "Fri",
+      Saturday: "Sat",
+      Sunday: "Sun",
     };
 
     // Update counts based on leave status and day of the week
-    weeklyLeaves.forEach(leave => {
-      const dayOfWeek = new Date(leave.createdAt).toLocaleString('en-us', { weekday: 'long' });
+    weeklyLeaves.forEach((leave) => {
+      const dayOfWeek = new Date(leave.createdAt).toLocaleString("en-us", {
+        weekday: "long",
+      });
       const shortDayOfWeek = dayNameMapping[dayOfWeek];
       dayCounts[shortDayOfWeek].total++;
-      if (leave.status === 'APPROVED') dayCounts[shortDayOfWeek].approved++;
-      else if (leave.status === 'PENDING') dayCounts[shortDayOfWeek].pending++;
-      else if (leave.status === 'REJECTED') dayCounts[shortDayOfWeek].rejected++;
+      if (leave.status === "APPROVED") dayCounts[shortDayOfWeek].approved++;
+      else if (leave.status === "PENDING") dayCounts[shortDayOfWeek].pending++;
+      else if (leave.status === "REJECTED")
+        dayCounts[shortDayOfWeek].rejected++;
     });
 
-    const todayApproved = todayLeaves.filter((leave) => leave.status === 'APPROVED');
-    const todayPending = todayLeaves.filter((leave) => leave.status === 'PENDING');
-    const todayRejected = todayLeaves.filter((leave) => leave.status === 'REJECTED');
+    const todayApproved = todayLeaves.filter(
+      (leave) => leave.status === "APPROVED"
+    );
+    const todayPending = todayLeaves.filter(
+      (leave) => leave.status === "PENDING"
+    );
+    const todayRejected = todayLeaves.filter(
+      (leave) => leave.status === "REJECTED"
+    );
 
     const approvedLeaveCount = todayApproved.length;
     const pendingLeaveCount = todayPending.length;
@@ -916,10 +1048,24 @@ const todayLeaveState = async (req, res) => {
     yesterday.setDate(today.getDate() - 1); // Set the date to the previous day
 
     // Start of yesterday
-    const startOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0);
+    const startOfYesterday = new Date(
+      yesterday.getFullYear(),
+      yesterday.getMonth(),
+      yesterday.getDate(),
+      0,
+      0,
+      0
+    );
 
     // End of yesterday
-    const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
+    const endOfYesterday = new Date(
+      yesterday.getFullYear(),
+      yesterday.getMonth(),
+      yesterday.getDate(),
+      23,
+      59,
+      59
+    );
 
     const yesterdayLeaves = await prisma.leaveApplication.findMany({
       where: {
@@ -933,14 +1079,16 @@ const todayLeaveState = async (req, res) => {
     let percentageChange = 0; // Initialize as null
 
     if (yesterdayTotalCount !== 0) {
-      percentageChange = ((todayLeavesCounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
+      percentageChange =
+        ((todayLeavesCounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
       percentageChange = parseFloat(percentageChange.toFixed(1));
       percentageChange = Math.min(percentageChange, 100);
       percentageChange = Math.max(percentageChange, 0);
-    }
-    else {
+    } else {
       if (todayLeavesCounts !== 0) {
-        percentageChange = ((todayLeavesCounts - yesterdayTotalCount) / yesterdayTotalCount) * 100;
+        percentageChange =
+          ((todayLeavesCounts - yesterdayTotalCount) / yesterdayTotalCount) *
+          100;
         percentageChange = parseFloat(percentageChange.toFixed(1));
         percentageChange = Math.min(percentageChange, 100);
         percentageChange = Math.max(percentageChange, 0);
@@ -956,7 +1104,7 @@ const todayLeaveState = async (req, res) => {
       totalRejected: rejectedLeaveCount,
       // todayTotal: todayTotalCount,
       yesterdayTotal: yesterdayTotalCount,
-      percentageChange: percentageChange
+      percentageChange: percentageChange,
     });
   } catch (error) {
     return res.status(400).json({ message: error.message });
@@ -969,27 +1117,43 @@ const yearlyLeaveState = async (req, res) => {
     const monthCounts = [];
 
     for (let month = 1; month <= currentMonth; month++) {
-      const currentMonthStart = new Date(date.getFullYear(), month - 1, 1, 0, 0, 0);
-      
+      const currentMonthStart = new Date(
+        date.getFullYear(),
+        month - 1,
+        1,
+        0,
+        0,
+        0
+      );
+
       // Adjust the calculation of currentMonthEnd to represent the end of the current month
-      const currentMonthEnd = new Date(date.getFullYear(), month, 0, 23, 59, 59);
+      const currentMonthEnd = new Date(
+        date.getFullYear(),
+        month,
+        0,
+        23,
+        59,
+        59
+      );
 
       const monthlyLeaves = await prisma.leaveApplication.findMany({
         where: {
           createdAt: { gte: currentMonthStart, lt: currentMonthEnd },
-          status: { in: ['APPROVED', 'REJECTED'] },
+          status: { in: ["APPROVED", "REJECTED"] },
         },
       });
 
       const monthCount = {
-        month: new Date(currentMonthStart).toLocaleString('en-us', { month: 'short' }),
+        month: new Date(currentMonthStart).toLocaleString("en-us", {
+          month: "short",
+        }),
         approved: 0,
         rejected: 0,
       };
 
-      monthlyLeaves.forEach(leave => {
-        if (leave.status === 'APPROVED') monthCount.approved++;
-        else if (leave.status === 'REJECTED') monthCount.rejected++;
+      monthlyLeaves.forEach((leave) => {
+        if (leave.status === "APPROVED") monthCount.approved++;
+        else if (leave.status === "REJECTED") monthCount.rejected++;
       });
 
       monthCounts.push(monthCount);
@@ -1007,7 +1171,9 @@ const MonthlyApprovedLeaves = async (req, res) => {
     const { date } = req.query;
 
     if (!date) {
-      return res.status(400).json({ message: "Date parameter is missing in the query" });
+      return res
+        .status(400)
+        .json({ message: "Date parameter is missing in the query" });
     }
 
     const startDate = new Date(date);
@@ -1016,15 +1182,15 @@ const MonthlyApprovedLeaves = async (req, res) => {
 
     const approvedLeave = await prisma.leaveApplication.findMany({
       where: {
-        status: 'APPROVED',
+        status: "APPROVED",
         AND: [
           {
-            leaveFrom: { lte: endDate }
+            leaveFrom: { lte: endDate },
           },
           {
-            leaveTo: { gte: startDate }
-          }
-        ]
+            leaveTo: { gte: startDate },
+          },
+        ],
       },
       orderBy: [
         {
@@ -1046,7 +1212,7 @@ const MonthlyApprovedLeaves = async (req, res) => {
     const approvedLeaveWithStartDateArray = approvedLeave.map((item) => {
       return {
         ...item,
-        startDate: startDate,  // Include start date array for each leave
+        startDate: startDate, // Include start date array for each leave
       };
     });
 
@@ -1061,30 +1227,24 @@ const MonthlyApprovedLeaves = async (req, res) => {
 const getAllLeave = async (req, res) => {
   const userId = parseInt(req.query.userId);
 
-
   let users = [];
 
   try {
     if (isNaN(userId) || userId <= 0) {
-      return res.status(400).json({ message: 'Invalid userId provided' });
+      return res.status(400).json({ message: "Invalid userId provided" });
     }
     const fetchUsers = async (referenceId, userIdToExclude) => {
       const users = await prisma.user.findMany({
         where: {
-          OR: [
-            { reference_id: referenceId },
-            { referenceid_two: referenceId }
-          ],
+          OR: [{ reference_id: referenceId }, { referenceid_two: referenceId }],
         },
       });
 
       const linkedUsers = await Promise.all(
         users.map(async (user) => {
-
           let dd = await fetchUsers(user.id);
           dd.push(user);
           return dd;
-
         })
       );
 
@@ -1096,9 +1256,8 @@ const getAllLeave = async (req, res) => {
       array.push(x.id);
     }
     console.log(array);
-    const { skip, limit, status,employeeId } = req.query;
+    const { skip, limit, status, employeeId } = req.query;
     const leave = await prisma.leaveApplication.findMany({
-
       where: {
         userId: { in: array },
         status: status,
@@ -1131,13 +1290,10 @@ const getAllLeave = async (req, res) => {
           },
         },
       },
-
     });
 
-
-
     return res.status(200).json(
-      leave,
+      leave
       // array
     );
   } catch (error) {
@@ -1157,11 +1313,12 @@ function sendnotifiy(Title, Body, Desc, Token) {
     admin
       .messaging()
       .send(message)
-      .then((response) => { console.log("Notification Send ....") })
+      .then((response) => {
+        console.log("Notification Send ....");
+      })
       .catch((error) => {
         console.log("Error sending notification:", error);
       });
-
   } catch (error) {
     console.log("Error:", error);
   }

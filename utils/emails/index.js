@@ -7,21 +7,20 @@ const forgotPasswordFilePath = path.join(__dirname, "templates");
 
 const transporter = nodemailer.createTransport({
   host: "mail.wise1ne.com",
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: "wise1newcb@wise1ne.com",
-    pass: "wK@wg!Po)SYg",
+    pass: "c%-8l%((w@z)",
   },
   tls: {
     rejectUnauthorized: false,
-  }
+  },
 });
-
 
 // console.log(process.env.user);
 const createEmailOption = ({ receipentEmail, subject, body, html }) => ({
-  from: 'wise1newcb@wise1ne.com',
+  from: "wise1newcb@wise1ne.com",
   to: receipentEmail,
   ...(subject && { subject }),
   ...(body && { body }),
@@ -45,7 +44,7 @@ const parseEmailTemplate = async (templateType, reqBody, next) => {
       template = "signUpTemplate.html";
       subject = "Email Confirmation";
       break;
-    
+
     case "employeesignup":
       template = "employeesignUpTemplate.html";
       subject = "Email Confirmation";
@@ -60,21 +59,20 @@ const parseEmailTemplate = async (templateType, reqBody, next) => {
       template = "requestForgotPassword.html";
       subject = "Reset Password";
       break;
-    
-    case "employeeStatus":
-        template = "changestatus.html";
-        subject = "Focus Mode Change";
-        break;
 
-        case "clientStatus":
-          template = "clientstatus.html";
-          subject = "Focus Mode Change";
-          break;
-          case "clientCompanyverified":
-            template = "clientCompanyverified.html";
-            subject = "Account Verified";
-            break;
-  
+    case "employeeStatus":
+      template = "changestatus.html";
+      subject = "Focus Mode Change";
+      break;
+
+    case "clientStatus":
+      template = "clientstatus.html";
+      subject = "Focus Mode Change";
+      break;
+    case "clientCompanyverified":
+      template = "clientCompanyverified.html";
+      subject = "Account Verified";
+      break;
 
     case "SubmitLandingPage":
       template = "LandingPage.html";
@@ -107,7 +105,7 @@ const sendEmail = async (templateType, reqData, next) => {
       subject: template.subject,
     });
     console.log("mail: " + mailOption);
-    
+
     const sendInfo = await transporter.sendMail(mailOption);
 
     if (sendInfo) {
@@ -115,7 +113,7 @@ const sendEmail = async (templateType, reqData, next) => {
         `${templateType} email send successfully to ${reqData.email}`
       );
       return `${templateType} email send successfully to ${reqData.email}`;
-    }else{
+    } else {
       return "Email not sent";
     }
   } catch (error) {
