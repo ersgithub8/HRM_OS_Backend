@@ -78,6 +78,7 @@ model user {
   joining_date1               DateTime?
   visaExpiry                  String?
   visaStatus                  String?
+  isLogin                     Boolean              @default(true)
   attendance                  attendance[]
   awardHistory                awardHistory[]
   designationHistory          designationHistory[]

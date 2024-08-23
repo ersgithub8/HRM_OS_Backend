@@ -1,9 +1,59 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
+const {auth} = require("firebase-admin");
 
+
+const logoutUser = async (roleId, res) => {
+  const users = await prisma.user.findMany({
+    where: {
+      roleId: roleId
+    }
+  });
+  if (users.length === 0) {
+    return ;
+  }
+  const updateUsers = await prisma.user.updateMany({
+    where: {
+      roleId: roleId
+    },
+    data: {
+      isLogin: false
+    }
+  });
+}
+
+const logoutDeletedUsers = async (req, res) => {
+  const roleIds = req.body;
+
+  // Retrieve unique users of the specified roles
+  const users = await prisma.user.findMany({
+    where: {
+      roleId: {
+        in: roleIds
+      }
+    },
+    distinct: ['id']
+  });
+
+  if (users){
+    const updateUsers = await prisma.user.updateMany({
+      where: {
+        roleId: {
+          in: roleIds
+        }
+      },
+      data: {
+        isLogin: false
+      }
+    });
+  }
+
+}
 const createRolePermission = async (req, res) => {
   try {
     if (req.query.query === "deletemany") {
+      // return  await logoutDeletedUsers(req, res);
+
       const deletedRolePermission = await prisma.rolePermission.deleteMany({
         where: {
           id: {
@@ -13,6 +63,9 @@ const createRolePermission = async (req, res) => {
       });
       res.json(deletedRolePermission);
     } else {
+      const roleId = parseInt(req.body.role_id);
+
+      await logoutUser(roleId, res);
       // convert all incoming data to a specific format.
       const data = req.body.permission_id.map((permission_id) => {
         return {

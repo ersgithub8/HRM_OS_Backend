@@ -52,6 +52,8 @@ const login = async (req, res) => {
       data: {
         firebaseToken: req.body.firebaseToken || user.firebaseToken,
         device: req.body.device || "Android",
+        isLogin: true  // Setting isLogin to true
+
       },
     });
 

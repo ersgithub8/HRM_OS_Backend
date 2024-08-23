@@ -129,3 +129,4 @@ prisma/seed.js
 *.prisma
 prisma/migrations/20230815112159_/migration.sql
 prisma/migrations/20230818050622_/migration.sql
+/.idea
