@@ -21,17 +21,17 @@ const login = async (req, res) => {
     if (!user) {
       return res
         .status(400)
-        .json({ message: "Authentication failed. Email is incorrect." });
+        .json({ message: "Email is incorrect." });
     }
 
     if (user.applicationStatus === "PENDING") {
       return res.status(401).json({
-        message: "Authentication failed. User account is not approved.",
+        message: "User account is not approved.",
       });
     }
     if (user.applicationStatus === "REJECTED") {
       return res.status(401).json({
-        message: "Authentication failed. Your application has been rejected.",
+        message: "Your application has been rejected.",
       });
     }
 
@@ -43,7 +43,7 @@ const login = async (req, res) => {
     if (!passwordMatches) {
       return res
         .status(400)
-        .json({ message: "Authentication failed. Password is incorrect." });
+        .json({ message: "Password is incorrect." });
     }
 
     // Update Firebase token and device information
