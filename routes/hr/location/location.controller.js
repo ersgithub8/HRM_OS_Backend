@@ -153,6 +153,9 @@ const getSingleLocation = async (req, res) => {
       },
       include: {
         user: {
+          where: {
+            applicationStatus: 'APPROVED',
+          },
           select: {
             id: true,
             firstName: true,

@@ -111,7 +111,7 @@ const createShift = async (req, res) => {
     // Check if userIds is an array or a single user ID
     const userIdArray = Array.isArray(userId) ? userId : [userId];
     if (userIdArray.length === 0) {
-      return res.status(400).json({ message: "Plase select at least one user" });
+      return res.status(400).json({ message: "Please select at least one user" });
     }
     // Iterate over the user IDs
     for (const userId of userIdArray) {
@@ -129,26 +129,33 @@ const createShift = async (req, res) => {
       });
 
       if (!user) {
-        return res.status(404).json({ message: `User with ID  not found` });
-      }     
+        throw new Error(`User with ID ${userId} not found`);
+      }
+      // Check for existing shift in the same week
+      user.shifts.forEach(shift => {
+        if (shift.weekNumber == weekNumber) {
+          throw new Error(`Shift already added for this week .`);
+        }
+      });
       // Initialize an array to store user names with shifts on the specified date
-const conflictingUserNames = [];
+      const conflictingUserNames = [];
+
 
 // Iterate over the user's shifts and schedules to check for existing shiftDate and status
-for (const shift of user.shifts) {
-  for (const schedule of shift.schedule) {
-    const scheduleDate = moment(schedule.shiftDate).format('YYYY-MM-DD');
-    // Extract only the date part from shiftFrom
-    const shiftFromDate = moment(shiftFrom).format('YYYY-MM-DD');
-    // Check if the scheduleDate matches the shiftFromDate and schedule status is true
-    if (scheduleDate === shiftFromDate && schedule.status === true) {
-      // Add the user's name to the array
-      conflictingUserNames.push(user.firstName);
-      // Break out of the inner loop as we found a conflict for the current user
-      break;
+      for (const shift of user.shifts) {
+    for (const schedule of shift.schedule) {
+      const scheduleDate = moment(schedule.shiftDate).format('YYYY-MM-DD');
+      // Extract only the date part from shiftFrom
+      const shiftFromDate = moment(shiftFrom).format('YYYY-MM-DD');
+      // Check if the scheduleDate matches the shiftFromDate and schedule status is true
+      if (scheduleDate === shiftFromDate && schedule.status === true) {
+        // Add the user's name to the array
+        conflictingUserNames.push(user.firstName);
+        // Break out of the inner loop as we found a conflict for the current user
+        break;
+      }
     }
   }
-}
 
 // Check if there are conflicting users
 if (conflictingUserNames.length > 0) {
@@ -252,10 +259,18 @@ if (conflictingUserNames.length > 0) {
     }
     return res.status(200).json({ createShift: createShiftResults, message: 'Shifts created successfully' });
   } catch (error) {
-    console.error(error);
-    return res.status(400).json({ message: 'Failed to create shift' });
+    if (!res.headersSent) {
+      return res.status(400).json({ message: error.message });
+    }
   }
 };
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return  weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+
+}
 
 const getAllShift = async (req, res) => {
   try {
@@ -318,31 +333,19 @@ const getAllShift = async (req, res) => {
           },
         },
       });
-    } else {
+    }
+    else {
       const today = new Date();
+      const currentWeek = getWeekNumber(today);
       startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
       endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 99)
       allShifts = await prisma.shifts.findMany({
         where: {
-
-          AND: [
-            {
-              shiftFrom: {
-                lte: endOfToday,
-              },
-            },
-            {
-              shiftTo: {
-                gte: startOfToday,
-              },
-            },
-          ],
+          weekNumber: currentWeek, // Filter by current week number
         },
-        orderBy: [
-          {
-            id: "desc",
-          },
-        ],
+        orderBy: {
+          id: "desc",
+        },
         include: {
           user: {
             select: {
