@@ -342,6 +342,18 @@ const getAllShift = async (req, res) => {
       allShifts = await prisma.shifts.findMany({
         where: {
           weekNumber: currentWeek, // Filter by current week number
+          // AND: [
+          //   {
+          //     shiftFrom: {
+          //       lte: endOfToday,
+          //     },
+          //   },
+          //   {
+          //     shiftTo: {
+          //       gte: startOfToday,
+          //     },
+          //   },
+          // ],
         },
         orderBy: {
           id: "desc",
