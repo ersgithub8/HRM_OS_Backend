@@ -109,6 +109,7 @@ const createAttendanceOnLeave = async () => {
 // This Cron Execute every 30 minutes and identify users whose shift time has exceeded by 30 minutes. This cron job
 // is designed to automatically check out users who have checked in for their shift but forgot to check
 // out after 30 minutes.
+
 cron.schedule('*/30 * * * *', async () => {
   console.log("cron run")
   try {
@@ -145,7 +146,12 @@ cron.schedule('*/30 * * * *', async () => {
           // Check if 30 minutes have passed since the shift end time
           if (now.isAfter(endTime.add(30, 'minutes'))) {
             const outTime = now.toDate();
-
+            const inTime = new Date(attendance.inTime);
+            // Calculate total hours
+            const totalMinutes = now.diff(moment(inTime), 'minutes');
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes}`);
             // Automatically check out the user
             await prisma.attendance.update({
               where: {
@@ -153,6 +159,7 @@ cron.schedule('*/30 * * * *', async () => {
               },
               data: {
                 outTime: outTime,
+                totalHour: totalHour,  // Set the total hours
                 outTimeStatus: 'OnTime', // Mark as auto-checkout
               },
             });

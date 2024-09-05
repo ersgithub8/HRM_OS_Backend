@@ -18,6 +18,7 @@ app.get("/", (req, res) => {
 let allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3000/",
+  "http://localhost:3001",
   "http://localhost:5000",
   "http://localhost:3001/",
   "http://4.227.140.35:3000",

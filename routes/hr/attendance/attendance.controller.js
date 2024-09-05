@@ -93,7 +93,6 @@ const createAttendance = async (req, res) => {
               outTimeStatus = "OnTime";
             } 
     }
-    console.log(scheduleForToday,"todaysche");
     //  return
     const existingCheckOut = await prisma.attendance.findFirst({
       where: {
