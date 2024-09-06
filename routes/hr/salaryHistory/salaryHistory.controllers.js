@@ -23,7 +23,7 @@ const createSingleSalaryHistory = async (req, res) => {
           userId: req.body.userId,
           salary: req.body.salary,
           startDate: new Date(req.body.salaryStartDate),
-          endDate: new Date(req.body.salaryEndDate),
+          endDate: req.body.salaryEndDate == null ? null: new Date(req.body.salaryEndDate),
           comment: req.body.salaryComment,
         },
       });
