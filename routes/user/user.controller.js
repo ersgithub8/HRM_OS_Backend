@@ -17,7 +17,7 @@ const login = async (req, res) => {
   try {
     const allUsers = await prisma.user.findMany();
 
-    const user = allUsers.find((u) => u.email === req.body.email);
+    const user = allUsers.find((u) => u.email == req.body.email);
     if (!user) {
       return res
         .status(400)

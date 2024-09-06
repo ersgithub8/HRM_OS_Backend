@@ -160,7 +160,7 @@ cron.schedule('*/30 * * * *', async () => {
               data: {
                 outTime: outTime,
                 totalHour: totalHour,  // Set the total hours
-                outTimeStatus: 'OnTime', // Mark as auto-checkout
+                outTimeStatus: 'Check out by system', // Mark as auto-checkout
               },
             });
 
