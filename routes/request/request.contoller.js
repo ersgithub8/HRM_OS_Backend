@@ -695,7 +695,7 @@ const swaprequest = async (req, res) => {
 
     return res.status(200).json({
       updatedRequest,
-      message: `Shift swap sequest status is changed to ${requststatus}`,
+      message: `Shift swap request status is changed to ${requststatus}`,
     });
   } catch (error) {
     console.error(error);
