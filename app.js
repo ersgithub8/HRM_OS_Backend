@@ -141,7 +141,7 @@ cron.schedule('*/30 * * * *', async () => {
         });
 
         if (scheduleForToday) {
-          const endTime = moment(scheduleForToday.endTime).tz(user.timezone || 'UTC');
+          const endTime = moment(scheduleForToday.endTime);
 
           // Check if 30 minutes have passed since the shift end time
           if (now.isAfter(endTime.add(30, 'minutes'))) {

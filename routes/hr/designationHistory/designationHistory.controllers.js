@@ -25,7 +25,7 @@ const createSingleDesignationHistory = async (req, res) => {
           userId: req.body.userId,
           designationId: req.body.designationId,
           startDate: new Date(req.body.designationStartDate),
-          endDate: new Date(req.body.designationEndDate),
+          endDate: req.body.designationEndDate == null ? null : new Date(req.body.designationEndDate),
           comment: req.body.designationComment,
         },
       });
@@ -67,6 +67,7 @@ const getSingleDesignationHistory = async (req, res) => {
 };
 
 const updateSingleDesignationHistory = async (req, res) => {
+
   try {
     const updatedDesignationHistory = await prisma.designationHistory.update({
       where: {
