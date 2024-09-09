@@ -135,7 +135,8 @@ const createAttendance = async (req, res) => {
         newAttendance,
         message: "Clock in marked successfully.",
       });
-    } else if (attendance === null) {
+    }
+    else if (attendance === null) {
       
       const inTime = new Date();
       const newAttendance = await prisma.attendance.create({
@@ -147,7 +148,7 @@ const createAttendance = async (req, res) => {
           comment: req.body.comment ? req.body.comment : null,
           date: req.body.date ? req.body.date : new Date(),
           attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : "present",
-          inTimeStatus,
+          inTimeStatus: inTimeStatus,
           outTimeStatus: null,
         },
       });
