@@ -408,7 +408,7 @@ const createadminAttendance = async (req, res) => {
 
       if (attendenceStatus && user.status === true) {
         const Title = 'Attendance Marked';
-        const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
+        const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been ' + attendenceStatus;
         const Desc = 'Attendance marked notification';
         const Token = user.firebaseToken;
         // const Device = user.device;
@@ -480,7 +480,7 @@ const createadminAttendance = async (req, res) => {
 
       if (attendenceStatus && user.status === true) {
         const Title = 'Attendance Marked';
-        const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been' + attendenceStatus;
+        const Body = user.firstName + " " + user.lastName + "  " + 'Your attendance has been ' + attendenceStatus;
         const Desc = 'Attendance marked notification';
         const Token = user.firebaseToken;
         // const Device = user.device;
