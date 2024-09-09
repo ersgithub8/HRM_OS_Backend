@@ -645,6 +645,7 @@ const getSingleUser = async (req, res) => {
   }
 };
 const updateSingleUser = async (req, res) => {
+  console.log("nice")
   const id = parseInt(req.params.id);
 
   if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
@@ -675,6 +676,24 @@ const updateSingleUser = async (req, res) => {
       if (userWithEmployeeId) {
         return res.status(400).json({
           message: "Employee ID is already in use by another user.",
+        });
+      }
+    }
+
+    // Check if the phone number is already in use by another user
+    if (req.body.phone) {
+      const existingPhoneUser = await prisma.user.findFirst({
+        where: {
+          phone: req.body.phone,
+          NOT: {
+            id: id, // Exclude the current user from the search
+          },
+        },
+      });
+
+      if (existingPhoneUser) {
+        return res.status(400).json({
+          message: "Phone number is already in use by another user.",
         });
       }
     }
