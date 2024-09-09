@@ -227,7 +227,8 @@ const adminSingleLeave = async (req, res) => {
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
-  } else {
+  }
+  else {
     try {
       const leaveFrom = new Date(req.body.leaveFrom);
       // leaveFrom.setHours(0,0,0,0)

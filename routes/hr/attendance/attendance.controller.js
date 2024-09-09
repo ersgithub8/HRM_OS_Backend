@@ -267,11 +267,16 @@ const createadminAttendance = async (req, res) => {
     }
 
     if (req.query.query === "manualPunch") {
+      const { date, attendenceStatus, checkinTime, checkoutTime } = req.body;
+
+      const inTime = new Date(checkinTime);
+      const outTime = new Date(checkoutTime);
+      const totalHours = (outTime - inTime) / (1000 * 60 * 60);
       const newAttendance = await prisma.attendance.create({
         data: {
           userId: user.id,
-          inTime: null,
-          outTime: null,
+          inTime: checkinTime,
+          outTime: checkoutTime,
           punchBy: req.auth.sub,
           inTimeStatus: null,
           outTimeStatus: null,
@@ -279,7 +284,7 @@ const createadminAttendance = async (req, res) => {
           date: date,
           attendenceStatus: attendenceStatus,
           ip: null,
-          totalHour: null,
+          totalHour: totalHours.toFixed(2),
           createdAt: date,
         },
       });
@@ -330,14 +335,21 @@ const createadminAttendance = async (req, res) => {
 
       return res.status(200).json({
         // result,
-        message: "Attendence marked successfully."
+        message: "Attendance marked successfully."
       });
     } else if (!attendance) {
+      const { date, attendenceStatus, checkinTime, checkoutTime } = req.body;
+
+      const inTime = new Date(checkinTime);
+      const outTime = new Date(checkoutTime);
+      const totalHours = (outTime - inTime) / (1000 * 60 * 60);
+      const formattedTotalHours = parseFloat(totalHours.toFixed(2)); // Convert the string to a float
+
       const newAttendance = await prisma.attendance.create({
         data: {
           userId: user.id,
-          inTime: null,
-          outTime: null,
+          inTime: inTime,
+          outTime: outTime,
           punchBy: req.auth.sub,
           inTimeStatus: null,
           outTimeStatus: null,
@@ -345,7 +357,7 @@ const createadminAttendance = async (req, res) => {
           date: date,
           attendenceStatus: attendenceStatus,
           ip: null,
-          totalHour: null,
+          totalHour: formattedTotalHours,
           createdAt: date,
 
         },
