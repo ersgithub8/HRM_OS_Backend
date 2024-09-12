@@ -110,68 +110,68 @@ const createAttendanceOnLeave = async () => {
 // is designed to automatically check out users who have checked in for their shift but forgot to check
 // out after 30 minutes.
 
-cron.schedule('*/30 * * * *', async () => {
-  console.log("cron run")
-  try {
-    const users = await prisma.user.findMany({
-      include: {
-        shifts: {
-          include: {
-            schedule: true,
-          },
-        },
-      },
-    });
+// cron.schedule('*/30 * * * *', async () => {
+//   console.log("cron run")
+//   try {
+//     const users = await prisma.user.findMany({
+//       include: {
+//         shifts: {
+//           include: {
+//             schedule: true,
+//           },
+//         },
+//       },
+//     });
 
 
-    const now = moment();
+//     const now = moment();
 
-    for (const user of users) {
-      const attendance = await prisma.attendance.findFirst({
-        where: {
-          userId: user.id,
-          outTime: null, // User hasn't checked out yet
-        },
-      });
+//     for (const user of users) {
+//       const attendance = await prisma.attendance.findFirst({
+//         where: {
+//           userId: user.id,
+//           outTime: null, // User hasn't checked out yet
+//         },
+//       });
 
-      if (attendance) {
-        // Find the schedule for today
-        const scheduleForToday = user.shifts.flatMap(shift => shift.schedule).find(schedule => {
-          return moment(schedule.shiftDate).isSame(now, 'day') && schedule.status;
-        });
+//       if (attendance) {
+//         // Find the schedule for today
+//         const scheduleForToday = user.shifts.flatMap(shift => shift.schedule).find(schedule => {
+//           return moment(schedule.shiftDate).isSame(now, 'day') && schedule.status;
+//         });
 
-        if (scheduleForToday) {
-          const endTime = moment(scheduleForToday.endTime);
+//         if (scheduleForToday) {
+//           const endTime = moment(scheduleForToday.endTime);
 
-          // Check if 30 minutes have passed since the shift end time
-          if (now.isAfter(endTime.add(30, 'minutes'))) {
-            const outTime = now.toDate();
-            const inTime = new Date(attendance.inTime);
-            // Calculate total hours
-            const totalMinutes = now.diff(moment(inTime), 'minutes');
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes}`);
-            // Automatically check out the user
-            await prisma.attendance.update({
-              where: {
-                id: attendance.id,
-              },
-              data: {
-                outTime: outTime,
-                totalHour: totalHour,  // Set the total hours
-                outTimeStatus: 'Check out by system', // Mark as auto-checkout
-              },
-            });
+//           // Check if 30 minutes have passed since the shift end time
+//           if (now.isAfter(endTime.add(30, 'minutes'))) {
+//             const outTime = now.toDate();
+//             const inTime = new Date(attendance.inTime);
+//             // Calculate total hours
+//             const totalMinutes = now.diff(moment(inTime), 'minutes');
+//             const hours = Math.floor(totalMinutes / 60);
+//             const minutes = totalMinutes % 60;
+//             const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes}`);
+//             // Automatically check out the user
+//             await prisma.attendance.update({
+//               where: {
+//                 id: attendance.id,
+//               },
+//               data: {
+//                 outTime: outTime,
+//                 totalHour: totalHour,  // Set the total hours
+//                 outTimeStatus: 'Check out by system', // Mark as auto-checkout
+//               },
+//             });
 
-          }
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error in auto-checkout cron job:', error.message);
-  }
-});
+//           }
+//         }
+//       }
+//     }
+//   } catch (error) {
+//     console.error('Error in auto-checkout cron job:', error.message);
+//   }
+// });
 
 
 cron.schedule('59 23 * * *', async () => {
