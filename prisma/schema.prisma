@@ -185,8 +185,8 @@ model designationHistory {
 model shift {
   id        Int      @id @default(autoincrement())
   name      String   @unique
-  startTime DateTime @db.Time(6)
-  endTime   DateTime @db.Time(6)
+  startTime DateTime @db.Timestamptz
+  endTime   DateTime @db.Timestamptz
   workHour  Float
   status    Boolean  @default(true)
   createdAt DateTime @default(now())

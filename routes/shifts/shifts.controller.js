@@ -5,6 +5,7 @@ const { schedule } = require("node-cron");
 const e = require("cors");
 const admin = require("firebase-admin");
 var FCM = require("fcm-node");
+const time_zone = process.env.timezone
 // const createShift = async (req, res) => {
 //   try {
 //     const userId = req.body.userId;
@@ -34,7 +35,7 @@ var FCM = require("fcm-node");
     //     }
     //   }
     // }
-    
+
 //     const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
 //     const totalMinutes = timeDiff / (1000 * 60);
 //     const hours = Math.floor(totalMinutes / 60);
@@ -106,6 +107,7 @@ var FCM = require("fcm-node");
 // };
 const createShift = async (req, res) => {
   try {
+    console.log(time_zone, 'time_zone')
     // Extract necessary data from the request
     const { userId, shiftFrom, shiftTo, name, weekNumber, locationId, status, generalInfo, schedule } = req.body;
     // Check if userIds is an array or a single user ID
@@ -158,15 +160,12 @@ const createShift = async (req, res) => {
   }
 
 // Check if there are conflicting users
-if (conflictingUserNames.length > 0) {
-  // Construct the error message with the names of conflicting users
-  const errorMessage = `Users ${conflictingUserNames.join(', ')} already have shifts for this date`;
-  return res.status(400).json({ message: errorMessage });
-}
+      if (conflictingUserNames.length > 0) {
+        // Construct the error message with the names of conflicting users
+        const errorMessage = `Users ${conflictingUserNames.join(', ')} already have shifts for this date`;
+        return res.status(400).json({ message: errorMessage });
+      }
 
-
-      
-      
     }
 
     // Calculate work hour based on start and end time
@@ -175,6 +174,15 @@ if (conflictingUserNames.length > 0) {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     const workHour = parseFloat(`${hours<12?'0':''}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+
+    // console.log(schedule, 'schedule')
+
+    // const timeInPakistan = '2024-09-23T19:00:00+05:00';
+    const timeInUTC = moment(e.startTime).utc().format();
+    console.log(timeInUTC, 'timeInUTC')
+
+
+
 
     // Create shift data object
     const createShiftData = {
@@ -188,27 +196,34 @@ if (conflictingUserNames.length > 0) {
       generalInfo,
       schedule: schedule
         ? {
+
             create: schedule.map((e) => {
+              const londonStartTime = e.startTime
+                  ? moment(e.startTime).utc().toDate()
+                  : null;
+              const londonEndTime = e.endTime
+                  ? moment(e.endTime).utc().toDate()
+                  : null;
+
               const scheduleData = {
                 day: e.day,
                 shiftDate: e.shiftDate,
-                startTime: e.startTime ? new Date(e.startTime) : null,
-                endTime: e.endTime ? new Date(e.endTime) : null,
+                startTime: londonStartTime,
+                endTime: londonEndTime,
                 breakTime: e.breakTime || null,
                 roomId: e.roomId || null,
                 folderTime: e.folderTime || null,
                 status: e.status,
-                workHour: e.startTime && e.endTime ? workHour : null, // Update workHour
+                workHour:  null, // Update workHour
               };
-              if (e.startTime && e.endTime) {
-                const timeDiff = moment(e.endTime).diff(moment(e.startTime));
-                const totalMinutes = timeDiff / (1000 * 60);
+              if (londonStartTime && londonEndTime) {
+                const startTimeMoment = moment(londonStartTime, moment.ISO_8601);
+                const endTimeMoment = moment(londonEndTime, moment.ISO_8601);
+                const timeDiff = endTimeMoment.diff(startTimeMoment); // Difference in milliseconds
+                const totalMinutes = timeDiff / (1000 * 60); // Convert milliseconds to minutes
                 const hours = Math.floor(totalMinutes / 60);
                 const minutes = totalMinutes % 60;
-                const workHour = parseFloat(`${hours<12?'0':''}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-                scheduleData.workHour = workHour;
-              } else {
-                scheduleData.workHour = null;
+                scheduleData.workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(0)}`);
               }
               return scheduleData;
             }),

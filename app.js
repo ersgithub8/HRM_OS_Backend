@@ -2,6 +2,7 @@ const fs = require("fs");
 const https = require("https");
 const app = require("./data");
 const moment = require("moment");
+const winston = require('winston');
 
 const PORT = process.env.PORT || 5000;
 
@@ -109,69 +110,86 @@ const createAttendanceOnLeave = async () => {
 // This Cron Execute every 30 minutes and identify users whose shift time has exceeded by 30 minutes. This cron job
 // is designed to automatically check out users who have checked in for their shift but forgot to check
 // out after 30 minutes.
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.printf(info => `${info.timestamp} [${info.level}]: ${info.message}`)
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ],
+});
 
-// cron.schedule('*/30 * * * *', async () => {
-//   console.log("cron run")
-//   try {
-//     const users = await prisma.user.findMany({
-//       include: {
-//         shifts: {
-//           include: {
-//             schedule: true,
-//           },
-//         },
-//       },
-//     });
+cron.schedule('*/1 * * * *', async () => {
+  console.log("cron run")
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        shifts: {
+          include: {
+            schedule: true,
+          },
+        },
+      },
+    });
 
 
-//     const now = moment();
+    const now = moment().tz("Europe/London");
+    console.log(now, 'now')
+    logger.info(now.format())
 
-//     for (const user of users) {
-//       const attendance = await prisma.attendance.findFirst({
-//         where: {
-//           userId: user.id,
-//           outTime: null, // User hasn't checked out yet
-//         },
-//       });
+    for (const user of users) {
+      const attendance = await prisma.attendance.findFirst({
+        where: {
+          userId: user.id,
+          outTime: null, // User hasn't checked out yet
+        },
+      });
 
-//       if (attendance) {
-//         // Find the schedule for today
-//         const scheduleForToday = user.shifts.flatMap(shift => shift.schedule).find(schedule => {
-//           return moment(schedule.shiftDate).isSame(now, 'day') && schedule.status;
-//         });
+      if (attendance) {
+        const scheduleForToday = user.shifts.flatMap(shift => shift.schedule).find(schedule => {
+          const today = moment().tz("Europe/London").startOf('day');
+          return moment.tz(schedule.shiftDate, "Europe/London").startOf('day').isSame(today, 'day');
+        });
+        logger.info(`schedule endtime: ${scheduleForToday.endTime}`);
+        if (scheduleForToday) {
+          console.log(scheduleForToday.startTime.toString())
+          if(scheduleForToday.endTime){
+            const endTime = moment(scheduleForToday.endTime).tz("Europe/London");
+            console.log(endTime.format(), endTime.format())
+            if (now.isAfter(endTime.add(30, 'minutes'))) {
+              const outTime = now.toDate();
+              const inTime = new Date(attendance.inTime);
+              // Calculate total hours
+              const totalMinutes = now.diff(moment(inTime), 'minutes');
+              const hours = Math.floor(totalMinutes / 60);
+              const minutes = totalMinutes % 60;
+              const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes}`);
+              // Automatically check out the user
+              await prisma.attendance.update({
+                where: {
+                  id: attendance.id,
+                },
+                data: {
+                  outTime: outTime,
+                  totalHour: totalHour,  // Set the total hours
+                  outTimeStatus: 'Check out by system', // Mark as auto-checkout
+                },
+              });
 
-//         if (scheduleForToday) {
-//           const endTime = moment(scheduleForToday.endTime);
+            }
+          }
 
-//           // Check if 30 minutes have passed since the shift end time
-//           if (now.isAfter(endTime.add(30, 'minutes'))) {
-//             const outTime = now.toDate();
-//             const inTime = new Date(attendance.inTime);
-//             // Calculate total hours
-//             const totalMinutes = now.diff(moment(inTime), 'minutes');
-//             const hours = Math.floor(totalMinutes / 60);
-//             const minutes = totalMinutes % 60;
-//             const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes}`);
-//             // Automatically check out the user
-//             await prisma.attendance.update({
-//               where: {
-//                 id: attendance.id,
-//               },
-//               data: {
-//                 outTime: outTime,
-//                 totalHour: totalHour,  // Set the total hours
-//                 outTimeStatus: 'Check out by system', // Mark as auto-checkout
-//               },
-//             });
 
-//           }
-//         }
-//       }
-//     }
-//   } catch (error) {
-//     console.error('Error in auto-checkout cron job:', error.message);
-//   }
-// });
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in auto-checkout cron job:', error.message);
+  }
+});
 
 
 cron.schedule('59 23 * * *', async () => {
