@@ -16,7 +16,6 @@ const createAttendance = async (req, res) => {
     const id = parseInt(req.body.userId);
     let inTimeStatus;
     let outTimeStatus;
-    let scheduleForToday = [];
 
     // Check user authorization
     if (!(id === req.auth.sub) && !req.auth.permissions.includes("create-attendance")) {
@@ -25,14 +24,12 @@ const createAttendance = async (req, res) => {
       });
     }
 
-    // Set all date variables to London timezone
-    const today = moment().tz("Europe/London").startOf('day');
-    const tomorrow = today.clone().add(1, 'days');
+    // Get current date in UTC
+    const todayUTC = moment.utc().startOf('day');
+    const tomorrowUTC = todayUTC.clone().add(1, 'days');
 
     const user = await prisma.user.findUnique({
-      where: {
-        id: id,
-      },
+      where: { id: id },
       include: {
         shifts: {
           include: {
@@ -47,77 +44,71 @@ const createAttendance = async (req, res) => {
         message: "Today's shift not found",
       });
     }
+
     const attendance = await prisma.attendance.findFirst({
       where: {
         userId: id,
         inTime: {
-          gte: today.toDate(),
-          lt: tomorrow.toDate(),
+          gte: todayUTC.toDate(),
+          lt: tomorrowUTC.toDate(),
         },
       },
     });
-    var newArray = [];
 
-    user.shifts.forEach(shift => {
-      shift.schedule.forEach(schedule => {
+    let scheduleForToday = [];
+
+    // Find today's schedule
+    user.shifts.forEach((shift) => {
+      shift.schedule.forEach((schedule) => {
         if (schedule.startTime !== null) {
-          const scheduleDate = moment.tz(schedule.shiftDate, "Europe/London").startOf('day');
-          const today = moment().tz("Europe/London").startOf('day');
-          if (scheduleDate.isSame(today)) {
-            newArray.push(schedule);
+          const scheduleDate = moment.utc(schedule.shiftDate).startOf('day');
+          if (scheduleDate.isSame(todayUTC)) {
+            scheduleForToday.push(schedule);
           }
         }
       });
     });
-    scheduleForToday.push(newArray[0]);
-    if (newArray.length > 0){
-      scheduleForToday.push(newArray[0]);
-    }else {
+
+    if (scheduleForToday.length === 0) {
       return res.status(400).json({ message: "Today's shift is not found" });
     }
 
-    if (!scheduleForToday) {
-      return res.status(400).json({ message: "Today's shift is not found" });
+    // Get current time in UTC
+    const currentTimeUTC = moment.utc();
+
+    // Parse shift start and end times
+    const startTimeUTC = moment.utc(scheduleForToday[0].startTime);
+    const endTimeUTC = moment.utc(scheduleForToday[0].endTime);
+
+    // Convert times to Europe/London for comparison
+    const currentTimeLondon = currentTimeUTC.clone().tz("Europe/London");
+    const startTimeLondon = startTimeUTC.clone().tz("Europe/London");
+    const endTimeLondon = endTimeUTC.clone().tz("Europe/London");
+
+    // Determine attendance status
+    if (currentTimeLondon.isSameOrBefore(startTimeLondon)) {
+      inTimeStatus = "OnTime";
+    } else {
+      inTimeStatus = "Late";
     }
 
-    else if (scheduleForToday) {
-      console.log(scheduleForToday[0].startTime, "without conversion ");
-      console.log(moment.utc(scheduleForToday[0].startTime).tz("Europe/London"), "after conversion ");
-
-      const currentTime = moment.utc().tz("Europe/London");
-      const startTime = moment.utc(scheduleForToday[0].startTime).tz("Europe/London");
-      const endTime = moment.utc(scheduleForToday[0].endTime).tz("Europe/London");
-
-      console.log(startTime, 'startTime');
-      console.log(currentTime, 'currentTime');
-
-// Determine attendance status
-      if (currentTime.isSameOrBefore(startTime)) {
-        inTimeStatus = "OnTime";
-      } else {
-        inTimeStatus = "Late";
-      }
-
-      if (currentTime.isSameOrAfter(endTime)) {
-        outTimeStatus = "OnTime";
-      } else {
-        outTimeStatus = "Early";
-      }
-
-
+    if (currentTimeLondon.isSameOrAfter(endTimeLondon)) {
+      outTimeStatus = "OnTime";
+    } else {
+      outTimeStatus = "Early";
     }
 
-
-    //  return
+    // Check for existing attendance records
     const existingCheckOut = await prisma.attendance.findFirst({
       where: {
         userId: id,
         outTime: {
-          gte: today.toDate(),
-          lt: tomorrow.toDate(),
+          gte: todayUTC.toDate(),
+          lt: tomorrowUTC.toDate(),
         },
       },
     });
+
     if (attendance && existingCheckOut) {
       return res.status(400).json({
         message: "Today's attendance has already been marked.",
@@ -125,23 +116,24 @@ const createAttendance = async (req, res) => {
     }
 
     if (req.query.query === "manualPunch") {
-      const inTime = moment().toDate();
-      const outTime = moment().toDate();
+      // Handle manual punch
+      const inTimeUTC = moment.utc().toDate();
+      const outTimeUTC = moment.utc().toDate();
 
-      const totalHours = parseFloat(((moment(outTime).diff(moment(inTime)) / 3600000).toFixed(3)));
+      const totalHours = parseFloat(((moment.utc(outTimeUTC).diff(moment.utc(inTimeUTC)) / 3600000).toFixed(3)));
 
       const newAttendance = await prisma.attendance.create({
         data: {
           userId: id,
-          inTime: inTime,
-          outTime: outTime,
+          inTime: inTimeUTC,
+          outTime: outTimeUTC,
           punchBy: req.auth.sub,
-          inTimeStatus: inTimeStatus == null ? 'OnTime' : inTimeStatus,
+          inTimeStatus: inTimeStatus || 'OnTime',
           outTimeStatus: outTimeStatus,
-          comment: req.body.comment ? req.body.comment : null,
-          date: req.body.date ? req.body.date : new Date(),
-          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : "present",
-          ip: req.body.ip ? req.body.ip : null,
+          comment: req.body.comment || null,
+          date: req.body.date ? moment.utc(req.body.date).toDate() : inTimeUTC,
+          attendenceStatus: req.body.attendenceStatus || "present",
+          ip: req.body.ip || null,
           totalHour: totalHours,
         },
       });
@@ -150,12 +142,10 @@ const createAttendance = async (req, res) => {
         newAttendance,
         message: "Clock in marked successfully.",
       });
-    }
-    else if (attendance === null) {
-
-      const inTimeUTC = moment().utc().toDate();
-      const dateUTC = req.body.date ? moment(req.body.date).utc().toDate() : moment().utc().toDate();
-      console.log(inTimeUTC,  "inTimeUTC")
+    } else if (!attendance) {
+      // Clock in
+      const inTimeUTC = moment.utc().toDate();
+      const dateUTC = req.body.date ? moment.utc(req.body.date).toDate() : inTimeUTC;
 
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -163,10 +153,10 @@ const createAttendance = async (req, res) => {
           inTime: inTimeUTC,
           outTime: null,
           punchBy: req.auth.sub,
-          comment: req.body.comment ? req.body.comment : null,
+          comment: req.body.comment || null,
           date: dateUTC,
-          attendenceStatus: req.body.attendenceStatus ? req.body.attendenceStatus : "present",
-          inTimeStatus: inTimeStatus == null ? 'OnTime' : inTimeStatus,
+          attendenceStatus: req.body.attendenceStatus || "present",
+          inTimeStatus: inTimeStatus || 'OnTime',
           outTimeStatus: null,
         },
       });
@@ -175,30 +165,29 @@ const createAttendance = async (req, res) => {
         newAttendance,
         message: "Clock in marked successfully.",
       });
-    }
-    else {
-      // Convert inTime and outTime to London timezone using moment-timezone
-      const inTime = moment(attendance.inTime).tz("Europe/London");
-      const outTime = moment().tz("Europe/London"); // Uses current time in London timezone
+    } else {
+      // Clock out
+      const inTimeUTC = moment.utc(attendance.inTime);
+      const outTimeUTC = moment.utc();
 
-      const timeDiff = outTime.diff(inTime); // Difference in milliseconds
+      const timeDiff = outTimeUTC.diff(inTimeUTC);
       const totalMinutes = timeDiff / (1000 * 60);
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
-      const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-      const overtimeHours = Math.max(0, totalHour - scheduleForToday.workHour);
-      // const overtimeMinutes = Math.round((overtimeHours % 1) * 60);
+      const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(0)}`);
+
+      // Calculate overtime
+      const scheduledWorkHour = scheduleForToday[0].workHour || 0;
+      const overtimeHours = Math.max(0, totalHour - scheduledWorkHour);
       const overtimeWithBuffer = overtimeHours >= 0.30 ? overtimeHours : 0;
-      console.log(overtimeWithBuffer,"over");
       const overtime = parseFloat(overtimeWithBuffer.toFixed(2));
 
-      // Check if overtime is greater than 30 minutes
       const newAttendance = await prisma.attendance.update({
         where: {
           id: attendance.id,
         },
         data: {
-          outTime: outTime.toDate(), // Convert moment object to JavaScript Date object
+          outTime: outTimeUTC.toDate(),
           overtime: overtime,
           totalHour: totalHour,
           outTimeStatus: outTimeStatus,
@@ -210,12 +199,11 @@ const createAttendance = async (req, res) => {
         message: "Clock out marked successfully.",
       });
     }
-
-
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
+
 //original
 const createadminAttendance = async (req, res) => {
   try {

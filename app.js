@@ -122,9 +122,12 @@ const logger = winston.createLogger({
   ],
 });
 
+
+
 cron.schedule('*/1 * * * *', async () => {
-  console.log("cron run")
+  console.log("Cron job started");
   try {
+    // Fetch all users along with their shifts and schedules
     const users = await prisma.user.findMany({
       include: {
         shifts: {
@@ -135,12 +138,13 @@ cron.schedule('*/1 * * * *', async () => {
       },
     });
 
-
-    const now = moment().tz("Europe/London");
-    console.log(now, 'now')
-    logger.info(now.format())
+    // Get the current time in UTC
+    const nowUTC = moment.utc();
+    console.log(`Current UTC time: ${nowUTC.format()}`);
+    logger.info(`Current UTC time: ${nowUTC.format()}`);
 
     for (const user of users) {
+      // Find attendance where the user hasn't checked out yet
       const attendance = await prisma.attendance.findFirst({
         where: {
           userId: user.id,
@@ -149,47 +153,75 @@ cron.schedule('*/1 * * * *', async () => {
       });
 
       if (attendance) {
-        const scheduleForToday = user.shifts.flatMap(shift => shift.schedule).find(schedule => {
-          const today = moment().tz("Europe/London").startOf('day');
-          return moment.tz(schedule.shiftDate, "Europe/London").startOf('day').isSame(today, 'day');
-        });
-        logger.info(`schedule endtime: ${scheduleForToday.endTime}`);
+        // Find today's schedule for the user
+        const scheduleForToday = user.shifts
+            .flatMap((shift) => shift.schedule)
+            .find((schedule) => {
+              // Get today's date in UTC
+              const todayUTC = moment.utc().startOf('day');
+              // Parse schedule's shiftDate as UTC
+              const scheduleDateUTC = moment.utc(schedule.shiftDate).startOf('day');
+              // Check if scheduleDate is the same as today
+              return scheduleDateUTC.isSame(todayUTC, 'day');
+            });
+
         if (scheduleForToday) {
-          console.log(scheduleForToday.startTime.toString())
-          if(scheduleForToday.endTime){
-            const endTime = moment(scheduleForToday.endTime).tz("Europe/London");
-            console.log(endTime.format(), endTime.format())
-            if (now.isAfter(endTime.add(30, 'minutes'))) {
-              const outTime = now.toDate();
-              const inTime = new Date(attendance.inTime);
+          // Ensure endTime exists
+          if (scheduleForToday.endTime) {
+            // Parse endTime in UTC
+            const endTimeUTC = moment.utc(scheduleForToday.endTime);
+            // Add 30 minutes buffer to endTime
+            const endTimeWithBufferUTC = endTimeUTC.clone().add(30, 'minutes');
+
+            // Log end times for debugging
+            console.log(`Schedule endTime UTC: ${endTimeUTC.format()}`);
+            console.log(`EndTime with buffer UTC: ${endTimeWithBufferUTC.format()}`);
+            logger.info(`Schedule endTime UTC: ${endTimeUTC.format()}`);
+            logger.info(`EndTime with buffer UTC: ${endTimeWithBufferUTC.format()}`);
+
+            // Check if current time is after endTime plus buffer
+            if (nowUTC.isAfter(endTimeWithBufferUTC)) {
+              const outTimeUTC = nowUTC.clone();
+              const inTimeUTC = moment.utc(attendance.inTime);
+
               // Calculate total hours
-              const totalMinutes = now.diff(moment(inTime), 'minutes');
+              const totalMinutes = nowUTC.diff(inTimeUTC, 'minutes');
               const hours = Math.floor(totalMinutes / 60);
               const minutes = totalMinutes % 60;
-              const totalHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes}`);
+              const totalHour = parseFloat(`${hours}.${minutes < 10 ? '0' : ''}${minutes}`);
+
               // Automatically check out the user
               await prisma.attendance.update({
                 where: {
                   id: attendance.id,
                 },
                 data: {
-                  outTime: outTime,
-                  totalHour: totalHour,  // Set the total hours
+                  outTime: outTimeUTC.toDate(),
+                  totalHour: totalHour,
                   outTimeStatus: 'Check out by system', // Mark as auto-checkout
                 },
               });
 
+              // Log the auto-checkout action
+              console.log(`User ID ${user.id} auto-checked out at ${outTimeUTC.format()}`);
+              logger.info(`User ID ${user.id} auto-checked out at ${outTimeUTC.format()}`);
             }
+          } else {
+            console.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
+            logger.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
           }
-
-
+        } else {
+          console.warn(`No schedule found for user ID ${user.id} for today`);
+          logger.warn(`No schedule found for user ID ${user.id} for today`);
         }
       }
     }
   } catch (error) {
     console.error('Error in auto-checkout cron job:', error.message);
+    logger.error(`Error in auto-checkout cron job: ${error.message}`);
   }
 });
+
 
 
 cron.schedule('59 23 * * *', async () => {
