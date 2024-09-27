@@ -143,8 +143,8 @@ const createShift = async (req, res) => {
 
       for (const shift of user.shifts) {
         for (const schedule of shift.schedule) {
-          const scheduleDate = moment.utc(schedule.shiftDate).format('YYYY-MM-DD');
-          const shiftFromDate = moment.utc(shiftFrom).format('YYYY-MM-DD');
+          const scheduleDate = moment.tz(schedule.shiftDate, "Europe/London").format('YYYY-MM-DD');
+          const shiftFromDate = moment.tz(shiftFrom, "Europe/London").format('YYYY-MM-DD');
           if (scheduleDate === shiftFromDate && schedule.status === true) {
             conflictingUserNames.push(user.firstName);
             break;
@@ -158,10 +158,14 @@ const createShift = async (req, res) => {
       }
     }
 
-    // Calculate work hours based on shiftFrom and shiftTo in UTC
-    const shiftFromUTC = moment.utc(shiftFrom);
-    const shiftToUTC = moment.utc(shiftTo);
-    const timeDiff = shiftToUTC.diff(shiftFromUTC);
+    // Parse shiftFrom and shiftTo as Europe/London time and convert to UTC
+    const shiftFromLondon = moment.tz(shiftFrom, "Europe/London");
+    const shiftToLondon = moment.tz(shiftTo, "Europe/London");
+    const shiftFromUTC = shiftFromLondon.clone().utc();
+    const shiftToUTC = shiftToLondon.clone().utc();
+
+    // Calculate work hours based on shiftFrom and shiftTo
+    const timeDiff = shiftToLondon.diff(shiftFromLondon);
     const totalMinutes = timeDiff / (1000 * 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
@@ -180,10 +184,13 @@ const createShift = async (req, res) => {
       schedule: schedule
           ? {
             create: schedule.map((e) => {
-              // Parse startTime and endTime as UTC, regardless of server's time zone
-              const startTimeUTC = e.startTime ? moment.parseZone(e.startTime).utc().toDate() : null;
-              const endTimeUTC = e.endTime ? moment.parseZone(e.endTime).utc().toDate() : null;
+              // Parse startTime and endTime as Europe/London time and convert to UTC
+              const startTimeLondon = e.startTime ? moment.tz(e.startTime, "Europe/London") : null;
+              const endTimeLondon = e.endTime ? moment.tz(e.endTime, "Europe/London") : null;
+              const startTimeUTC = startTimeLondon ? startTimeLondon.clone().utc().toDate() : null;
+              const endTimeUTC = endTimeLondon ? endTimeLondon.clone().utc().toDate() : null;
 
+              // Parse shiftDate as Europe/London date and convert to UTC
               const scheduleData = {
                 day: e.day,
                 shiftDate: moment.utc(e.shiftDate).toDate(),
@@ -196,11 +203,9 @@ const createShift = async (req, res) => {
                 workHour: null,
               };
 
-              // Calculate workHour for the schedule
-              if (startTimeUTC && endTimeUTC) {
-                const startTimeMoment = moment.utc(startTimeUTC);
-                const endTimeMoment = moment.utc(endTimeUTC);
-                const timeDiff = endTimeMoment.diff(startTimeMoment);
+              // Calculate workHour for the schedule using London times
+              if (startTimeLondon && endTimeLondon) {
+                const timeDiff = endTimeLondon.diff(startTimeLondon);
                 const totalMinutes = timeDiff / (1000 * 60);
                 const hours = Math.floor(totalMinutes / 60);
                 const minutes = totalMinutes % 60;
@@ -694,12 +699,14 @@ const updateSingleShift = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Parse shiftFrom and shiftTo as UTC
-    const shiftFromUTC = moment.utc(req.body.shiftFrom).toDate();
-    const shiftToUTC = moment.utc(req.body.shiftTo).toDate();
+    // Parse shiftFrom and shiftTo as Europe/London time and convert to UTC
+    const shiftFromLondon = moment.tz(req.body.shiftFrom, "Europe/London");
+    const shiftToLondon = moment.tz(req.body.shiftTo, "Europe/London");
+    const shiftFromUTC = shiftFromLondon.clone().utc().toDate();
+    const shiftToUTC = shiftToLondon.clone().utc().toDate();
 
     // Update the shift with times in UTC
-    const updatedShift = await prisma.shift.update({
+    const updatedShift = await prisma.shifts.update({
       where: {
         id: shiftId,
       },
@@ -718,18 +725,23 @@ const updateSingleShift = async (req, res) => {
 
     if (req.body.schedule) {
       for (const scheduleItem of req.body.schedule) {
-        // Parse startTime and endTime as UTC
-        const startTimeUTC = scheduleItem.startTime
-            ? moment.parseZone(scheduleItem.startTime).utc()
+        // Parse startTime and endTime as Europe/London time and convert to UTC
+        const startTimeLondon = scheduleItem.startTime
+            ? moment.tz(scheduleItem.startTime, "Europe/London")
             : null;
-        const endTimeUTC = scheduleItem.endTime
-            ? moment.parseZone(scheduleItem.endTime).utc()
+        const endTimeLondon = scheduleItem.endTime
+            ? moment.tz(scheduleItem.endTime, "Europe/London")
             : null;
+        const startTimeUTC = startTimeLondon ? startTimeLondon.clone().utc().toDate() : null;
+        const endTimeUTC = endTimeLondon ? endTimeLondon.clone().utc().toDate() : null;
+
+        // Parse shiftDate as Europe/London date and convert to UTC
+        const shiftDateUTC = moment.tz(scheduleItem.shiftDate, "Europe/London").startOf('day').utc().toDate();
 
         // Calculate workHour if both times are available
         let workHour = null;
-        if (startTimeUTC && endTimeUTC) {
-          const timeDiff = endTimeUTC.diff(startTimeUTC); // Difference in milliseconds
+        if (startTimeLondon && endTimeLondon) {
+          const timeDiff = endTimeLondon.diff(startTimeLondon); // Difference in milliseconds
           const totalMinutes = timeDiff / (1000 * 60); // Convert milliseconds to minutes
           const hours = Math.floor(totalMinutes / 60);
           const minutes = totalMinutes % 60;
@@ -746,8 +758,8 @@ const updateSingleShift = async (req, res) => {
           data: {
             day: scheduleItem.day,
             shiftDate: moment.utc(scheduleItem.shiftDate).toDate(),
-            startTime: startTimeUTC ? startTimeUTC.toDate() : null,
-            endTime: endTimeUTC ? endTimeUTC.toDate() : null,
+            startTime: startTimeUTC,
+            endTime: endTimeUTC,
             breakTime: scheduleItem.breakTime || null,
             roomId: scheduleItem.roomId || null,
             folderTime: scheduleItem.folderTime || null,

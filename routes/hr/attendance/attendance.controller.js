@@ -24,9 +24,10 @@ const createAttendance = async (req, res) => {
       });
     }
 
-    // Get current date in UTC
-    const todayUTC = moment.utc().startOf('day');
-    const tomorrowUTC = todayUTC.clone().add(1, 'days');
+    // Get current date and time in Europe/London
+    const currentTimeLondon = moment().tz("Europe/London");
+    const todayLondon = currentTimeLondon.clone().startOf('day');
+    const tomorrowLondon = todayLondon.clone().add(1, 'days');
 
     const user = await prisma.user.findUnique({
       where: { id: id },
@@ -45,12 +46,13 @@ const createAttendance = async (req, res) => {
       });
     }
 
+    // Find attendance for today
     const attendance = await prisma.attendance.findFirst({
       where: {
         userId: id,
         inTime: {
-          gte: todayUTC.toDate(),
-          lt: tomorrowUTC.toDate(),
+          gte: todayLondon.clone().utc().toDate(),
+          lt: tomorrowLondon.clone().utc().toDate(),
         },
       },
     });
@@ -61,8 +63,8 @@ const createAttendance = async (req, res) => {
     user.shifts.forEach((shift) => {
       shift.schedule.forEach((schedule) => {
         if (schedule.startTime !== null) {
-          const scheduleDate = moment.utc(schedule.shiftDate).startOf('day');
-          if (scheduleDate.isSame(todayUTC)) {
+          const scheduleDateLondon = moment.utc(schedule.shiftDate).tz("Europe/London").startOf('day');
+          if (scheduleDateLondon.isSame(todayLondon)) {
             scheduleForToday.push(schedule);
           }
         }
@@ -73,15 +75,11 @@ const createAttendance = async (req, res) => {
       return res.status(400).json({ message: "Today's shift is not found" });
     }
 
-    // Get current time in UTC
-    const currentTimeUTC = moment.utc();
-
     // Parse shift start and end times
     const startTimeUTC = moment.utc(scheduleForToday[0].startTime);
     const endTimeUTC = moment.utc(scheduleForToday[0].endTime);
 
     // Convert times to Europe/London for comparison
-    const currentTimeLondon = currentTimeUTC.clone().tz("Europe/London");
     const startTimeLondon = startTimeUTC.clone().tz("Europe/London");
     const endTimeLondon = endTimeUTC.clone().tz("Europe/London");
 
@@ -103,8 +101,8 @@ const createAttendance = async (req, res) => {
       where: {
         userId: id,
         outTime: {
-          gte: todayUTC.toDate(),
-          lt: tomorrowUTC.toDate(),
+          gte: todayLondon.clone().utc().toDate(),
+          lt: tomorrowLondon.clone().utc().toDate(),
         },
       },
     });
@@ -117,10 +115,12 @@ const createAttendance = async (req, res) => {
 
     if (req.query.query === "manualPunch") {
       // Handle manual punch
-      const inTimeUTC = moment.utc().toDate();
-      const outTimeUTC = moment.utc().toDate();
+      const inTimeUTC = currentTimeLondon.clone().utc().toDate();
+      const outTimeUTC = currentTimeLondon.clone().utc().toDate();
 
-      const totalHours = parseFloat(((moment.utc(outTimeUTC).diff(moment.utc(inTimeUTC)) / 3600000).toFixed(3)));
+      const totalHours = parseFloat(
+          (moment.duration(outTimeUTC - inTimeUTC).asHours()).toFixed(2)
+      );
 
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -131,7 +131,7 @@ const createAttendance = async (req, res) => {
           inTimeStatus: inTimeStatus || 'OnTime',
           outTimeStatus: outTimeStatus,
           comment: req.body.comment || null,
-          date: req.body.date ? moment.utc(req.body.date).toDate() : inTimeUTC,
+          date: req.body.date ? moment.tz(req.body.date, "Europe/London").utc().toDate() : inTimeUTC,
           attendenceStatus: req.body.attendenceStatus || "present",
           ip: req.body.ip || null,
           totalHour: totalHours,
@@ -144,8 +144,8 @@ const createAttendance = async (req, res) => {
       });
     } else if (!attendance) {
       // Clock in
-      const inTimeUTC = moment.utc().toDate();
-      const dateUTC = req.body.date ? moment.utc(req.body.date).toDate() : inTimeUTC;
+      const inTimeUTC = currentTimeLondon.clone().utc().toDate();
+      const dateUTC = req.body.date ? moment.tz(req.body.date, "Europe/London").utc().toDate() : inTimeUTC;
 
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -168,9 +168,10 @@ const createAttendance = async (req, res) => {
     } else {
       // Clock out
       const inTimeUTC = moment.utc(attendance.inTime);
-      const outTimeUTC = moment.utc();
+      const inTimeLondon = inTimeUTC.clone().tz("Europe/London");
+      const outTimeLondon = currentTimeLondon.clone();
 
-      const timeDiff = outTimeUTC.diff(inTimeUTC);
+      const timeDiff = outTimeLondon.diff(inTimeLondon);
       const totalMinutes = timeDiff / (1000 * 60);
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
@@ -187,7 +188,7 @@ const createAttendance = async (req, res) => {
           id: attendance.id,
         },
         data: {
-          outTime: outTimeUTC.toDate(),
+          outTime: outTimeLondon.clone().utc().toDate(),
           overtime: overtime,
           totalHour: totalHour,
           outTimeStatus: outTimeStatus,

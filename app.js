@@ -125,7 +125,8 @@ const logger = winston.createLogger({
 
 
 cron.schedule('*/1 * * * *', async () => {
-  console.log("Cron job started");
+  logger.info(`Cron job started .`);
+
   try {
     // Fetch all users along with their shifts and schedules
     const users = await prisma.user.findMany({
@@ -138,10 +139,9 @@ cron.schedule('*/1 * * * *', async () => {
       },
     });
 
-    // Get the current time in UTC
-    const nowUTC = moment.utc();
-    console.log(`Current UTC time: ${nowUTC.format()}`);
-    logger.info(`Current UTC time: ${nowUTC.format()}`);
+    // Get the current time in Europe/London
+    const nowLondon = moment().tz("Europe/London");
+    logger.info(`Current London time: ${nowLondon.format()}`);
 
     for (const user of users) {
       // Find attendance where the user hasn't checked out yet
@@ -157,35 +157,25 @@ cron.schedule('*/1 * * * *', async () => {
         const scheduleForToday = user.shifts
             .flatMap((shift) => shift.schedule)
             .find((schedule) => {
-              // Get today's date in UTC
-              const todayUTC = moment.utc().startOf('day');
-              // Parse schedule's shiftDate as UTC
-              const scheduleDateUTC = moment.utc(schedule.shiftDate).startOf('day');
-              // Check if scheduleDate is the same as today
-              return scheduleDateUTC.isSame(todayUTC, 'day');
+              const todayLondon = nowLondon.clone().startOf('day');
+              const scheduleDateLondon = moment.utc(schedule.shiftDate).tz("Europe/London").startOf('day');
+              return scheduleDateLondon.isSame(todayLondon, 'day');
             });
 
         if (scheduleForToday) {
-          // Ensure endTime exists
           if (scheduleForToday.endTime) {
-            // Parse endTime in UTC
             const endTimeUTC = moment.utc(scheduleForToday.endTime);
-            // Add 30 minutes buffer to endTime
-            const endTimeWithBufferUTC = endTimeUTC.clone().add(30, 'minutes');
-
-            // Log end times for debugging
-            console.log(`Schedule endTime UTC: ${endTimeUTC.format()}`);
-            console.log(`EndTime with buffer UTC: ${endTimeWithBufferUTC.format()}`);
-            logger.info(`Schedule endTime UTC: ${endTimeUTC.format()}`);
-            logger.info(`EndTime with buffer UTC: ${endTimeWithBufferUTC.format()}`);
-
-            // Check if current time is after endTime plus buffer
-            if (nowUTC.isAfter(endTimeWithBufferUTC)) {
-              const outTimeUTC = nowUTC.clone();
+            const endTimeLondon = endTimeUTC.clone().tz("Europe/London");
+            const endTimeWithBufferLondon = endTimeLondon.clone().add(1, 'minutes');
+            logger.info(`Schedule endTime London: ${endTimeLondon.format()}`);
+            logger.info(`EndTime with buffer London: ${endTimeWithBufferLondon.format()}`);
+            if (nowLondon.isAfter(endTimeWithBufferLondon)) {
+              const outTimeUTC = nowLondon.clone().utc().toDate();
               const inTimeUTC = moment.utc(attendance.inTime);
 
               // Calculate total hours
-              const totalMinutes = nowUTC.diff(inTimeUTC, 'minutes');
+              const inTimeLondon = inTimeUTC.clone().tz("Europe/London");
+              const totalMinutes = nowLondon.diff(inTimeLondon, 'minutes');
               const hours = Math.floor(totalMinutes / 60);
               const minutes = totalMinutes % 60;
               const totalHour = parseFloat(`${hours}.${minutes < 10 ? '0' : ''}${minutes}`);
@@ -196,15 +186,15 @@ cron.schedule('*/1 * * * *', async () => {
                   id: attendance.id,
                 },
                 data: {
-                  outTime: outTimeUTC.toDate(),
+                  outTime: outTimeUTC,
                   totalHour: totalHour,
                   outTimeStatus: 'Check out by system', // Mark as auto-checkout
                 },
               });
 
               // Log the auto-checkout action
-              console.log(`User ID ${user.id} auto-checked out at ${outTimeUTC.format()}`);
-              logger.info(`User ID ${user.id} auto-checked out at ${outTimeUTC.format()}`);
+              console.log(`User ID ${user.id} auto-checked out at ${nowLondon.format()}`);
+              logger.info(`User ID ${user.id} auto-checked out at ${nowLondon.format()}`);
             }
           } else {
             console.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
@@ -221,7 +211,6 @@ cron.schedule('*/1 * * * *', async () => {
     logger.error(`Error in auto-checkout cron job: ${error.message}`);
   }
 });
-
 
 
 cron.schedule('59 23 * * *', async () => {
