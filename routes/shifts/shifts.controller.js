@@ -172,53 +172,57 @@ const createShift = async (req, res) => {
     const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(0)}`);
 
     // Create shift data object
-    const createShiftData = {
-      name,
-      shiftFrom: shiftFromUTC.toDate(),
-      shiftTo: shiftToUTC.toDate(),
-      weekNumber,
-      locationId,
-      assignedBy: req.auth.sub,
-      status,
-      generalInfo,
-      schedule: schedule
-          ? {
-            create: schedule.map((e) => {
-              // Parse startTime and endTime as Europe/London time and convert to UTC
-              const startTimeLondon = e.startTime ? moment.tz(e.startTime, "Europe/London") : null;
-              const endTimeLondon = e.endTime ? moment.tz(e.endTime, "Europe/London") : null;
-              const startTimeUTC = startTimeLondon ? startTimeLondon.clone().utc().toDate() : null;
-              const endTimeUTC = endTimeLondon ? endTimeLondon.clone().utc().toDate() : null;
+      const createShiftData = {
+        name,
+        shiftFrom: shiftFromUTC.toDate(),
+        shiftTo: shiftToUTC.toDate(),
+        weekNumber,
+        locationId,
+        assignedBy: req.auth.sub,
+        status,
+        generalInfo,
+        schedule: schedule
+            ? {
+              create: schedule.map((e) => {
+                // Parse startTime and endTime as Europe/London time and convert to UTC
+                const startTimeLondon = e.startTime ? moment(e.startTime) : null;
+                const endTimeLondon = e.endTime ? moment(e.endTime) : e.endTime;
+                console.log(e.startTime, "e.startTime")
+                console.log(e.endTime, "e.endTime")
+                const startTime = e.startTime ? e.startTime : null;
+                const endTime = e.endTime ? e.endTime : null;
 
-              // Parse shiftDate as Europe/London date and convert to UTC
-              const scheduleData = {
-                day: e.day,
-                shiftDate: moment.utc(e.shiftDate).toDate(),
-                startTime: startTimeUTC,
-                endTime: endTimeUTC,
-                breakTime: e.breakTime || null,
-                roomId: e.roomId || null,
-                folderTime: e.folderTime || null,
-                status: e.status,
-                workHour: null,
-              };
 
-              // Calculate workHour for the schedule using London times
-              if (startTimeLondon && endTimeLondon) {
-                const timeDiff = endTimeLondon.diff(startTimeLondon);
-                const totalMinutes = timeDiff / (1000 * 60);
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = totalMinutes % 60;
-                scheduleData.workHour = parseFloat(
-                    `${hours}.${minutes < 10 ? '0' : ''}${minutes.toFixed(0)}`
-                );
-              }
+                // Parse shiftDate as Europe/London date and convert to UTC
+                const scheduleData = {
+                  day: e.day,
+                  shiftDate:  e.shiftDate,
+                  startTime: startTime,
+                  endTime: endTime,
+                  breakTime: e.breakTime || null,
+                  roomId: e.roomId || null,
+                  folderTime: e.folderTime || null,
+                  status: e.status,
+                  workHour: null,
+                };
 
-              return scheduleData;
-            }),
-          }
-          : {},
-    };
+                // Calculate workHour for the schedule using London times
+                if (startTimeLondon && endTimeLondon) {
+                  const timeDiff = endTimeLondon.diff(startTimeLondon);
+                  const totalMinutes = timeDiff / (1000 * 60);
+                  const hours = Math.floor(totalMinutes / 60);
+                  const minutes = totalMinutes % 60;
+                  scheduleData.workHour = parseFloat(
+                      `${hours}.${minutes < 10 ? '0' : ''}${minutes.toFixed(0)}`
+                  );
+                }
+                console.log(scheduleData, "scheduleData")
+
+                return scheduleData;
+              }),
+            }
+            : {},
+      };
 
     // Create shifts for each user
     const createShiftResults = await Promise.all(
@@ -274,24 +278,18 @@ const getAllShift = async (req, res) => {
 
     let allShifts;
     if (isDateRangeProvided) {
-      const startDateTime = new Date(shiftFrom);
-      const endDateTime = new Date(shiftTo);
+      // const startDateTime = new Date(shiftFrom);
+      // const endDateTime = new Date(shiftTo);
       endDateTime.setHours(23, 59, 59, 999);
+      const startDateTime = moment(shiftFrom).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+      const endDateTime = moment(shiftTo).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+
       allShifts = await prisma.shifts.findMany({
 
         where: {
-
           AND: [
-            {
-              shiftFrom: {
-                lte: endDateTime,
-              },
-            },
-            {
-              shiftTo: {
-                gte: startDateTime,
-              },
-            },
+            { shiftFrom: { lte: endDateTime } },
+            { shiftTo: { gte: startDateTime } },
           ],
         },
         orderBy: [{ id: "desc" }],
@@ -411,20 +409,21 @@ const getAllShiftmobile = async (req, res) => {
 
     if (startDate && endDate) {
       startOfDate = new Date(startDate);
+      startOfDate.setHours(0, 0, 0, 0); // Start of the day
       endOfDate = new Date(endDate);
-      endOfDate.setHours(23, 59, 59, 999);
+      endOfDate.setHours(23, 59, 59, 999); // End of the day
 
       const shiftsWithSchedules = await prisma.shifts.findMany({
         where: {
           schedule: {
             some: {
               shiftDate: {
-                gte: startOfDate.toISOString().slice(0, 10),
-                lte: endOfDate.toISOString().slice(0, 10)
+                gte: startOfDate,
+                lte: endOfDate,
               },
               status: true,
-            }
-          }
+            },
+          },
         },
         orderBy: [{ id: "desc" }],
         include: {
@@ -440,8 +439,8 @@ const getAllShiftmobile = async (req, res) => {
           schedule: {
             where: {
               shiftDate: {
-                gte: startOfDate.toISOString().slice(0, 10),
-                lte: endOfDate.toISOString().slice(0, 10)
+                gte: startOfDate,
+                lte: endOfDate,
               },
               status: true,
             },
@@ -481,6 +480,122 @@ const getAllShiftmobile = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+
+
+const createAttendanceOnLeave = async (req,res) => {
+  try {
+    // Fetch all users along with their shifts and schedules
+    const users = await prisma.user.findMany({
+      include: {
+        shifts: {
+          include: {
+            schedule: true,
+          },
+        },
+      },
+    });
+
+    let todayLondon ;
+    let currentLTimeAndDate;
+    let currentLTime;
+   
+
+    currentTimeLondon = moment().tz("Europe/London");
+    todayLondon = currentTimeLondon.format("YYYY-MM-DD");
+    currentLTimeAndDate = currentTimeLondon.format("YYYY-MM-DD HH:mm:ss");
+    currentLTime = currentTimeLondon.format("HH:mm:ss");
+    let twoDaysBefore = currentTimeLondon.subtract(1, 'days').format("YYYY-MM-DD");
+
+   
+
+    for (const user of users) {
+      // Find attendance where the user hasn't checked out yet
+      const attendance = await prisma.attendance.findFirst({
+        where: {
+          userId: user.id,
+          // outTime: null, // User hasn't checked out yet
+          date : twoDaysBefore
+        },
+      });
+
+      
+
+      
+        // Find today's schedule for the user
+        
+        let scheduleForToday = [];
+
+      // Find today's schedule
+        user.shifts.forEach((shift) => {
+          shift.schedule.forEach((schedule) => {
+            if (schedule.startTime !== null) {
+              const scheduleDateLondon = schedule.shiftDate;
+              
+              if (scheduleDateLondon == twoDaysBefore) {
+                scheduleForToday.push(schedule);
+              }
+            }
+          });
+        });
+       
+
+        if (scheduleForToday) {
+
+          if (scheduleForToday[0]?.endTime ) {
+            if(attendance) 
+              {
+                if(attendance.outTime == null)
+                {
+                  const attendanceupdate = await prisma.attendance.update({
+                    where: {
+                      id: attendance.id,
+                    },
+                    data: {
+                      outTime: moment(scheduleForToday[0].endTime).format("HH:mm:ss"),
+                      totalHour: String(scheduleForToday[0].workHour),
+                      outTimeStatus: 'Check out by system', // Mark as auto-checkout
+                    },
+                  });
+                }
+                 
+              }
+              else
+              {
+                await prisma.attendance.create({
+                  data: {
+                    userId: user.id,
+                    inTime: null,
+                    outTime: null,
+                    punchBy: 1, 
+                    inTimeStatus: null,
+                    outTimeStatus: "Attendence Marked by system",
+                    comment: 'Absent',
+                    date: twoDaysBefore,
+                    attendenceStatus: 'absent',
+                    ip: null,
+                    totalHour: null,
+                  },
+                });  
+              }
+            
+          } else {
+             console.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
+            // logger.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
+          }
+        } else {
+          // console.warn(`No schedule found for user ID ${user.id} for today`);
+          // logger.warn(`No schedule found for user ID ${user.id} for today`);
+        }
+      
+    }
+  } catch (error) {
+   console.error('Error in auto-checkout cron job:', error.message);
+    // logger.error(`Error in auto-checkout cron job: ${error.message}`);
+  }
+};
+
+
 
 const getSingleShift = async (req, res) => {
   try {
@@ -576,11 +691,11 @@ const getSingleShiftbyuserId = async (req, res) => {
   let startOfDate, endOfDate;
 
   if (startDate && endDate) {
-    startOfDate = new Date(startDate);
-    endOfDate = new Date(endDate);
-    endOfDate.setHours(23, 59, 59, 999);
-  }
+    startOfDate = moment(startDate).format("YYYY-MM-DD");
+    endOfDate = moment(endOfDate).format("YYYY-MM-DD");
+    }
 
+  //return res.status(400).json({ message: startOfDate + "  "+ endOfDate});
 
   try {
     const userId = parseInt(req.params.id);
@@ -591,8 +706,8 @@ const getSingleShiftbyuserId = async (req, res) => {
         schedule: {
           some: {
             shiftDate: {
-              gte: startOfDate.toISOString().slice(0, 10),
-              lte: endOfDate.toISOString().slice(0, 10)
+              gte: startOfDate,
+              lte: endOfDate,
             },
             status: true,
           }
@@ -612,8 +727,8 @@ const getSingleShiftbyuserId = async (req, res) => {
         schedule: {
           where: {
             shiftDate: {
-              gte: startOfDate.toISOString().slice(0, 10),
-              lte: endOfDate.toISOString().slice(0, 10)
+              gte: startOfDate,
+              lte: endOfDate,
             },
             status: true,
 
@@ -654,6 +769,7 @@ const getSingleShiftbyuserId = async (req, res) => {
         },
       },
     });
+    console.log(singleShift)
 
     if (singleShift && singleShift.length > 0) {
       for (let shift of singleShift) {
@@ -704,6 +820,8 @@ const updateSingleShift = async (req, res) => {
     const shiftToLondon = moment.tz(req.body.shiftTo, "Europe/London");
     const shiftFromUTC = shiftFromLondon.clone().utc().toDate();
     const shiftToUTC = shiftToLondon.clone().utc().toDate();
+    const startTime = e.startTime ? moment(e.startTime).toISOString() : null;
+    const endTime = e.endTime ? moment(e.endTime).toISOString() : null;
 
     // Update the shift with times in UTC
     const updatedShift = await prisma.shifts.update({
@@ -750,16 +868,20 @@ const updateSingleShift = async (req, res) => {
           );
         }
 
+        const startTime = scheduleItem.startTime ? moment(scheduleItem.startTime).toISOString() : null;
+        const endTime = scheduleItem.endTime ? moment(scheduleItem.endTime).toISOString() : null;
         // Update the schedule with times in UTC
+        console.log(startTime, "startTime")
+        console.log(endTime, "endTime")
         await prisma.schedule.update({
           where: {
             id: scheduleItem.id,
           },
           data: {
             day: scheduleItem.day,
-            shiftDate: moment.utc(scheduleItem.shiftDate).toDate(),
-            startTime: startTimeUTC,
-            endTime: endTimeUTC,
+            shiftDate: scheduleItem.shiftDate,
+            startTime: scheduleItem.startTime,
+            endTime: scheduleItem.endTime,
             breakTime: scheduleItem.breakTime || null,
             roomId: scheduleItem.roomId || null,
             folderTime: scheduleItem.folderTime || null,
@@ -971,4 +1093,5 @@ module.exports = {
   swapSingleShift,
   swapSingleShiftRequest,
   getAllShiftmobile,
+  createAttendanceOnLeave,
 };

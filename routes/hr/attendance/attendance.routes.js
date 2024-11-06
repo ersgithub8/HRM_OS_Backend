@@ -20,7 +20,7 @@ const attendanceRoutes = express.Router();
 
 attendanceRoutes.post("/", authorize(""), createAttendance);
 attendanceRoutes.post("/leaveattendence", authorize(""), createAttendanceonleave);
-attendanceRoutes.post("/create", authorize(""), createadminAttendance);
+attendanceRoutes.post("/create", authorize(""), createAttendance);
 attendanceRoutes.get("/search", authorize(""), search);
 attendanceRoutes.get("/", authorize(""), getAllAttendance);
 attendanceRoutes.get("/:id", authorize(""), getSingleAttendance);

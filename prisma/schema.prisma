@@ -76,9 +76,9 @@ model user {
   emp_telno1                  String?
   end_date1                   DateTime?
   joining_date1               DateTime?
+  isLogin                     Boolean              @default(true)
   visaExpiry                  String?
   visaStatus                  String?
-  isLogin                     Boolean              @default(true)
   attendance                  attendance[]
   awardHistory                awardHistory[]
   designationHistory          designationHistory[]
@@ -185,12 +185,12 @@ model designationHistory {
 model shift {
   id        Int      @id @default(autoincrement())
   name      String   @unique
-  startTime DateTime @db.Timestamptz
-  endTime   DateTime @db.Timestamptz
   workHour  Float
   status    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  startTime DateTime @db.Timestamptz(6)
+  endTime   DateTime @db.Timestamptz(6)
   user      user[]
 }
 
@@ -219,23 +219,23 @@ model awardHistory {
 }
 
 model attendance {
-  id               Int       @id @default(autoincrement())
+  id               Int      @id @default(autoincrement())
   userId           Int
-  inTime           DateTime?
-  outTime          DateTime?
+  inTime           String?
+  outTime          String?
   ip               String?
   comment          String?
   punchBy          Int?
-  totalHour        Float?
-  overtime         Float?
+  totalHour        String?
+  overtime         String?
   inTimeStatus     String?
   outTimeStatus    String?
   attendenceStatus String?
-  date             DateTime  @default(now())
-  status           Boolean   @default(true)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  user             user      @relation(fields: [userId], references: [id])
+  date             String
+  status           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             user     @relation(fields: [userId], references: [id])
 }
 
 model leaveApplication {
@@ -568,8 +568,8 @@ model Schedule {
   id         Int       @id @default(autoincrement())
   day        String?
   shiftDate  String?
-  startTime  DateTime?
-  endTime    DateTime?
+  startTime  String?
+  endTime    String?
   breakTime  Int?
   folderTime Int?
   roomId     Int?

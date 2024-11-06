@@ -69,6 +69,8 @@ const getSingleDesignationHistory = async (req, res) => {
 const updateSingleDesignationHistory = async (req, res) => {
 
   try {
+    const endDate = req.body.designationEndDate ? new Date(req.body.designationEndDate) : null;
+
     const updatedDesignationHistory = await prisma.designationHistory.update({
       where: {
         id: Number(req.params.id),
@@ -76,7 +78,7 @@ const updateSingleDesignationHistory = async (req, res) => {
       data: {
         designationId: req.body.designationId,
         startDate: new Date(req.body.designationStartDate),
-        endDate: new Date(req.body.designationEndDate),
+        endDate: endDate,
         comment: req.body.designationComment,
       },
     });

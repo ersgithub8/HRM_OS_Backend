@@ -17,9 +17,9 @@ function  authorize(permission) {
           id: req.auth.sub,
         },
       });
-      if (!existingUserByEmail.isLogin){
-        return res.status(401).json({message: "Unauthorized"});
-      }
+      // if (!existingUserByEmail.isLogin){
+      //   return res.status(401).json({message: "Unauthorized"});
+      // }
 
       next();
     },

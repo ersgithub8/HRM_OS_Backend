@@ -3,26 +3,41 @@ const prisma = require("../../utils/prisma");
 
 //create single room
 const createrooms = async (req, res) => {
-    try {
-      const {locationId, roomName, } = req.body;
+  try {
+    const { locationId, roomName } = req.body;
+    const userId = parseInt(req.auth.sub);
 
-      const newroom = await prisma.room.create({
-        data: {
-            locationId,
-            userId: req.auth.sub,
-            roomName,
-        },
-      });
-  
-      return res.status(200).json({
-        newroom,
-        message: 'Room created successfully',
-      });
-    } catch (error) {
-      console.error('Error creating room:', error);
-      return res.status(400).json({ message: 'Failed to create room'});
+    // Check if user exists
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  };
+
+    console.log(userId, "userId");
+    console.log(locationId, "locationId");
+    console.log(roomName, "roomName");
+
+    const newroom = await prisma.room.create({
+      data: {
+        locationId,
+        userId,
+        roomName,
+      },
+    });
+
+    return res.status(200).json({
+      newroom,
+      message: 'Room created successfully',
+    });
+  } catch (error) {
+    console.error('Error creating room:', error);
+    return res.status(400).json({ message: 'Failed to create room', error: error.message });
+  }
+};
+
 //get all romms
   const getAllrooms = async (req, res) => {
     if (req.query.query === "all") {

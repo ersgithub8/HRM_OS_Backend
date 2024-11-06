@@ -409,7 +409,7 @@ const getAllUser = async (req, res) => {
           day: s.day,
           shiftDate: moment(s.shiftDate).format("MM/DD/YYYY"),
           workHour: s.workHour,
-          room: {
+          room: s.room ? { // Check if s.room is not null before accessing properties
             id: s.room.id,
             locationId: s.room.locationId,
             userId: s.room.userId,
@@ -417,7 +417,7 @@ const getAllUser = async (req, res) => {
             status: s.room.status,
             createdAt: s.room.createdAt,
             updatedAt: s.room.updatedAt,
-          },
+          } : null,
           status: s.status,
         }));
 

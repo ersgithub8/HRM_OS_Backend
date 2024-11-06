@@ -34,10 +34,10 @@ const createSingleAnnouncement = async (req, res) => {
       const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
       const newTokens = tokenArray.filter(item => item !== null)
 
-      const Title = "Announcment:"+req.body.title;
+      const Title = "Announcement:"+req.body.title;
       const Body = req.body.description;
 
-      const Desc = 'Announcment notification';
+      const Desc = 'Announcement notification';
       // const Device = user.device;
       console.log(Title, Body, Desc, newTokens);
       sendNotify(Title, Body, Desc, newTokens);
