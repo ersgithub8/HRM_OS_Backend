@@ -141,7 +141,7 @@ app.post("/upload", uploadimagesimple.fields([
       if (file) {
         const split = file.path.split("uploads");
         const path = split[1].replace(/\\/g, "/");
-        const baseUrl = req.protocol + "://localhost:5000";
+        const baseUrl = req.protocol + "://backend.wise1ne.com";
         files[fileType] = { path: baseUrl + "/uploads" + path };
       }
     });

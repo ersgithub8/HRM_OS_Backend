@@ -485,110 +485,310 @@ const getAllShiftmobile = async (req, res) => {
 
 const createAttendanceOnLeave = async (req,res) => {
   try {
-    // Fetch all users along with their shifts and schedules
-    const users = await prisma.user.findMany({
-      include: {
-        shifts: {
-          include: {
-            schedule: true,
+    const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+const bcrypt = require("bcrypt");
+const fs = require("fs");
+const path = require("path");
+const saltRounds = 10;
+
+const endpoints = [
+  "rolePermission",
+  "transaction",
+  "permission",
+  "dashboard",
+  "user",
+  "role",
+  "designation",
+  "account",
+  "setting",
+  "email",
+  "attendance",
+  "department",
+  "education",
+  "payroll",
+  "leaveApplication",
+  "shift",
+  "employmentStatus",
+  "announcement",
+  "salaryHistory",
+  "designationHistory",
+  "award",
+  "awardHistory",
+  "file",
+  "leavePolicy",
+  "weeklyHoliday",
+  "publicHoliday",
+  "project",
+  "milestone",
+  "task",
+  "projectTeam",
+  "taskDependency",
+  "taskStatus",
+  "taskTime",
+  "priority",
+  "assignedTask",
+  "location",
+  "training",
+  "meeting",
+  "room",
+  "shifts",
+  "request"
+];
+
+const permissionTypes = ["create", "readAll", "readSingle", "update", "delete"];
+
+// create permissions for each endpoint by combining permission type and endpoint name
+const permissions = endpoints.reduce((acc, cur) => {
+  const permission = permissionTypes.map((type) => {
+    return `${type}-${cur}`;
+  });
+  return [...acc, ...permission];
+}, []);
+
+// const roles = ["admin", "staff" ,"CEO","DOO","NC","NAC","ASC"];
+
+const account = [
+  { name: "Asset", type: "Asset" },
+  { name: "Liability", type: "Liability" },
+  { name: "Capital", type: "Owner's Equity" },
+  { name: "Withdrawal", type: "Owner's Equity" },
+  { name: "Revenue", type: "Owner's Equity" },
+  { name: "Expense", type: "Owner's Equity" },
+];
+
+const subAccount = [
+  { account_id: 1, name: "Cash" }, //1
+  { account_id: 1, name: "Bank" }, //2
+  { account_id: 1, name: "Inventory" }, //3
+  { account_id: 1, name: "Accounts Receivable" }, //4
+  { account_id: 2, name: "Accounts Payable" }, //5
+  { account_id: 3, name: "Capital" }, //6
+  { account_id: 4, name: "Withdrawal" }, //7
+  { account_id: 5, name: "Sales" }, //8
+  { account_id: 6, name: "Cost of Sales" }, //9
+  { account_id: 6, name: "Salary" }, //10
+  { account_id: 6, name: "Rent" }, //11
+  { account_id: 6, name: "Utilities" }, //12
+  { account_id: 5, name: "Discount Earned" }, //13
+  { account_id: 6, name: "Discount Given" }, //14
+];
+
+const settings = {
+  company_name: "My Company",
+  address: "My Address",
+  phone: "My Phone",
+  email: "My Email",
+  website: "My Website",
+  footer: "My Footer",
+  tag_line: "My Tag Line",
+};
+
+const department = [
+  { name: "IT" },
+  { name: "HR" },
+  { name: "Sales" },
+  { name: "Marketing" },
+  { name: "Finance" },
+  { name: "Operations" },
+  { name: "Customer Support" },
+];
+
+const designation = [
+  { name: "CEO" },
+  { name: "CTO" },
+  { name: "CFO" },
+  { name: "DOO" },
+  { name: "HR Manager" },
+];
+
+const employmentStatus = [
+  { name: "Intern", colourValue: "#00FF00", description: "Intern" },
+  { name: "Permenent", colourValue: "#FF0000", description: "Permenent" },
+  { name: "Staff", colourValue: "#FFFF00", description: "Staff" },
+  { name: "Terminated", colourValue: "#00FFFF", description: "Terminated" },
+];
+
+const shifts = [
+  {
+    name: "Morning",
+    startTime: "1970-01-01T08:00:00.000Z",
+    endTime: "1970-01-01T16:00:00.000Z",
+    workHour: 8,
+  },
+  {
+    name: "Evening",
+    startTime: "1970-01-01T16:00:00.000Z",
+    endTime: "1970-01-01T00:00:00.000Z",
+    workHour: 8,
+  },
+  {
+    name: "Night",
+    startTime: "1970-01-01T00:00:00.000Z",
+    endTime: "1970-01-01T08:00:00.000Z",
+    workHour: 8,
+  },
+];
+
+const leavePolicy = [
+  {
+    name: "Policy 20-8",
+    paidLeaveCount: 20,
+    unpaidLeaveCount: 8,
+  }
+];
+
+const weeklyHoliday = [
+  {
+    name: "Saturday-Sunday",
+    startDay: "Saturday",
+    endDay: "Sunday",
+  },
+];
+
+const date = new Date();
+
+const publicHoliday = [
+  {
+    name: "New Year",
+    date: date,
+  },
+  {
+    name: "Independence Day",
+    date: new Date(date.getTime() + 3 * 24 * 60 * 60 * 1000),
+  },
+  {
+    name: "Christmas",
+    date: new Date(date.getTime() + 9 * 24 * 60 * 60 * 1000),
+  },
+];
+
+const award = [
+  {
+    name: "Employee of the Month",
+    description: "Employee who has performed well in the month",
+  },
+  {
+    name: "Employee of the Year",
+    description: "Employee who has performed well in the year",
+  },
+];
+
+const priority = [
+  {
+    name: "Low",
+  },
+  {
+    name: "Medium",
+  },
+  {
+    name: "High",
+  },
+];
+
+async function main() {
+  await prisma.department.createMany({
+    data: department,
+  });
+  await prisma.designation.createMany({
+    data: designation,
+  });
+  await prisma.employmentStatus.createMany({
+    data: employmentStatus,
+  });
+  await prisma.shift.createMany({
+    data: shifts,
+  });
+
+  await prisma.leavePolicy.createMany({
+    data: leavePolicy,
+  });
+
+  await prisma.weeklyHoliday.createMany({
+    data: weeklyHoliday,
+  });
+
+  await prisma.publicHoliday.createMany({
+    data: publicHoliday,
+  });
+
+  await prisma.award.createMany({
+    data: award,
+  });
+
+  await prisma.priority.createMany({
+    data: priority,
+  });
+
+  // await prisma.role.createMany({
+  //   data: roles.map((role) => {
+  //     return {
+  //       name: role,
+  //     };
+  //   }),
+  // });
+  await prisma.permission.createMany({
+    data: permissions.map((permission) => {
+      return {
+        name: permission,
+      };
+    }),
+  });
+  for (let i = 1; i <= permissions.length; i++) {
+    await prisma.rolePermission.create({
+      data: {
+        role: {
+          connect: {
+            id: 1,
+          },
+        },
+        permission: {
+          connect: {
+            id: i,
           },
         },
       },
     });
+  }
+  const adminHash = await bcrypt.hash("asdf1234", saltRounds);
+  await prisma.user.create({
+    data: {
+      firstName: "HRM",
+      lastName: "Wise1ne",
+      userName: "admin",
+      email:"admin@gmail.com",
+      password: adminHash,
+      employmentStatusId: 1,
+      applicationStatus:'APPROVED',
+      employeeId:'admin-1',
+      departmentId: 1,
+      roleId: 1,
+      shiftId: 1,
+      leavePolicyId: 1,
+      weeklyHolidayId: 1,
+    },
+  });
 
-    let todayLondon ;
-    let currentLTimeAndDate;
-    let currentLTime;
-   
+  await prisma.account.createMany({
+    data: account,
+  });
+  await prisma.subAccount.createMany({
+    data: subAccount,
+  });
+  await prisma.appSetting.create({
+    data: settings,
+  });
+}
 
-    currentTimeLondon = moment().tz("Europe/London");
-    todayLondon = currentTimeLondon.format("YYYY-MM-DD");
-    currentLTimeAndDate = currentTimeLondon.format("YYYY-MM-DD HH:mm:ss");
-    currentLTime = currentTimeLondon.format("HH:mm:ss");
-    let twoDaysBefore = currentTimeLondon.subtract(1, 'days').format("YYYY-MM-DD");
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    await prisma.$disconnect();
+    process.exit(1);
+  });
 
-   
-
-    for (const user of users) {
-      // Find attendance where the user hasn't checked out yet
-      const attendance = await prisma.attendance.findFirst({
-        where: {
-          userId: user.id,
-          // outTime: null, // User hasn't checked out yet
-          date : twoDaysBefore
-        },
-      });
-
-      
-
-      
-        // Find today's schedule for the user
-        
-        let scheduleForToday = [];
-
-      // Find today's schedule
-        user.shifts.forEach((shift) => {
-          shift.schedule.forEach((schedule) => {
-            if (schedule.startTime !== null) {
-              const scheduleDateLondon = schedule.shiftDate;
-              
-              if (scheduleDateLondon == twoDaysBefore) {
-                scheduleForToday.push(schedule);
-              }
-            }
-          });
-        });
-       
-
-        if (scheduleForToday) {
-
-          if (scheduleForToday[0]?.endTime ) {
-            if(attendance) 
-              {
-                if(attendance.outTime == null)
-                {
-                  const attendanceupdate = await prisma.attendance.update({
-                    where: {
-                      id: attendance.id,
-                    },
-                    data: {
-                      outTime: moment(scheduleForToday[0].endTime).format("HH:mm:ss"),
-                      totalHour: String(scheduleForToday[0].workHour),
-                      outTimeStatus: 'Check out by system', // Mark as auto-checkout
-                    },
-                  });
-                }
-                 
-              }
-              else
-              {
-                await prisma.attendance.create({
-                  data: {
-                    userId: user.id,
-                    inTime: null,
-                    outTime: null,
-                    punchBy: 1, 
-                    inTimeStatus: null,
-                    outTimeStatus: "Attendence Marked by system",
-                    comment: 'Absent',
-                    date: twoDaysBefore,
-                    attendenceStatus: 'absent',
-                    ip: null,
-                    totalHour: null,
-                  },
-                });  
-              }
-            
-          } else {
-             console.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
-            // logger.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
-          }
-        } else {
-          // console.warn(`No schedule found for user ID ${user.id} for today`);
-          // logger.warn(`No schedule found for user ID ${user.id} for today`);
-        }
-      
-    }
   } catch (error) {
    console.error('Error in auto-checkout cron job:', error.message);
     // logger.error(`Error in auto-checkout cron job: ${error.message}`);
@@ -692,84 +892,101 @@ const getSingleShiftbyuserId = async (req, res) => {
 
   if (startDate && endDate) {
     startOfDate = moment(startDate).format("YYYY-MM-DD");
-    endOfDate = moment(endOfDate).format("YYYY-MM-DD");
+    endOfDate = moment(endDate).format("YYYY-MM-DD");
     }
 
   //return res.status(400).json({ message: startOfDate + "  "+ endOfDate});
 
+let userId ; 
   try {
-    const userId = parseInt(req.params.id);
+      if(req.params.id == "all")
+      {
+            userId = null;
+      }
+      else
+      {
+            userId = parseInt(req.params.id);
+      }
+   
 
-    const singleShift = await prisma.shifts.findMany({
-      where: {
-        userId: userId,
-        schedule: {
-          some: {
-            shiftDate: {
-              gte: startOfDate,
-              lte: endOfDate,
-            },
-            status: true,
-          }
-        }
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            userName: true,
-          },
+   const singleShift = await prisma.shifts.findMany({
+  where: {
+    ...(userId && { userId: userId }),
+    schedule: {
+      some: {
+        shiftDate: {
+          gte: startOfDate,
+          lte: endOfDate,
         },
-        location: true,
-
-        schedule: {
-          where: {
-            shiftDate: {
-              gte: startOfDate,
-              lte: endOfDate,
-            },
-            status: true,
-
-          },
+        status: true,
+      },
+    },
+  },
+  include: {
+    user: {
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        userName: true,
+      },
+    },
+    location: true,
+    schedule: {
+      select: {
+        id: true,
+        day: true,
+        startTime: true,
+        endTime: true,
+        breakTime: true,
+        folderTime: true,
+        shiftDate: true,
+        room: {
           select: {
             id: true,
-            day: true,
-            startTime: true,
-            endTime: true,
-            breakTime: true,
-            folderTime: true,
-            shiftDate: true,
-            room: {
+            location: {
               select: {
                 id: true,
-                location: {
-                  select: {
-                    id: true,
-                    latitude: true,
-                    longitude: true,
-                    locationName: true,
-                    createdAt: true,
-                    updatedAt: true,
-                  },
-                },
-                roomName: true,
-                status: true,
+                latitude: true,
+                longitude: true,
+                locationName: true,
                 createdAt: true,
                 updatedAt: true,
               },
             },
-            workHour: true,
+            roomName: true,
             status: true,
-            shiftsId: true,
             createdAt: true,
             updatedAt: true,
           },
         },
+        workHour: true,
+        status: true,
+        shiftsId: true,
+        createdAt: true,
+        updatedAt: true,
       },
+    },
+  },
+});
+
+   const startOfDateObj = moment(startOfDate).format("YYYY-MM-DD");
+    const endOfDateObj = moment(endOfDate).format("YYYY-MM-DD");
+    
+    console.log("gvsGHDvasgdvsgadvgasd",startOfDateObj + " " + endOfDateObj)
+    singleShift.forEach(shift => {
+      shift.schedule = shift.schedule.filter(sched => {
+        const schedDate = moment(sched.shiftDate).format("YYYY-MM-DD");
+        console.log(">>>>>>>>>>>>>>>>>",schedDate);
+        return (
+          schedDate >= startOfDateObj &&
+          schedDate <= endOfDateObj &&
+          sched.status === true
+        );
+      });
     });
-    console.log(singleShift)
+    console.log("------>", singleShift);
+
 
     if (singleShift && singleShift.length > 0) {
       for (let shift of singleShift) {
@@ -789,7 +1006,8 @@ const getSingleShiftbyuserId = async (req, res) => {
     console.log(error);
     return res.status(400).json({ message: error.message });
   }
-};
+}; // this one
+
 
 const updateSingleShift = async (req, res) => {
   try {

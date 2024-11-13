@@ -394,6 +394,7 @@ const createSingleLeave = async (req, res) => {
         } else {
           status = "PENDING"; // Set a default status if none of the conditions match
         }
+        console.log(req.body.employeeId, "req.body.employeeId")
         const createdLeave = await prisma.leaveApplication.create({
           data: {
             user: {
