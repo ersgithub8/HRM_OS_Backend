@@ -14,7 +14,6 @@ CREATE TABLE "user" (
     "dob" TIMESTAMP(3),
     "emergencycontact" TEXT,
     "nicno" TEXT,
-    "identitystatus" TEXT,
     "firstaid" TEXT,
     "firstaidtext" TEXT,
     "dbscheck" TEXT,
@@ -69,6 +68,9 @@ CREATE TABLE "user" (
     "emp_telno1" TEXT,
     "end_date1" TIMESTAMP(3),
     "joining_date1" TIMESTAMP(3),
+    "isLogin" BOOLEAN NOT NULL DEFAULT true,
+    "visaExpiry" TEXT,
+    "visaStatus" TEXT,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -166,12 +168,12 @@ CREATE TABLE "designationHistory" (
 CREATE TABLE "shift" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "startTime" TIME(6) NOT NULL,
-    "endTime" TIME(6) NOT NULL,
     "workHour" DOUBLE PRECISION NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "startTime" TIMESTAMPTZ(6) NOT NULL,
+    "endTime" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "shift_pkey" PRIMARY KEY ("id")
 );
@@ -207,17 +209,17 @@ CREATE TABLE "awardHistory" (
 CREATE TABLE "attendance" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
-    "inTime" TIMESTAMP(3),
-    "outTime" TIMESTAMP(3),
+    "inTime" TEXT,
+    "outTime" TEXT,
     "ip" TEXT,
     "comment" TEXT,
     "punchBy" INTEGER,
-    "totalHour" DOUBLE PRECISION,
-    "overtime" DOUBLE PRECISION,
+    "totalHour" TEXT,
+    "overtime" TEXT,
     "inTimeStatus" TEXT,
     "outTimeStatus" TEXT,
     "attendenceStatus" TEXT,
-    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "date" TEXT NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -585,8 +587,8 @@ CREATE TABLE "Schedule" (
     "id" SERIAL NOT NULL,
     "day" TEXT,
     "shiftDate" TEXT,
-    "startTime" TIMESTAMP(3),
-    "endTime" TIMESTAMP(3),
+    "startTime" TEXT,
+    "endTime" TEXT,
     "breakTime" INTEGER,
     "folderTime" INTEGER,
     "roomId" INTEGER,
