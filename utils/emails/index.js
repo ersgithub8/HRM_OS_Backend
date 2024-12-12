@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: "wise1newcb@wise1ne.com",
-    pass: "c%-8l%((w@z)",
+    user: "support@wise1ne.com",
+    pass: "hE.(%@h4siaz",
   },
   tls: {
     rejectUnauthorized: false,
@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 
 // console.log(process.env.user);
 const createEmailOption = ({ receipentEmail, subject, body, html }) => ({
-  from: "wise1newcb@wise1ne.com",
+  from: "support@wise1ne.com",
   to: receipentEmail,
   ...(subject && { subject }),
   ...(body && { body }),
