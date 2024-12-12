@@ -59,7 +59,7 @@ const permissions = endpoints.reduce((acc, cur) => {
   return [...acc, ...permission];
 }, []);
 
-// const roles = ["admin", "staff" ,"CEO","DOO","NC","NAC","ASC"];
+const roles = ["admin", "staff" ,"CEO","DOO","NC","NAC","ASC"];
 
 const account = [
   { name: "Asset", type: "Asset" },
@@ -233,13 +233,13 @@ async function main() {
     data: priority,
   });
 
-  // await prisma.role.createMany({
-  //   data: roles.map((role) => {
-  //     return {
-  //       name: role,
-  //     };
-  //   }),
-  // });
+  await prisma.role.createMany({
+    data: roles.map((role) => {
+      return {
+        name: role,
+      };
+    }),
+  });
   await prisma.permission.createMany({
     data: permissions.map((permission) => {
       return {

@@ -22,8 +22,8 @@ const createSingleSalaryHistory = async (req, res) => {
         data: {
           userId: req.body.userId,
           salary: req.body.salary,
-          startDate: new Date(req.body.salaryStartDate),
-          endDate: req.body.salaryEndDate == null ? null: new Date(req.body.salaryEndDate),
+          startDate: new Date(req.body.salaryStartDate).toISOString(), // Ensure this is a valid date string
+          endDate: req.body.salaryEndDate ? new Date(req.body.salaryEndDate).toISOString() : null, // Check and convert if not null
           comment: req.body.salaryComment,
         },
       });
@@ -122,20 +122,32 @@ const updateSingleSalaryHistory = async (req, res) => {
         },
       });
       return res.status(200).json(updatedSalaryHistory);
-    } else {
+    }else {
+      // Function to validate the date
+      const isValidDate = (dateString) => {
+        const date = new Date(dateString);
+        return date instanceof Date && !isNaN(date);
+      };
+    
+      // Check if provided dates are valid
+      if (!isValidDate(req.body.salaryStartDate) || (req.body.salaryEndDate && !isValidDate(req.body.salaryEndDate))) {
+        return res.status(400).json({ message: 'Invalid date format provided.' });
+      }
+    
       const updatedSalaryHistory = await prisma.salaryHistory.update({
         where: {
           id: Number(req.params.id),
         },
         data: {
           salary: req.body.salary,
-          startDate: new Date(req.body.salaryStartDate),
-          endDate: new Date(req.body.salaryEndDate),
+          startDate: new Date(req.body.salaryStartDate).toISOString(), // Convert to ISO string format
+          endDate: req.body.salaryEndDate ? new Date(req.body.salaryEndDate).toISOString() : null, // Convert if not null
           comment: req.body.salaryComment,
         },
       });
       return res.status(200).json(updatedSalaryHistory);
     }
+
   } catch (error) {
     return res.status(400).json(error.message);
   }

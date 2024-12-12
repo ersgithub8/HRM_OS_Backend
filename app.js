@@ -66,7 +66,6 @@ const createAttendanceOnLeave = async () => {
       },
     });
 
-    //console.log(isTodayPublicHoliday, "isTodayPublicHoliday");
 
     if (isTodayPublicHoliday) {
       // Fetch all users
@@ -79,7 +78,6 @@ const createAttendanceOnLeave = async () => {
           //attendenceStatus: "holiday",
         },
       });
-      console.log(usersOnHoliday, "isTodayPublicHoliday", todayLondon);
 
      
       if (usersOnHoliday.length === users.length) {
@@ -92,7 +90,7 @@ const createAttendanceOnLeave = async () => {
       // Process each user for attendance
       for (const user of users) {
         console.log(`Processing user: ${user.id}`);
-        const attendanceDate = today;
+        const attendanceDate = todayLondon;
 
         const attendance = await prisma.attendance.findFirst({
           where: {
@@ -128,10 +126,16 @@ const createAttendanceOnLeave = async () => {
               attendenceStatus: "holiday",
               ip: null,
               totalHour: null,
-              createdAt: attendanceDate,
+              createdAt: new Date(`${todayLondon}T00:00:00Z`), // Start of the day in UTC
+              updatedAt: new Date(`${todayLondon}T00:00:00Z`),
+             
             },
           });
+         
+
           await attendancePromise;
+          
+          
           console.log(
             `Attendance marked for user ${user.id} on ${attendanceDate}`
           );
@@ -143,7 +147,7 @@ const createAttendanceOnLeave = async () => {
       console.log("Today is not a public holiday. No attendance marked.");
     }
   } catch (error) {
-    console.error("Error:", error.message);
+
   }
 };
 
@@ -180,17 +184,37 @@ const logger = winston.createLogger({
 cron.schedule('0 * * * *', async () => {
   logger.info(`Cron job started.`);
 
-  try {
-    // Fetch all users along with their shifts and schedules
+   try {
+   
+//     const updatedSchedules = await prisma.schedule.updateMany({
+//   where: {
+//     id: {
+//       in: [612, 616, 731, 732, 734, 735, 1218, 1249],
+//     },
+//   },
+//   data: {
+//     startTime: '2024-12-09T18:00:00', // Use a Date object for datetime values
+//   },
+// });
+
+    
     const users = await prisma.user.findMany({
-      include: {
-        shifts: {
-          include: {
-            schedule: true,
+          where: {
+            applicationStatus: 'APPROVED',
+            shifts: {
+              some: {}, // Filters users who have at least one shift
+            },
           },
-        },
-      },
-    });
+          include: {
+            shifts: {
+              include: {
+                schedule: true,
+              },
+            },
+          },
+        });
+   
+      
 
     let todayLondon ;
     let currentLTimeAndDate;
@@ -204,7 +228,7 @@ cron.schedule('0 * * * *', async () => {
     let twoDaysBefore = currentTimeLondon.subtract(1, 'days').format("YYYY-MM-DD");
 
    
-
+       
     for (const user of users) {
       // Find attendance where the user hasn't checked out yet
       const attendance = await prisma.attendance.findFirst({
@@ -214,7 +238,9 @@ cron.schedule('0 * * * *', async () => {
           date : twoDaysBefore
         },
       });
-
+      
+      
+    
       
 
       
@@ -225,7 +251,7 @@ cron.schedule('0 * * * *', async () => {
       // Find today's schedule
         user.shifts.forEach((shift) => {
           shift.schedule.forEach((schedule) => {
-            if (schedule.startTime !== null) {
+            if (schedule.startTime !== null && schedule.status == true ) {
               const scheduleDateLondon = schedule.shiftDate;
               
               if (scheduleDateLondon == twoDaysBefore) {
@@ -236,58 +262,101 @@ cron.schedule('0 * * * *', async () => {
         });
        
 
-        if (scheduleForToday) {
+         // return res.status(400).json({ message: scheduleForToday });
 
-          if (scheduleForToday[0]?.endTime ) {
+        if (scheduleForToday) {
+            
+            
             if(attendance) 
               {
-                if(attendance.outTime == null)
+                if(attendance.outTime == null && attendance.inTime)
                 {
-                  const attendanceupdate = await prisma.attendance.update({
+                    
+                   
+                  // Extract the date part from endTime
+                  const datePart = moment(scheduleForToday[0].endTime).format("YYYY-MM-DD");
+                  
+                  // Combine date with attendance.inTime
+                  const attendanceInTimeWithDate = `${datePart} ${attendance.inTime}`;
+                  
+                  // Parse currentOutTime and attendanceInTime
+                  const currentOutTime = moment(`${datePart} ${moment(scheduleForToday[0].endTime).format("HH:mm:ss")}`, "YYYY-MM-DD HH:mm:ss");
+                  const attendanceInTime = moment(attendanceInTimeWithDate, "YYYY-MM-DD HH:mm:ss");
+                  
+                  // Validate parsed dates
+                  if (!currentOutTime.isValid() || !attendanceInTime.isValid()) {
+                    return res.status(400).json({ error: "Invalid date or time format" });
+                  }
+                  
+                  // Compute the time difference in milliseconds
+                  const timeDiff = currentOutTime.diff(attendanceInTime);
+                  
+                  // Convert milliseconds into human-readable form
+                  const duration = moment.duration(timeDiff);
+                  const hours = Math.floor(duration.asHours()); // Total whole hours
+                  const minutes = duration.minutes(); // Remaining minutes
+                  
+                  // Format hours and minutes with leading zeros
+                  const formattedHours = String(hours).padStart(2, '0');
+                  const formattedMinutes = String(minutes).padStart(2, '0');
+                  
+                  // Combine total hours and minutes
+                  const totalHourCombine = `${formattedHours}:${formattedMinutes}`;
+                  
+                 
+                   
+      
+      
+                  const attendanceUpdate = await prisma.attendance.update({
                     where: {
                       id: attendance.id,
                     },
                     data: {
                       outTime: moment(scheduleForToday[0].endTime).format("HH:mm:ss"),
-                      totalHour: String(scheduleForToday[0].workHour),
+                      totalHour: totalHourCombine,
+                      //overtime: overtimeCombine,
+                      overtime : null,
                       outTimeStatus: 'Check out by system', // Mark as auto-checkout
                     },
                   });
                 }
                  
-              }
+              } 
               else
               {
-                await prisma.attendance.create({
-                  data: {
-                    userId: user.id,
-                    inTime: null,
-                    outTime: null,
-                    punchBy: 1, 
-                    inTimeStatus: null,
-                    outTimeStatus: "Attendence Marked by system",
-                    comment: 'Absent',
-                    date: twoDaysBefore,
-                    attendenceStatus: 'absent',
-                    ip: null,
-                    totalHour: null,
-                  },
-                });  
+                  if (scheduleForToday?.[0]?.startTime !== null && scheduleForToday?.[0]?.startTime !== undefined  && scheduleForToday?.[0]?.endTime !== null && scheduleForToday?.[0]?.endTime !== undefined )
+                     {
+                      await prisma.attendance.create({
+                          data: {
+                            userId: user.id,
+                            inTime: null,
+                            outTime: null,
+                            punchBy: 1, 
+                            inTimeStatus: null,
+                            outTimeStatus: "Attendence Marked by system",
+                            comment: 'Absent',
+                            date: twoDaysBefore,
+                            attendenceStatus: 'absent',
+                            ip: null,
+                            totalHour: null,
+                            overtime:null,
+                            createdAt: new Date(`${twoDaysBefore}T00:00:00Z`), // Start of the day in UTC
+                            updatedAt: new Date(`${twoDaysBefore}T00:00:00Z`),
+                          },
+                        }); 
+                  }
+                 
               }
             
-          } else {
-             console.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
-            // logger.warn(`No endTime found for schedule ID ${scheduleForToday.id}`);
-          }
+          
         } else {
-          // console.warn(`No schedule found for user ID ${user.id} for today`);
-          // logger.warn(`No schedule found for user ID ${user.id} for today`);
+            //return res.status(400).json({ message: "here" });
+
         }
       
     }
   } catch (error) {
-   console.error('Error in auto-checkout cron job:', error.message);
-    // logger.error(`Error in auto-checkout cron job: ${error.message}`);
+         // return res.status(400).json({ message: error.message });
   }
 });
 

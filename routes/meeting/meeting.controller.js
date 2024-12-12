@@ -381,8 +381,6 @@ const getMeetingByuserId = async (req, res) => {
   try {
     const userId = Number(req.params.id);
     const currentDate = new Date();
-    console.log(currentDate, "currentDate")
-
     const meetings = await prisma.meeting.findMany({
       where: {
         user: { some: { id: userId } },
@@ -429,7 +427,6 @@ const getMeetingByuserId = async (req, res) => {
         } else {
           status = "ENDED";
         }
-
         // Calculate meeting duration
         const durationInMinutes = (endTime - startTime) / (1000 * 60);
         const durationHours = Math.floor(durationInMinutes / 60);

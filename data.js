@@ -27,6 +27,7 @@ let allowedOrigins = [
   "https://www.wise1ne.com",
   "https://www.app.wise1ne.com/",
   "https://app.wise1ne.com/",
+  "https://app.wise1ne.com"
 ];
 
 const admin = require("firebase-admin");

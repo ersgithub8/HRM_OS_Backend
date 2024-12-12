@@ -27,54 +27,54 @@ const createPublicHoliday = async (req, res) => {
   }
 
   else {
-    try {
-      const { name, date: incomingDate } = req.body;
-      const date = moment.tz(incomingDate, "Europe/London").toDate(); // Convert incoming date to London timezone
+  try {
+    const { name, date: incomingDate } = req.body;
+    const date = moment.tz(incomingDate, "Europe/London").startOf('day').toDate(); // Normalize date to start of day in London timezone
 
-      // Check if a public holiday already exists for the specified date
-      const existingPublicHoliday = await prisma.publicHoliday.findFirst({
-        where: {
-          date,
-        },
-      });
+    // Check if a public holiday already exists for the specified date
+    const existingPublicHoliday = await prisma.publicHoliday.findFirst({
+      where: {
+        date,
+      },
+    });
 
-      if (existingPublicHoliday) {z
-        return res.status(400).json({ message: 'A public holiday already exists for the specified date.' });
-      }
-
-      const createdPublicHoliday = await prisma.publicHoliday.create({
-        data: {
-          name,
-          date,
-        },
-      });
-
-      const allUsers = await prisma.user.findMany();
-      const todayInLondon = moment().tz("Europe/London").startOf('day').toDate(); // Get today's date in London timezone
-
-      for (const user of allUsers) {
-        let updateData = {
-          bankallowedleave: user.bankallowedleave ? (parseInt(user.bankallowedleave) + 1).toString() : '1', // Increment bankallowedleave by 1
-        };
-
-        // Only increment remaingbankallowedleave if the new holiday is after today
-        if (date > todayInLondon && user.remaingbankallowedleave) {
-          updateData.remaingbankallowedleave = (parseInt(user.remaingbankallowedleave) + 1).toString();
-        }
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: updateData,
-        });
-      }
-
-      return res.status(201).json(createdPublicHoliday);
-    }
-    catch (error) {
-      return res.status(400).json({ message: error.message });
+    if (existingPublicHoliday) {
+      return res.status(400).json({ message: 'A public holiday already exists for the specified date.' });
     }
 
+    const createdPublicHoliday = await prisma.publicHoliday.create({
+      data: {
+        name,
+        date,
+      },
+    });
+
+    const allUsers = await prisma.user.findMany();
+    const todayInLondon = moment().tz("Europe/London").startOf('day').toDate(); // Also normalize today's date to start of day
+
+    for (const user of allUsers) {
+      let updateData = {
+        bankallowedleave: user.bankallowedleave ? (parseInt(user.bankallowedleave) + 1).toString() : '1', // Increment bankallowedleave by 1
+      };
+
+      // Only increment remaingbankallowedleave if the new holiday is strictly in the future (not today)
+      if (date > todayInLondon && user.remaingbankallowedleave) {
+        updateData.remaingbankallowedleave = (parseInt(user.remaingbankallowedleave) + 1).toString();
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+    }
+
+    return res.status(201).json(createdPublicHoliday);
   }
+  catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+}
+
 };
 
 const getAllPublicHoliday = async (req, res) => {
@@ -199,11 +199,15 @@ const deleteSinglePublicHoliday = async (req, res) => {
         updateData.bankallowedleave = updatedBankAllowedLeaveCount.toString();
       }
 
-      // Only decrement remaingbankallowedleave if the deleted holiday is today or in the past
-      if (holidayDate.isBefore(todayInLondon, 'day') && user.remaingbankallowedleave && parseInt(user.remaingbankallowedleave) > 0) {
-        const updatedRemainingLeaveCount = parseInt(user.remaingbankallowedleave) - 1;
-        updateData.remaingbankallowedleave = updatedRemainingLeaveCount.toString();
-      }
+      // Decrement remaingbankallowedleave if the deleted holiday is today or in the future
+          if (
+            !holidayDate.isBefore(todayInLondon, 'day') &&
+            user.remaingbankallowedleave &&
+            parseInt(user.remaingbankallowedleave) > 0
+          ) {
+            const updatedRemainingLeaveCount = Math.max(parseInt(user.remaingbankallowedleave) - 1, 0);
+            updateData.remaingbankallowedleave = updatedRemainingLeaveCount.toString();
+          }
 
       if (Object.keys(updateData).length > 0) {
         await prisma.user.update({

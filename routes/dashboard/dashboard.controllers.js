@@ -1,4 +1,5 @@
 const prisma = require("../../utils/prisma");
+const moment = require('moment'); // Make sure to have moment.js installed
 
 const getDashboardData = async (req, res) => {
   try {
@@ -23,20 +24,22 @@ const getDashboardData = async (req, res) => {
     }, 0);
     // calculate today's attendance by unique users
     const today = new Date();
-    const attendance = await prisma.attendance.findMany({
-      where: {
-        inTime: {
-          gte: new Date(
-            `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
-          ),
-          lte: new Date(
-            `${today.getFullYear()}-${today.getMonth() + 1}-${
-              today.getDate() + 1
-            }`
-          ),
-        },
-      },
-    });
+    
+
+        // Formatting the date strings to match the expected 'YYYY-MM-DD' format
+        const startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const endDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate() + 1).padStart(2, '0')}`;
+        
+        const attendance = await prisma.attendance.findMany({
+          where: {
+            inTime: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        });
+
+
     // calculate total unique users from attendance
     const todayPresent = attendance.reduce((acc, user) => {
       if (!acc.includes(user.userId)) {
@@ -77,13 +80,13 @@ const getDashboardData = async (req, res) => {
     const todayAbsent = totalUsers - todayPresent - todayOnLeave;
     // sum up daily total work hours from all users date wise and format it as above
     const workHours = await prisma.attendance.findMany({
-      where: {
-        inTime: {
-          gte: new Date(req.query.startdate),
-          lte: new Date(req.query.enddate),
-        },
-      },
-    });
+          where: {
+            inTime: {
+              gte: moment(req.query.startdate).format('YYYY-MM-DD'), // Format the start date as a string
+              lte: moment(req.query.enddate).format('YYYY-MM-DD'),   // Format the end date as a string
+            },
+          },
+        });
     // calculate totalHour for each day
     const workHoursDateWise = workHours.reduce((acc, user) => {
       const date = new Date(user.inTime).toISOString().split("T")[0];

@@ -97,7 +97,7 @@ const login = async (req, res) => {
     console.error(error);
     return res
       .status(502)
-      .json({ message: "Server is not responding. Please try again later." });
+      .json({ message: error.message });
   }
 };
 const validate = async (req, res) => {
@@ -324,7 +324,7 @@ const register = async (req, res) => {
       .json({ userWithoutPassword, message: "User registered successfully" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -442,14 +442,14 @@ const getSingleUser = async (req, res) => {
   try {
     const userId = Number(req.params.id);
 
-    if (
-      userId !== req.auth.sub &&
-      !req.auth.permissions.includes("readSingle-user")
-    ) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized. You are not an admin" });
-    }
+    // if (
+    //   userId !== req.auth.sub &&
+    //   !req.auth.permissions.includes("readSingle-user")
+    // ) {
+    //   return res
+    //     .status(401)
+    //     .json({ message: "Unauthorized. You are not an admin" });
+    // }
 
     // Fetch the user record by their ID
     console.log(userId, "trasjhk");

@@ -78,7 +78,7 @@ const updateSingleDesignationHistory = async (req, res) => {
       data: {
         designationId: req.body.designationId,
         startDate: new Date(req.body.designationStartDate),
-        endDate: endDate,
+        endDate: new Date(endDate),
         comment: req.body.designationComment,
       },
     });

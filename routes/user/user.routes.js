@@ -28,7 +28,7 @@ userRoutes.post(
 ); // public route
 userRoutes.post("/validate", validate);
 userRoutes.get("/", authorize("readAll-user"), getAllUser); // readUser only
-userRoutes.get("/:id", authorize("readSingle-user"), getSingleUser); // authenticated users can read their own and readUser
+userRoutes.get("/:id", getSingleUser); // authenticated users can read their own and readUser
 userRoutes.put("/:id", authorize("update-user"), updateSingleUser); // authenticated users can update their own and updateUser
 userRoutes.put(
   "/profile/:id",
