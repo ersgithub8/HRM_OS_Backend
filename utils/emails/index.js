@@ -41,18 +41,18 @@ const parseEmailTemplate = async (templateType, reqBody, next) => {
   let subject = null;
   switch (templateType) {
     case "signup":
-      template = "signUpTemplate.html";
-      subject = "Email Confirmation";
+      template = "signup.html";
+      subject = "User Registration";
       break;
 
-    case "employeesignup":
-      template = "employeesignUpTemplate.html";
-      subject = "Email Confirmation";
+    case "leaveapply":
+      template = "leaveapply.html";
+      subject = "Leave Application";
       break;
 
-    case "accountVerification":
-      template = "activateAccount.html";
-      subject = "Account Activation";
+    case "swaprequest.html":
+      template = "swaprequest.html";
+      subject = "Swap Request";
       break;
 
     case "requestForgotPassword":
@@ -60,24 +60,6 @@ const parseEmailTemplate = async (templateType, reqBody, next) => {
       subject = "Reset Password";
       break;
 
-    case "employeeStatus":
-      template = "changestatus.html";
-      subject = "Focus Mode Change";
-      break;
-
-    case "clientStatus":
-      template = "clientstatus.html";
-      subject = "Focus Mode Change";
-      break;
-    case "clientCompanyverified":
-      template = "clientCompanyverified.html";
-      subject = "Account Verified";
-      break;
-
-    case "SubmitLandingPage":
-      template = "LandingPage.html";
-      subject = "Email From Landing Page";
-      break;
     default:
       template;
   }

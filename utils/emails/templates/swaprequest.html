@@ -168,7 +168,7 @@
       }
 
       .bg_light {
-        background: white;
+        background: #fafafa;
       }
 
       .bg_black {
@@ -465,18 +465,9 @@
                             font-family: 'Poppins';
                           "
                         >
-                          Reset Password
+                          User Shift Swap Request
                         </h2>
-                        <h4
-                          style="
-                            font-size: 13px;
-                            font-weight: 400;
-                            font-family: 'Poppins';
-                            line-height: 23px;
-                          "
-                        >
-                          Subject: Reset Your Account Password
-                        </h4>
+
                         <h4
                           style="
                             font-size: 13px;
@@ -485,7 +476,7 @@
                             font-family: 'Poppins';
                           "
                         >
-                          Dear <%= firstName %> <%= lastName %>,
+                          Hi <%= adminFirstName %> <%= adminLastName %>,
                         </h4>
 
                         <h4
@@ -497,10 +488,9 @@
                             margin-bottom: 0.8rem;
                           "
                         >
-                          We have received a request to reset the password for
-                          your account. To ensure the security of your account,
-                          we're sending you a one-time password (OTP) that you
-                          can use to reset your password.
+                          A new shift swap request has been submitted. Below are
+                          the details of the request and the employee initiating
+                          it:
                         </h4>
                       </td>
                     </tr>
@@ -528,29 +518,8 @@
                               line-height: 23px;
                             "
                           >
-                            Here is your OTP:
-                            <b
-                              style="
-                                font-size: 30px;
-                                font-weight: 500;
-                                font-family: 'Poppins';
-                                line-height: 23px;
-                              "
-                              ><%= token %></b
-                            >
+                            <b> Swap Request Detail From:</b>
                           </h5>
-                          <h4
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              margin-bottom: 0.8rem;
-                              line-height: 23px;
-                            "
-                          >
-                            Please follow the steps below to reset your
-                            password:
-                          </h4>
 
                           <h4
                             style="
@@ -562,12 +531,42 @@
                             "
                           >
                             <ol>
-                              <li>Copy this Unique OTP</li>
-                              <li>Enter the OTP code when prompted.</li>
                               <li>
-                                Create a new strong password for your account.
+                                <b>Full Name:</b> <%= firstName %> <%= lastName
+                                %>
                               </li>
-                              <li>Confirm the new password.</li>
+                              <li><b>Email Address:</b> <%= useremail %></li>
+                              <li><b>Registration Date:</b> <%= date %></li>
+                            </ol>
+                          </h4>
+
+                          <h5
+                            style="
+                              font-size: 13px;
+                              font-weight: 400;
+                              font-family: 'Poppins';
+                              line-height: 23px;
+                            "
+                          >
+                            <b> Swap Request Detail With:</b>
+                          </h5>
+
+                          <h4
+                            style="
+                              font-size: 13px;
+                              font-weight: 400;
+                              font-family: 'Poppins';
+                              margin-bottom: 0.8rem;
+                              line-height: 23px;
+                            "
+                          >
+                            <ol>
+                              <li>
+                                <b>Full Name:</b> <%= firstName %> <%= lastName
+                                %>
+                              </li>
+                              <li><b>Email Address:</b> <%= useremail %></li>
+                              <li><b>Registration Date:</b> <%= date %></li>
                             </ol>
                           </h4>
 
@@ -580,15 +579,15 @@
                               line-height: 23px;
                             "
                           >
-                            If you did not request a password reset or believe
-                            this to be an error, please ignore this email. Your
-                            account will remain secure. This OTP is valid for
-                            the next 24 Hours. For security reasons, please do
-                            not share this OTP with anyone. Our support team
-                            will never ask you for your OTP. Thank you for using
-                            Wise1ne. If you have any questions or need further
-                            assistance, please don't hesitate to contact our
-                            support team at wise1ne.support@gmail.com
+                            Please review this request carefully to assess its
+                            feasibility based on operational needs and staffing
+                            requirements. Take into consideration any potential
+                            impact on the team, workload distribution, and
+                            overall shift coverage. If you need additional
+                            information, clarification on the reasons for the
+                            swap, or have any concerns about the impact of this
+                            change, please feel free to contact the employee
+                            directly for further discussion or clarification.
                           </h4>
                           <h4
                             style="

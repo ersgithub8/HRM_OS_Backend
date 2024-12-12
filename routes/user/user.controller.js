@@ -17,11 +17,12 @@ const login = async (req, res) => {
   try {
     const allUsers = await prisma.user.findMany();
 
-    const user = allUsers.find((u) => u.email.toLowerCase() === req.body.email.toLowerCase());
+    const user = allUsers.find(
+      (u) => u.email.toLowerCase() === req.body.email.toLowerCase()
+    );
     if (!user) {
       return res.status(400).json({ message: "Email is incorrect." });
     }
-
 
     if (user.applicationStatus === "PENDING") {
       return res.status(401).json({
@@ -40,9 +41,7 @@ const login = async (req, res) => {
     );
 
     if (!passwordMatches) {
-      return res
-        .status(400)
-        .json({ message: "Password is incorrect." });
+      return res.status(400).json({ message: "Password is incorrect." });
     }
 
     // Update Firebase token and device information
@@ -51,8 +50,7 @@ const login = async (req, res) => {
       data: {
         firebaseToken: req.body.firebaseToken || user.firebaseToken,
         device: req.body.device || "Android",
-        isLogin: true  // Setting isLogin to true
-
+        isLogin: true, // Setting isLogin to true
       },
     });
 
@@ -95,9 +93,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(502)
-      .json({ message: error.message });
+    return res.status(502).json({ message: error.message });
   }
 };
 const validate = async (req, res) => {
@@ -147,6 +143,14 @@ const validate = async (req, res) => {
 
 const register = async (req, res) => {
   try {
+    const userwithrole = await prisma.user.findMany({
+      where: {
+        roleId: {
+          in: [1, 3, 4, 5, 6, 7], // Use 'in' operator to match multiple values
+        },
+      },
+    });
+
     const existingUserByEmail = await prisma.user.findFirst({
       where: {
         email: req.body.email,
@@ -319,6 +323,17 @@ const register = async (req, res) => {
       },
     });
     const { password, ...userWithoutPassword } = createUser;
+    for (const user of userwithrole) {
+      await sendEmail("signup", {
+        email: user.email, // Use the email of the current user
+        useremail: createUser.email,
+        firstName: createUser.firstName,
+        lastName: createUser.lastName,
+        date: new Date().toDateString(),
+        adminFirstName: user.firstName, // Optional: Include admin's name
+        adminLastName: user.lastName, // Optional: Include admin's last name
+      });
+    }
     return res
       .status(200)
       .json({ userWithoutPassword, message: "User registered successfully" });
@@ -409,15 +424,18 @@ const getAllUser = async (req, res) => {
           day: s.day,
           shiftDate: moment(s.shiftDate).format("MM/DD/YYYY"),
           workHour: s.workHour,
-          room: s.room ? { // Check if s.room is not null before accessing properties
-            id: s.room.id,
-            locationId: s.room.locationId,
-            userId: s.room.userId,
-            roomName: s.room.roomName,
-            status: s.room.status,
-            createdAt: s.room.createdAt,
-            updatedAt: s.room.updatedAt,
-          } : null,
+          room: s.room
+            ? {
+                // Check if s.room is not null before accessing properties
+                id: s.room.id,
+                locationId: s.room.locationId,
+                userId: s.room.userId,
+                roomName: s.room.roomName,
+                status: s.room.status,
+                createdAt: s.room.createdAt,
+                updatedAt: s.room.updatedAt,
+              }
+            : null,
           status: s.status,
         }));
 
@@ -644,7 +662,7 @@ const getSingleUser = async (req, res) => {
   }
 };
 const updateSingleUser = async (req, res) => {
-  console.log("nice")
+  console.log("nice");
   const id = parseInt(req.params.id);
 
   if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
