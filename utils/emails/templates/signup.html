@@ -396,241 +396,153 @@
         justify-content: center;
         align-items: center;
         padding: 1rem;
+        flex-direction: column;
       "
     >
-      <div class="outer-parent">
+      <div
+        class="outer-parent"
+        style="width: 100%; max-width: 800px; padding: 1rem"
+      >
         <img
           src="https://res.cloudinary.com/dfzb19p6t/image/upload/v1734007334/marketplace-assets/WhatsApp%20Image%202024-12-12%20at%205.jpg"
           alt="logo"
-          style="width: 13%; padding: 1rem; border-radius: 90px"
+          style="
+            width: 30%;
+            max-width: 150px;
+            padding: 1rem;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+          "
           class="fm-logo"
         />
-        <center
+
+        <div
+          class="email-container bg_white"
           style="
             width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
           "
         >
-          <div
+          <h4
             style="
-              display: none;
-              font-size: 1px;
-              max-height: 0px;
-              max-width: 0px;
-              opacity: 0;
-              overflow: hidden;
-              mso-hide: all;
-              font-family: sans-serif;
+              font-size: 1rem;
+              font-weight: 400;
+              font-family: 'Poppins', sans-serif;
+              line-height: 1.5;
+              margin-bottom: 1rem;
             "
           >
-            &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
-          </div>
-          <div
-            style="max-width: 800px; margin: 0 auto"
-            class="email-container bg_white"
+            Subject: New Wise1HRM User Account Created
+          </h4>
+
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 400;
+              font-family: 'Poppins', sans-serif;
+              text-transform: capitalize;
+              margin-bottom: 1rem;
+            "
           >
-            <table
-              align="center"
-              role="presentation"
-              cellspacing="0"
-              cellpadding="0"
-              border="0"
-              width="100%"
-              style="margin: auto"
-            >
-              <tr>
-                <td
-                  valign="top"
-                  class="bg_white"
-                  style="padding: 1.5em 2.5em 0 2.5em"
-                >
-                  <table
-                    role="presentation"
-                    border="0"
-                    cellpadding="0"
-                    cellspacing="0"
-                    width="100%"
-                  >
-                    <tr>
-                      <td class="logo" style="text-align: left; line-height: 1">
-                        <h2
-                          style="
-                            text-align: left;
-                            font-weight: 700;
-                            line-height: 50px;
-                            margin-bottom: 0;
-                            font-family: 'Poppins';
-                          "
-                        >
-                          User Registeration
-                        </h2>
-                        <h4
-                          style="
-                            font-size: 13px;
-                            font-weight: 400;
-                            font-family: 'Poppins';
-                            line-height: 23px;
-                          "
-                        >
-                          Subject: New User Registeration
-                        </h4>
-                        <h4
-                          style="
-                            font-size: 13px;
-                            font-weight: 400;
-                            text-transform: capitalize;
-                            font-family: 'Poppins';
-                          "
-                        >
-                          Hi <%= adminFirstName %> <%= adminLastName %>,
-                        </h4>
+            Dear <%= adminFirstName %> <%= adminLastName %>,
+          </h4>
 
-                        <h4
-                          style="
-                            font-size: 13px;
-                            font-weight: 400;
-                            font-family: 'Poppins';
-                            line-height: 23px;
-                            margin-bottom: 0.8rem;
-                          "
-                        >
-                          We’re excited to inform you that a new user has just
-                          registered on Wise1ne. Here are the details of the new
-                          user:
-                        </h4>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr>
-                <td
-                  valign="middle"
-                  class="hero"
-                  style="padding: 0.5em 0 0.5em 0"
-                >
-                  <table>
-                    <tr>
-                      <td>
-                        <div
-                          class="text"
-                          style="padding: 0 2.5em; text-align: left"
-                        >
-                          <h5
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              line-height: 23px;
-                            "
-                          >
-                            <b> User Information:</b>
-                          </h5>
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 400;
+              font-family: 'Poppins', sans-serif;
+              line-height: 1.5;
+              margin-bottom: 1rem;
+            "
+          >
+            A new user account has been created in the Wise1HRM system.
+          </h4>
 
-                          <h4
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              margin-bottom: 0.8rem;
-                              line-height: 23px;
-                            "
-                          >
-                            <ol>
-                              <li>
-                                <b>Full Name:</b> <%= firstName %> <%= lastName
-                                %>
-                              </li>
-                              <li><b>Email Address:</b> <%= useremail %></li>
-                              <li><b>Registration Date:</b> <%= date %></li>
-                            </ol>
-                          </h4>
+          <ul
+            style="
+              text-align: left;
+              font-size: 1rem;
+              font-family: 'Poppins', sans-serif;
+              margin: 0 auto 1rem;
+              padding: 0 1rem;
+              list-style-position: inside;
+            "
+          >
+            <li><b>Staff Name:</b> <%= firstName %> <%= lastName %></li>
+            <li><b>Staff Email:</b> <%= useremail %></li>
+          </ul>
 
-                          <h4
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              margin-bottom: 0.8rem;
-                              line-height: 23px;
-                            "
-                          >
-                            Please review the registration details provided
-                            above. If necessary, verify the user's information
-                            for accuracy, approve or activate their account, or
-                            reach out to them for any additional documentation
-                            or confirmation required. You can also check the
-                            admin dashboard for more insights and to manage the
-                            user account accordingly.
-                          </h4>
-                          <h4
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              margin-bottom: 0.8rem;
-                            "
-                          >
-                            Best regards,
-                          </h4>
-                          <h4
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              margin-bottom: 0.8rem;
-                            "
-                          >
-                            The Wise1ne Team
-                          </h4>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </center>
-        <table
-          align="center"
-          role="presentation"
-          cellspacing="0"
-          cellpadding="0"
-          border="0"
-          width="100%"
-          style="margin: auto"
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 400;
+              font-family: 'Poppins', sans-serif;
+              line-height: 1.5;
+              margin-bottom: 1rem;
+            "
+          >
+            Please collect all necessary details from the staff member and
+            complete their profile setup.
+          </h4>
+
+          <a
+            href="https://app.wise1ne.com/"
+            style="
+              font-size: 1rem;
+              font-weight: 600;
+              font-family: 'Poppins', sans-serif;
+              color: #fff;
+              text-decoration: none;
+              background-color: #007bff;
+              padding: 10px 20px;
+              border-radius: 5px;
+              display: inline-block;
+              margin-bottom: 1rem;
+            "
+          >
+            Update Profile
+          </a>
+
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 400;
+              font-family: 'Poppins', sans-serif;
+              margin-bottom: 1rem;
+            "
+          >
+            Best regards,
+          </h4>
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 400;
+              font-family: 'Poppins', sans-serif;
+              margin-bottom: 1rem;
+            "
+          >
+            The Wise1ne Team
+          </h4>
+        </div>
+
+        <footer
+          style="
+            text-align: center;
+            color: #fff;
+            background-color: #007bff;
+            padding: 1rem;
+            font-size: 0.9rem;
+          "
         >
-          <tr>
-            <td>
-              <div style="text-align: center; padding-bottom: 1rem">
-                <h3
-                  style="
-                    margin-bottom: 0px !important;
-                    color: #fff;
-                    font-weight: 500;
-                    font-size: 20px;
-                  "
-                >
-                  Wise1ne
-                </h3>
-                <p
-                  style="
-                    color: #fff;
-                    margin-bottom: 0px !important;
-                    margin-top: 0px !important;
-                    font-size: 13px;
-                  "
-                >
-                  Copyright &copy; 2023 Wise1ne, All rights reserved
-                </p>
-              </div>
-            </td>
-          </tr>
-        </table>
+          <h3 style="margin-bottom: 0; font-weight: 500">Wise1ne</h3>
+          <p style="margin-top: 0">
+            Copyright &copy; 2024 Wise1ne, All rights reserved
+          </p>
+        </footer>
       </div>
     </center>
   </body>

@@ -3,10 +3,19 @@ const prisma = require("../../utils/prisma");
 const admin = require("firebase-admin");
 var FCM = require("fcm-node");
 const { DECIMAL } = require("sequelize");
+const sendEmail = require("../../utils/emails");
+
 //shift exchange request
 const addrequest = async (req, res) => {
   try {
     const { FromScheduleId, ToScheduleId, userId } = req.body;
+    const userwithrole = await prisma.user.findMany({
+      where: {
+        roleId: {
+          in: [1, 3, 4, 5, 6, 7], // Use 'in' operator to match multiple values
+        },
+      },
+    });
     const fromSchedule = await prisma.schedule.findUnique({
       where: { id: FromScheduleId },
       include: {
@@ -109,7 +118,21 @@ const addrequest = async (req, res) => {
       await sendnotifiy1(Title1, Body1, Desc1, toToken);
       console.log(Title, Body, Desc, fromToken, "fromtoken");
       console.log(Title1, Body1, Desc1, toToken, "totoken");
-
+      for (const users of userwithrole) {
+        if (users.id !== fromUser.id) {
+          await sendEmail("swaprequest", {
+            email: users.email,
+            fromfirstName: fromUser.firstName,
+            fromlastName: fromUser.lastName,
+            tofirstName: toUser.firstName,
+            tolastName: toUser.lastName,
+            swapdate: fromSchedule.shiftDate,
+            submittiondate: new Date().toDateString(),
+            adminFirstName: users.firstName,
+            adminLastName: users.lastName,
+          });
+        }
+      }
       return res.status(200).json({
         createRequest: createRequestResult,
         message: "Request created successfully.",

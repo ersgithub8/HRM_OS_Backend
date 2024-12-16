@@ -465,7 +465,7 @@
                             font-family: 'Poppins';
                           "
                         >
-                          User Shift Swap Request
+                          Shift Swap Request Submitted
                         </h2>
 
                         <h4
@@ -476,7 +476,7 @@
                             font-family: 'Poppins';
                           "
                         >
-                          Hi <%= adminFirstName %> <%= adminLastName %>,
+                          Dear <%= adminFirstName %> <%= adminLastName %>,
                         </h4>
 
                         <h4
@@ -488,9 +488,8 @@
                             margin-bottom: 0.8rem;
                           "
                         >
-                          A new shift swap request has been submitted. Below are
-                          the details of the request and the employee initiating
-                          it:
+                          A shift swap request involving two staff members has
+                          been submitted and requires your review:
                         </h4>
                       </td>
                     </tr>
@@ -518,7 +517,7 @@
                               line-height: 23px;
                             "
                           >
-                            <b> Swap Request Detail From:</b>
+                            <b> Swap Request Details:</b>
                           </h5>
 
                           <h4
@@ -532,44 +531,19 @@
                           >
                             <ol>
                               <li>
-                                <b>Full Name:</b> <%= firstName %> <%= lastName
-                                %>
+                                <b>Requesting Staff Name:</b> <%= fromfirstName
+                                %> <%= fromlastName %>
                               </li>
-                              <li><b>Email Address:</b> <%= useremail %></li>
-                              <li><b>Registration Date:</b> <%= date %></li>
-                            </ol>
-                          </h4>
-
-                          <h5
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              line-height: 23px;
-                            "
-                          >
-                            <b> Swap Request Detail With:</b>
-                          </h5>
-
-                          <h4
-                            style="
-                              font-size: 13px;
-                              font-weight: 400;
-                              font-family: 'Poppins';
-                              margin-bottom: 0.8rem;
-                              line-height: 23px;
-                            "
-                          >
-                            <ol>
                               <li>
-                                <b>Full Name:</b> <%= firstName %> <%= lastName
-                                %>
+                                <b>Shift Swap With:</b> <%= tofirstName %> <%=
+                                tolastName %>
                               </li>
-                              <li><b>Email Address:</b> <%= useremail %></li>
-                              <li><b>Registration Date:</b> <%= date %></li>
+                              <li><b>Swap Shift Date:</b> <%= swapdate %></li>
+                              <li>
+                                <b>Submission Date:</b> <%= submittiondate %>
+                              </li>
                             </ol>
                           </h4>
-
                           <h4
                             style="
                               font-size: 13px;
@@ -579,16 +553,26 @@
                               line-height: 23px;
                             "
                           >
-                            Please review this request carefully to assess its
-                            feasibility based on operational needs and staffing
-                            requirements. Take into consideration any potential
-                            impact on the team, workload distribution, and
-                            overall shift coverage. If you need additional
-                            information, clarification on the reasons for the
-                            swap, or have any concerns about the impact of this
-                            change, please feel free to contact the employee
-                            directly for further discussion or clarification.
+                            Please review the request details to ensure both
+                            staff agree and that staffing levels remain optimal.
                           </h4>
+                          <a
+                            href="https://app.wise1ne.com/"
+                            style="
+                              font-size: 1rem;
+                              font-weight: 600;
+                              font-family: 'Poppins', sans-serif;
+                              color: #fff;
+                              text-decoration: none;
+                              background-color: #007bff;
+                              padding: 10px 20px;
+                              border-radius: 5px;
+                              display: inline-block;
+                              margin-bottom: 1rem;
+                            "
+                          >
+                            Update Shift Swap Request
+                          </a>
                           <h4
                             style="
                               font-size: 13px;
@@ -618,42 +602,20 @@
             </table>
           </div>
         </center>
-        <table
-          align="center"
-          role="presentation"
-          cellspacing="0"
-          cellpadding="0"
-          border="0"
-          width="100%"
-          style="margin: auto"
+        <footer
+          style="
+            text-align: center;
+            color: #fff;
+            background-color: #007bff;
+            padding: 1rem;
+            font-size: 0.9rem;
+          "
         >
-          <tr>
-            <td>
-              <div style="text-align: center; padding-bottom: 1rem">
-                <h3
-                  style="
-                    margin-bottom: 0px !important;
-                    color: #fff;
-                    font-weight: 500;
-                    font-size: 20px;
-                  "
-                >
-                  Wise1ne
-                </h3>
-                <p
-                  style="
-                    color: #fff;
-                    margin-bottom: 0px !important;
-                    margin-top: 0px !important;
-                    font-size: 13px;
-                  "
-                >
-                  Copyright &copy; 2023 Wise1ne, All rights reserved
-                </p>
-              </div>
-            </td>
-          </tr>
-        </table>
+          <h3 style="margin-bottom: 0; font-weight: 500">Wise1ne</h3>
+          <p style="margin-top: 0">
+            Copyright &copy; 2024 Wise1ne, All rights reserved
+          </p>
+        </footer>
       </div>
     </center>
   </body>

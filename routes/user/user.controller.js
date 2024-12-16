@@ -146,7 +146,7 @@ const register = async (req, res) => {
     const userwithrole = await prisma.user.findMany({
       where: {
         roleId: {
-          in: [1, 3, 4, 5, 6, 7], // Use 'in' operator to match multiple values
+          in: [1],
         },
       },
     });

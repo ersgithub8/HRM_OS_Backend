@@ -50,7 +50,7 @@ const parseEmailTemplate = async (templateType, reqBody, next) => {
       subject = "Leave Application";
       break;
 
-    case "swaprequest.html":
+    case "swaprequest":
       template = "swaprequest.html";
       subject = "Swap Request";
       break;
