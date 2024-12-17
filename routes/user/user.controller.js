@@ -298,7 +298,7 @@ const register = async (req, res) => {
           ? {
               create: {
                 salary: req.body.salary,
-                startDate: new Date(req.body.salaryStartDate),
+                startDate: new Date(req.body.salaryStartDate).toISOString(),
                 endDate: req.body.salaryEndDate
                   ? new Date(req.body.salaryEndDate)
                   : null,
