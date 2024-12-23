@@ -5,43 +5,44 @@ const { schedule } = require("node-cron");
 const e = require("cors");
 const admin = require("firebase-admin");
 var FCM = require("fcm-node");
-const time_zone = process.env.timezone
-  const { PrismaClient } = require("@prisma/client");
-    const prisma = new PrismaClient();
-    const bcrypt = require("bcrypt");
-    const fs = require("fs");
-    const path = require("path");
-    const saltRounds = 10;
-    
+const time_zone = process.env.timezone;
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+const bcrypt = require("bcrypt");
+const fs = require("fs");
+const path = require("path");
+const saltRounds = 10;
+const crypto = require("crypto");
+
 // const createShift = async (req, res) => {
 //   try {
 //     const userId = req.body.userId;
-    // const shiftDate = moment(req.body.shiftFrom).format('YYYY-MM-DD');
-    // const user = await prisma.user.findUnique({
-    //   where: {
-    //     id: userId,
-    //   },
-    //   include: {
-    //     shifts: {
-    //       include: {
-    //         schedule: true,
-    //       },
-    //     },
-    //   },
-    // });
-    // // console.log(user);
-    // if (user) {
-    //   // Iterate over the user's shifts and schedules to check for existing shiftDate and status
-    //   for (const shift of user.shifts) {
-    //     for (const schedule of shift.schedule) {
-    //       const scheduleDate = moment(schedule.shiftDate).format('YYYY-MM-DD');
-    //       // console.log(scheduleDate);
-    //       if (scheduleDate === shiftDate && schedule.status === true) {
-    //         return res.status(400).json({ message: "User already has a shift for this date" });
-    //       }
-    //     }
-    //   }
-    // }
+// const shiftDate = moment(req.body.shiftFrom).format('YYYY-MM-DD');
+// const user = await prisma.user.findUnique({
+//   where: {
+//     id: userId,
+//   },
+//   include: {
+//     shifts: {
+//       include: {
+//         schedule: true,
+//       },
+//     },
+//   },
+// });
+// // console.log(user);
+// if (user) {
+//   // Iterate over the user's shifts and schedules to check for existing shiftDate and status
+//   for (const shift of user.shifts) {
+//     for (const schedule of shift.schedule) {
+//       const scheduleDate = moment(schedule.shiftDate).format('YYYY-MM-DD');
+//       // console.log(scheduleDate);
+//       if (scheduleDate === shiftDate && schedule.status === true) {
+//         return res.status(400).json({ message: "User already has a shift for this date" });
+//       }
+//     }
+//   }
+// }
 
 //     const timeDiff = moment(req.body.endTime).diff(moment(req.body.startTime));
 //     const totalMinutes = timeDiff / (1000 * 60);
@@ -80,16 +81,16 @@ const time_zone = process.env.timezone
 
 //           };
 
-          // if (e.startTime && e.endTime) {
-          //   const timeDiff = moment(e.endTime).diff(moment(e.startTime));
-          //   const totalMinutes = timeDiff / (1000 * 60);
-          //   const hours = Math.floor(totalMinutes / 60);
-          //   const minutes = totalMinutes % 60;
-          //   const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
-          //   scheduleData.workHour = workHour;
-          // } else {
-          //   scheduleData.workHour = null;
-          // }
+// if (e.startTime && e.endTime) {
+//   const timeDiff = moment(e.endTime).diff(moment(e.startTime));
+//   const totalMinutes = timeDiff / (1000 * 60);
+//   const hours = Math.floor(totalMinutes / 60);
+//   const minutes = totalMinutes % 60;
+//   const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(2)}`);
+//   scheduleData.workHour = workHour;
+// } else {
+//   scheduleData.workHour = null;
+// }
 
 //           return scheduleData;
 //         }),
@@ -115,12 +116,24 @@ const time_zone = process.env.timezone
 const createShift = async (req, res) => {
   try {
     // Extract necessary data from the request
-    const { userId, shiftFrom, shiftTo, name, weekNumber, locationId, status, generalInfo, schedule } = req.body;
+    const {
+      userId,
+      shiftFrom,
+      shiftTo,
+      name,
+      weekNumber,
+      locationId,
+      status,
+      generalInfo,
+      schedule,
+    } = req.body;
 
     // Ensure userId is an array
     const userIdArray = Array.isArray(userId) ? userId : [userId];
     if (userIdArray.length === 0) {
-      return res.status(400).json({ message: "Please select at least one user" });
+      return res
+        .status(400)
+        .json({ message: "Please select at least one user" });
     }
 
     // Iterate over the user IDs
@@ -150,8 +163,12 @@ const createShift = async (req, res) => {
 
       for (const shift of user.shifts) {
         for (const schedule of shift.schedule) {
-          const scheduleDate = moment.tz(schedule.shiftDate, "Europe/London").format('YYYY-MM-DD');
-          const shiftFromDate = moment.tz(shiftFrom, "Europe/London").format('YYYY-MM-DD');
+          const scheduleDate = moment
+            .tz(schedule.shiftDate, "Europe/London")
+            .format("YYYY-MM-DD");
+          const shiftFromDate = moment
+            .tz(shiftFrom, "Europe/London")
+            .format("YYYY-MM-DD");
           if (scheduleDate === shiftFromDate && schedule.status === true) {
             conflictingUserNames.push(user.firstName);
             break;
@@ -160,7 +177,9 @@ const createShift = async (req, res) => {
       }
 
       if (conflictingUserNames.length > 0) {
-        const errorMessage = `Users ${conflictingUserNames.join(', ')} already have shifts for this date`;
+        const errorMessage = `Users ${conflictingUserNames.join(
+          ", "
+        )} already have shifts for this date`;
         return res.status(400).json({ message: errorMessage });
       }
     }
@@ -176,69 +195,71 @@ const createShift = async (req, res) => {
     const totalMinutes = timeDiff / (1000 * 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    const workHour = parseFloat(`${hours}.${(minutes < 10 ? '0' : '')}${minutes.toFixed(0)}`);
+    const workHour = parseFloat(
+      `${hours}.${minutes < 10 ? "0" : ""}${minutes.toFixed(0)}`
+    );
 
     // Create shift data object
-      const createShiftData = {
-        name,
-        shiftFrom: shiftFromUTC.toDate(),
-        shiftTo: shiftToUTC.toDate(),
-        weekNumber,
-        locationId,
-        assignedBy: req.auth.sub,
-        status,
-        generalInfo,
-        schedule: schedule
-            ? {
-              create: schedule.map((e) => {
-                // Parse startTime and endTime as Europe/London time and convert to UTC
-                const startTimeLondon = e.startTime ? moment(e.startTime) : null;
-                const endTimeLondon = e.endTime ? moment(e.endTime) : e.endTime;
-                console.log(e.startTime, "e.startTime")
-                console.log(e.endTime, "e.endTime")
-                const startTime = e.startTime ? e.startTime : null;
-                const endTime = e.endTime ? e.endTime : null;
+    const createShiftData = {
+      name,
+      shiftFrom: shiftFromUTC.toDate(),
+      shiftTo: shiftToUTC.toDate(),
+      weekNumber,
+      locationId,
+      assignedBy: req.auth.sub,
+      status,
+      generalInfo,
+      schedule: schedule
+        ? {
+            create: schedule.map((e) => {
+              // Parse startTime and endTime as Europe/London time and convert to UTC
+              const startTimeLondon = e.startTime ? moment(e.startTime) : null;
+              const endTimeLondon = e.endTime ? moment(e.endTime) : e.endTime;
+              console.log(e.startTime, "e.startTime");
+              console.log(e.endTime, "e.endTime");
+              const startTime = e.startTime ? e.startTime : null;
+              const endTime = e.endTime ? e.endTime : null;
 
+              // Parse shiftDate as Europe/London date and convert to UTC
+              const scheduleData = {
+                day: e.day,
+                shiftDate: e.shiftDate,
+                startTime: startTime,
+                endTime: endTime,
+                breakTime: e.breakTime || null,
+                roomId: e.roomId || null,
+                folderTime: e.folderTime || null,
+                status: e.status,
+                workHour: null,
+              };
 
-                // Parse shiftDate as Europe/London date and convert to UTC
-                const scheduleData = {
-                  day: e.day,
-                  shiftDate:  e.shiftDate,
-                  startTime: startTime,
-                  endTime: endTime,
-                  breakTime: e.breakTime || null,
-                  roomId: e.roomId || null,
-                  folderTime: e.folderTime || null,
-                  status: e.status,
-                  workHour: null,
-                };
+              // Calculate workHour for the schedule using London times
+              if (startTimeLondon && endTimeLondon) {
+                const timeDiff = endTimeLondon.diff(startTimeLondon);
+                const totalMinutes = timeDiff / (1000 * 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                scheduleData.workHour = parseFloat(
+                  `${hours}.${minutes < 10 ? "0" : ""}${minutes.toFixed(0)}`
+                );
+              }
+              console.log(scheduleData, "scheduleData");
 
-                // Calculate workHour for the schedule using London times
-                if (startTimeLondon && endTimeLondon) {
-                  const timeDiff = endTimeLondon.diff(startTimeLondon);
-                  const totalMinutes = timeDiff / (1000 * 60);
-                  const hours = Math.floor(totalMinutes / 60);
-                  const minutes = totalMinutes % 60;
-                  scheduleData.workHour = parseFloat(
-                      `${hours}.${minutes < 10 ? '0' : ''}${minutes.toFixed(0)}`
-                  );
-                }
-                console.log(scheduleData, "scheduleData")
-
-                return scheduleData;
-              }),
-            }
-            : {},
-      };
+              return scheduleData;
+            }),
+          }
+        : {},
+    };
 
     // Create shifts for each user
     const createShiftResults = await Promise.all(
-        userIdArray.map(async (userId) => {
-          const result = await prisma.shifts.create({
-            data: { ...createShiftData, userId },
-          });
-          return result;
-        })
+      userIdArray.map(async (userId) => {
+        const result = await prisma.shifts.create({
+          data: { ...createShiftData, userId },
+          // c,
+        });
+        return result;
+      })
     );
 
     // Send notifications to users
@@ -252,18 +273,22 @@ const createShift = async (req, res) => {
     });
 
     const tokensForNotification = usersForNotification
-        .map((user) => user.firebaseToken)
-        .filter((token) => token !== null);
+      .map((user) => user.firebaseToken)
+      .filter((token) => token !== null);
 
     if (tokensForNotification.length > 0) {
-      const Title = 'Shift added';
-      const Body = 'Your shift has been added';
-      const Desc = 'Shift marked notification';
+      const Title = "Shift added";
+      const Body = "Your shift has been added";
+      const Desc = "Shift marked notification";
       sendNotify(Title, Body, Desc, tokensForNotification);
     }
 
-    return res.status(200).json({ createShift: createShiftResults, message: 'Shifts created successfully' });
+    return res.status(200).json({
+      createShift: createShiftResults,
+      message: "Shifts created successfully",
+    });
   } catch (error) {
+    console.error(error, "error");
     if (!res.headersSent) {
       return res.status(400).json({ message: error.message });
     }
@@ -272,14 +297,10 @@ const createShift = async (req, res) => {
 
 function getWeekNumber(d) {
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-  var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return  weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return (weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7));
 }
-
-
-
 
 const getAllShift = async (req, res) => {
   try {
@@ -290,35 +311,37 @@ const getAllShift = async (req, res) => {
 
     if (isDateRangeProvided) {
       // Validate input dates
-      const DATE_FORMAT = 'YYYY-MM-DD';
+      const DATE_FORMAT = "YYYY-MM-DD";
       if (
         !moment(shiftFrom, DATE_FORMAT, true).isValid() ||
         !moment(shiftTo, DATE_FORMAT, true).isValid()
       ) {
-        return res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD.' });
+        return res
+          .status(400)
+          .json({ message: "Invalid date format. Use YYYY-MM-DD." });
       }
 
       // Create Moment.js objects with proper formatting
-      const shiftFromMoment = moment(shiftFrom, DATE_FORMAT).startOf('day');
-      const shiftToMoment = moment(shiftTo, DATE_FORMAT).endOf('day'); // Set to end of day
+      const shiftFromMoment = moment(shiftFrom, DATE_FORMAT).startOf("day");
+      const shiftToMoment = moment(shiftTo, DATE_FORMAT).endOf("day"); // Set to end of day
 
       // Convert to ISO-8601 strings
       const startDateTime = shiftFromMoment.toISOString(); // e.g., "2024-11-01T00:00:00.000Z"
-      const endDateTime = shiftToMoment.toISOString();     // e.g., "2024-11-08T23:59:59.999Z"
+      const endDateTime = shiftToMoment.toISOString(); // e.g., "2024-11-08T23:59:59.999Z"
 
       // Optional: Log for debugging (remove in production)
-      console.log('startDateTime:', startDateTime);
-      console.log('endDateTime:', endDateTime);
+      console.log("startDateTime:", startDateTime);
+      console.log("endDateTime:", endDateTime);
 
       // Execute Prisma query with formatted dates
       allShifts = await prisma.shifts.findMany({
         where: {
           AND: [
-           { shiftFrom: { lte: endDateTime } },
+            { shiftFrom: { lte: endDateTime } },
             { shiftTo: { gte: startDateTime } },
           ],
         },
-        orderBy: [{ id: 'desc' }],
+        orderBy: [{ id: "desc" }],
         include: {
           user: {
             select: {
@@ -358,8 +381,8 @@ const getAllShift = async (req, res) => {
       const currentWeek = getWeekNumber(today);
 
       // Define start and end of today
-      const startOfToday = moment(today).startOf('day').toDate(); // e.g., "2024-04-27T00:00:00.000Z"
-      const endOfToday = moment(today).endOf('day').toDate();     // e.g., "2024-04-27T23:59:59.999Z"
+      const startOfToday = moment(today).startOf("day").toDate(); // e.g., "2024-04-27T00:00:00.000Z"
+      const endOfToday = moment(today).endOf("day").toDate(); // e.g., "2024-04-27T23:59:59.999Z"
 
       // Execute Prisma query for current week
       allShifts = await prisma.shifts.findMany({
@@ -379,7 +402,7 @@ const getAllShift = async (req, res) => {
           //   },
           // ],
         },
-        orderBy: { id: 'desc' },
+        orderBy: { id: "desc" },
         include: {
           user: {
             select: {
@@ -427,7 +450,12 @@ const getAllShift = async (req, res) => {
         if (shift.assignedBy) {
           const assignedByUser = await prisma.user.findUnique({
             where: { id: shift.assignedBy },
-            select: { id: true, firstName: true, lastName: true, userName: true },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+            },
           });
           return { ...shift, assignedBy: assignedByUser };
         }
@@ -437,13 +465,12 @@ const getAllShift = async (req, res) => {
 
     return res.status(200).json(shiftsWithAssignedBy);
   } catch (error) {
-    console.error('Error fetching shifts:', error); // Log the error for debugging
+    console.error("Error fetching shifts:", error); // Log the error for debugging
     return res.status(400).json({ message: error.message });
   } finally {
     await prisma.$disconnect(); // Ensure Prisma disconnects
   }
 };
-
 
 //this one is depreciated
 const getAllShiftmobile = async (req, res) => {
@@ -518,193 +545,193 @@ const getAllShiftmobile = async (req, res) => {
 
       return res.status(200).json(shiftsWithSchedules);
     } else {
-      return res.status(400).json({ message: "Please provide valid startDate and endDate." });
+      return res
+        .status(400)
+        .json({ message: "Please provide valid startDate and endDate." });
     }
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}; 
-
+};
 
 //cron
-const createAttendanceOnLeave = async (req,res) => {
- try {
-   
-//     const updatedSchedules = await prisma.schedule.updateMany({
-//   where: {
-//     id: {
-//       in: [612, 616, 731, 732, 734, 735, 1218, 1249],
-//     },
-//   },
-//   data: {
-//     startTime: '2024-12-09T18:00:00', // Use a Date object for datetime values
-//   },
-// });
+const createAttendanceOnLeave = async (req, res) => {
+  //  const attendance = await prisma.attendance.deleteMany({
+  //         where: {
+  //           date: "2024-12-16",
+  //           outTimeStatus :"Attendence Marked by system",
+  //           attendenceStatus           : "absent"
 
-    
+  //         }
+  //       });
+
+  // return res.status(400).json({ message: attendance})
+
+  // return;
+  try {
+    isCronRunning = true;
+
     const users = await prisma.user.findMany({
-          where: {
-            applicationStatus: 'APPROVED',
-            shifts: {
-              some: {}, // Filters users who have at least one shift
-            },
-          },
+      where: {
+        applicationStatus: "APPROVED",
+        shifts: {
+          some: {}, // Filters users who have at least one shift
+        },
+      },
+      include: {
+        shifts: {
           include: {
-            shifts: {
-              include: {
-                schedule: true,
-              },
-            },
+            schedule: true,
           },
-        });
-   
-      
+        },
+      },
+    });
 
-    let todayLondon ;
+    let todayLondon;
     let currentLTimeAndDate;
     let currentLTime;
-   
 
     currentTimeLondon = moment().tz("Europe/London");
     todayLondon = currentTimeLondon.format("YYYY-MM-DD");
     currentLTimeAndDate = currentTimeLondon.format("YYYY-MM-DD HH:mm:ss");
     currentLTime = currentTimeLondon.format("HH:mm:ss");
-    let twoDaysBefore = currentTimeLondon.subtract(1, 'days').format("YYYY-MM-DD");
+    let twoDaysBefore = currentTimeLondon
+      .subtract(1, "days")
+      .format("YYYY-MM-DD");
 
-   
-       
     for (const user of users) {
       // Find attendance where the user hasn't checked out yet
+      const uniqueIp = generateUniqueId(user.id, todayLondon);
       const attendance = await prisma.attendance.findFirst({
         where: {
           userId: user.id,
-          // outTime: null, // User hasn't checked out yet
-          date : twoDaysBefore
+          date: twoDaysBefore,
         },
       });
-      
-      
-    
-      
 
-      
-        // Find today's schedule for the user
-        
-        let scheduleForToday = [];
+      // Find today's schedule for the user
+
+      let scheduleForToday = [];
 
       // Find today's schedule
-        user.shifts.forEach((shift) => {
-          shift.schedule.forEach((schedule) => {
-            if (schedule.startTime !== null && schedule.status == true ) {
-              const scheduleDateLondon = schedule.shiftDate;
-              
-              if (scheduleDateLondon == twoDaysBefore) {
-                scheduleForToday.push(schedule);
-              }
+      user.shifts.forEach((shift) => {
+        shift.schedule.forEach((schedule) => {
+          if (schedule.startTime !== null && schedule.status == true) {
+            const scheduleDateLondon = schedule.shiftDate;
+
+            if (scheduleDateLondon == twoDaysBefore) {
+              scheduleForToday.push(schedule);
             }
-          });
+          }
         });
-       
+      });
 
-         // return res.status(400).json({ message: scheduleForToday });
+      // return res.status(400).json({ message: scheduleForToday });
+      console.log(scheduleForToday, "scheduleForToday");
+      if (scheduleForToday) {
+        if (attendance) {
+          if (attendance.outTime == null && attendance.inTime) {
+            // Extract the date part from endTime
+            const datePart = moment(scheduleForToday[0].endTime).format(
+              "YYYY-MM-DD"
+            );
 
-        if (scheduleForToday) {
-            
-            
-            if(attendance) 
-              {
-                if(attendance.outTime == null && attendance.inTime)
-                {
-                    
-                   
-                  // Extract the date part from endTime
-                  const datePart = moment(scheduleForToday[0].endTime).format("YYYY-MM-DD");
-                  
-                  // Combine date with attendance.inTime
-                  const attendanceInTimeWithDate = `${datePart} ${attendance.inTime}`;
-                  
-                  // Parse currentOutTime and attendanceInTime
-                  const currentOutTime = moment(`${datePart} ${moment(scheduleForToday[0].endTime).format("HH:mm:ss")}`, "YYYY-MM-DD HH:mm:ss");
-                  const attendanceInTime = moment(attendanceInTimeWithDate, "YYYY-MM-DD HH:mm:ss");
-                  
-                  // Validate parsed dates
-                  if (!currentOutTime.isValid() || !attendanceInTime.isValid()) {
-                    return res.status(400).json({ error: "Invalid date or time format" });
-                  }
-                  
-                  // Compute the time difference in milliseconds
-                  const timeDiff = currentOutTime.diff(attendanceInTime);
-                  
-                  // Convert milliseconds into human-readable form
-                  const duration = moment.duration(timeDiff);
-                  const hours = Math.floor(duration.asHours()); // Total whole hours
-                  const minutes = duration.minutes(); // Remaining minutes
-                  
-                  // Format hours and minutes with leading zeros
-                  const formattedHours = String(hours).padStart(2, '0');
-                  const formattedMinutes = String(minutes).padStart(2, '0');
-                  
-                  // Combine total hours and minutes
-                  const totalHourCombine = `${formattedHours}:${formattedMinutes}`;
-                  
-                 
-                   
-      
-      
-                  const attendanceUpdate = await prisma.attendance.update({
-                    where: {
-                      id: attendance.id,
-                    },
-                    data: {
-                      outTime: moment(scheduleForToday[0].endTime).format("HH:mm:ss"),
-                      totalHour: totalHourCombine,
-                      //overtime: overtimeCombine,
-                      overtime : null,
-                      outTimeStatus: 'Check out by system', // Mark as auto-checkout
-                    },
-                  });
-                }
-                 
-              } 
-              else
-              {
-                  if (scheduleForToday?.[0]?.startTime !== null && scheduleForToday?.[0]?.startTime !== undefined  && scheduleForToday?.[0]?.endTime !== null && scheduleForToday?.[0]?.endTime !== undefined )
-                     {
-                      await prisma.attendance.create({
-                          data: {
-                            userId: user.id,
-                            inTime: null,
-                            outTime: null,
-                            punchBy: 1, 
-                            inTimeStatus: null,
-                            outTimeStatus: "Attendence Marked by system",
-                            comment: 'Absent',
-                            date: twoDaysBefore,
-                            attendenceStatus: 'absent',
-                            ip: null,
-                            totalHour: null,
-                            overtime:null,
-                            createdAt: new Date(`${twoDaysBefore}T00:00:00Z`), // Start of the day in UTC
-                            updatedAt: new Date(`${twoDaysBefore}T00:00:00Z`),
-                          },
-                        }); 
-                  }
-                 
-              }
-            
-          
+            // Combine date with attendance.inTime
+            const attendanceInTimeWithDate = `${datePart} ${attendance.inTime}`;
+
+            // Parse currentOutTime and attendanceInTime
+            const currentOutTime = moment(
+              `${datePart} ${moment(scheduleForToday[0].endTime).format(
+                "HH:mm:ss"
+              )}`,
+              "YYYY-MM-DD HH:mm:ss"
+            );
+            const attendanceInTime = moment(
+              attendanceInTimeWithDate,
+              "YYYY-MM-DD HH:mm:ss"
+            );
+
+            // Validate parsed dates
+            if (!currentOutTime.isValid() || !attendanceInTime.isValid()) {
+              return res
+                .status(400)
+                .json({ error: "Invalid date or time format" });
+            }
+
+            // Compute the time difference in milliseconds
+            const timeDiff = currentOutTime.diff(attendanceInTime);
+
+            // Convert milliseconds into human-readable form
+            const duration = moment.duration(timeDiff);
+            const hours = Math.floor(duration.asHours()); // Total whole hours
+            const minutes = duration.minutes(); // Remaining minutes
+
+            // Format hours and minutes with leading zeros
+            const formattedHours = String(hours).padStart(2, "0");
+            const formattedMinutes = String(minutes).padStart(2, "0");
+
+            // Combine total hours and minutes
+            const totalHourCombine = `${formattedHours}:${formattedMinutes}`;
+
+            const attendanceUpdate = await prisma.attendance.update({
+              where: {
+                id: attendance.id,
+              },
+              data: {
+                outTime: moment(scheduleForToday[0].endTime).format("HH:mm:ss"),
+                totalHour: totalHourCombine,
+                //overtime: overtimeCombine,
+                overtime: null,
+                outTimeStatus: "Check out by system", // Mark as auto-checkout
+                ip: uniqueIp,
+              },
+            });
+          }
         } else {
-            return res.status(400).json({ message: "here" });
+          if (
+            scheduleForToday?.[0]?.startTime !== null &&
+            scheduleForToday?.[0]?.startTime !== undefined &&
+            scheduleForToday?.[0]?.endTime !== null &&
+            scheduleForToday?.[0]?.endTime !== undefined
+          ) {
+            const attendanceRecehck = await prisma.attendance.findFirst({
+              where: {
+                userId: user.id,
+                date: twoDaysBefore,
+              },
+              select: { id: true }, // Only fetch ID to minimize data
+            });
 
+            if (!attendanceRecehck) {
+              await prisma.attendance.create({
+                data: {
+                  userId: user.id,
+                  inTime: null,
+                  outTime: null,
+                  punchBy: 1,
+                  inTimeStatus: null,
+                  outTimeStatus: "Attendence Marked by system",
+                  comment: "Absent",
+                  date: twoDaysBefore,
+                  attendenceStatus: "absent",
+                  ip: uniqueIp,
+                  totalHour: null,
+                  overtime: null,
+                  createdAt: new Date(`${twoDaysBefore}T00:00:00Z`), // Start of the day in UTC
+                  updatedAt: new Date(`${twoDaysBefore}T00:00:00Z`),
+                },
+              });
+            }
+          }
         }
-      
+      } else {
+        //return res.status(400).json({ message: "here" });
+      }
     }
   } catch (error) {
-          return res.status(400).json({ message: error.message });
+    // return res.status(400).json({ message: error.message });
   }
 };
-
-
 
 const getSingleShift = async (req, res) => {
   try {
@@ -725,7 +752,7 @@ const getSingleShift = async (req, res) => {
                 designation: true,
               },
               orderBy: {
-                startDate: 'desc', // Order by start date in ascending order
+                startDate: "desc", // Order by start date in ascending order
               },
             },
           },
@@ -745,7 +772,6 @@ const getSingleShift = async (req, res) => {
                 id: true,
                 roomName: true,
               },
-
             },
             workHour: true,
             status: true,
@@ -753,15 +779,12 @@ const getSingleShift = async (req, res) => {
             // generalInfo:true,
             createdAt: true,
             updatedAt: true,
-
           },
-
-        }
-
+        },
       },
     });
     if (!singleShift) {
-      return res.status(400).json({ message: "Shift not found" })
+      return res.status(400).json({ message: "Shift not found" });
     }
     const daysOrder = {
       Monday: 1,
@@ -780,13 +803,11 @@ const getSingleShift = async (req, res) => {
       const assignedByUser = await prisma.user.findUnique({
         where: { id: singleShift.assignedBy },
         select: { id: true, firstName: true, lastName: true, userName: true },
-
       });
       const shiftWithAssignedBy = {
         ...singleShift,
         assignedBy: assignedByUser,
       };
-
 
       return res.status(200).json(shiftWithAssignedBy);
     }
@@ -795,7 +816,6 @@ const getSingleShift = async (req, res) => {
   }
 };
 
-
 const getSingleShiftbyuserId = async (req, res) => {
   const { startDate, endDate } = req.query;
   let startOfDate, endOfDate;
@@ -803,91 +823,87 @@ const getSingleShiftbyuserId = async (req, res) => {
   if (startDate && endDate) {
     startOfDate = moment(startDate).format("YYYY-MM-DD");
     endOfDate = moment(endDate).format("YYYY-MM-DD");
-    }
+  }
 
   //return res.status(400).json({ message: startOfDate + "  "+ endOfDate});
 
-let userId ; 
+  let userId;
   try {
-      if(req.params.id == "all")
-      {
-            userId = null;
-      }
-      else
-      {
-            userId = parseInt(req.params.id);
-      }
-   
+    if (req.params.id == "all") {
+      userId = null;
+    } else {
+      userId = parseInt(req.params.id);
+    }
 
-   const singleShift = await prisma.shifts.findMany({
-  where: {
-    ...(userId && { userId: userId }),
-    schedule: {
-      some: {
-        shiftDate: {
-          gte: startOfDate,
-          lte: endOfDate,
+    const singleShift = await prisma.shifts.findMany({
+      where: {
+        ...(userId && { userId: userId }),
+        schedule: {
+          some: {
+            shiftDate: {
+              gte: startOfDate,
+              lte: endOfDate,
+            },
+            status: true,
+          },
         },
-        status: true,
       },
-    },
-  },
-  include: {
-    user: {
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        userName: true,
-      },
-    },
-    location: true,
-    schedule: {
-      select: {
-        id: true,
-        day: true,
-        startTime: true,
-        endTime: true,
-        breakTime: true,
-        folderTime: true,
-        shiftDate: true,
-        room: {
+      include: {
+        user: {
           select: {
             id: true,
-            location: {
+            firstName: true,
+            lastName: true,
+            userName: true,
+          },
+        },
+        location: true,
+        schedule: {
+          select: {
+            id: true,
+            day: true,
+            startTime: true,
+            endTime: true,
+            breakTime: true,
+            folderTime: true,
+            shiftDate: true,
+            room: {
               select: {
                 id: true,
-                latitude: true,
-                longitude: true,
-                locationName: true,
+                location: {
+                  select: {
+                    id: true,
+                    latitude: true,
+                    longitude: true,
+                    locationName: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
+                roomName: true,
+                status: true,
                 createdAt: true,
                 updatedAt: true,
               },
             },
-            roomName: true,
+            workHour: true,
             status: true,
+            shiftsId: true,
             createdAt: true,
             updatedAt: true,
           },
         },
-        workHour: true,
-        status: true,
-        shiftsId: true,
-        createdAt: true,
-        updatedAt: true,
       },
-    },
-  },
-});
+    });
 
-   const startOfDateObj = moment(startOfDate).format("YYYY-MM-DD");
+    const startOfDateObj = moment(startOfDate).format("YYYY-MM-DD");
     const endOfDateObj = moment(endOfDate).format("YYYY-MM-DD");
-    
-    console.log("gvsGHDvasgdvsgadvgasd",startOfDateObj + " " + endOfDateObj)
-    singleShift.forEach(shift => {
-      shift.schedule = shift.schedule.filter(sched => {
+
+    console.log("gvsGHDvasgdvsgadvgasd", startOfDateObj + " " + endOfDateObj);
+    singleShift.forEach((shift) => {
+      shift.schedule = shift.schedule.filter((sched) => {
         const schedDate = moment(sched.shiftDate).format("YYYY-MM-DD");
-        console.log(">>>>>>>>>>>>>>>>>",schedDate);
+        console.log(">>>>>>>>>>>>>>>>>", schedDate);
         return (
           schedDate >= startOfDateObj &&
           schedDate <= endOfDateObj &&
@@ -897,13 +913,17 @@ let userId ;
     });
     console.log("------>", singleShift);
 
-
     if (singleShift && singleShift.length > 0) {
       for (let shift of singleShift) {
         if (shift.assignedBy) {
           const assignedByUser = await prisma.user.findUnique({
             where: { id: shift.assignedBy },
-            select: { id: true, firstName: true, lastName: true, userName: true },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+            },
           });
           shift.assignedBy = assignedByUser;
         }
@@ -917,8 +937,6 @@ let userId ;
     return res.status(400).json({ message: error.message });
   }
 }; // this one
-
-
 
 const updateSingleShift = async (req, res) => {
   try {
@@ -941,7 +959,7 @@ const updateSingleShift = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Parse shiftFrom and shiftTo as Europe/London time and convert to UTC
@@ -974,16 +992,24 @@ const updateSingleShift = async (req, res) => {
       for (const scheduleItem of req.body.schedule) {
         // Parse startTime and endTime as Europe/London time and convert to UTC
         const startTimeLondon = scheduleItem.startTime
-            ? moment.tz(scheduleItem.startTime, "Europe/London")
-            : null;
+          ? moment.tz(scheduleItem.startTime, "Europe/London")
+          : null;
         const endTimeLondon = scheduleItem.endTime
-            ? moment.tz(scheduleItem.endTime, "Europe/London")
-            : null;
-        const startTimeUTC = startTimeLondon ? startTimeLondon.clone().utc().toDate() : null;
-        const endTimeUTC = endTimeLondon ? endTimeLondon.clone().utc().toDate() : null;
+          ? moment.tz(scheduleItem.endTime, "Europe/London")
+          : null;
+        const startTimeUTC = startTimeLondon
+          ? startTimeLondon.clone().utc().toDate()
+          : null;
+        const endTimeUTC = endTimeLondon
+          ? endTimeLondon.clone().utc().toDate()
+          : null;
 
         // Parse shiftDate as Europe/London date and convert to UTC
-        const shiftDateUTC = moment.tz(scheduleItem.shiftDate, "Europe/London").startOf('day').utc().toDate();
+        const shiftDateUTC = moment
+          .tz(scheduleItem.shiftDate, "Europe/London")
+          .startOf("day")
+          .utc()
+          .toDate();
 
         // Calculate workHour if both times are available
         let workHour = null;
@@ -993,15 +1019,19 @@ const updateSingleShift = async (req, res) => {
           const hours = Math.floor(totalMinutes / 60);
           const minutes = totalMinutes % 60;
           workHour = parseFloat(
-              `${hours}.${minutes < 10 ? '0' : ''}${minutes.toFixed(0)}`
+            `${hours}.${minutes < 10 ? "0" : ""}${minutes.toFixed(0)}`
           );
         }
 
-        const startTime = scheduleItem.startTime ? moment(scheduleItem.startTime).toISOString() : null;
-        const endTime = scheduleItem.endTime ? moment(scheduleItem.endTime).toISOString() : null;
+        const startTime = scheduleItem.startTime
+          ? moment(scheduleItem.startTime).toISOString()
+          : null;
+        const endTime = scheduleItem.endTime
+          ? moment(scheduleItem.endTime).toISOString()
+          : null;
         // Update the schedule with times in UTC
-        console.log(startTime, "startTime")
-        console.log(endTime, "endTime")
+        console.log(startTime, "startTime");
+        console.log(endTime, "endTime");
         await prisma.schedule.update({
           where: {
             id: scheduleItem.id,
@@ -1022,9 +1052,9 @@ const updateSingleShift = async (req, res) => {
     }
 
     // Send notification to the user
-    const Title = 'Shift Updated';
-    const Body = 'Your shift has been updated';
-    const Desc = 'Shift marked notification';
+    const Title = "Shift Updated";
+    const Body = "Your shift has been updated";
+    const Desc = "Shift marked notification";
     const Token = user.firebaseToken;
 
     console.log(Title, Body, Desc, Token);
@@ -1036,10 +1066,11 @@ const updateSingleShift = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ message: 'Failed to update shift', error: error.message });
+    return res
+      .status(400)
+      .json({ message: "Failed to update shift", error: error.message });
   }
 };
-
 
 const deleteSingleShift = async (req, res) => {
   try {
@@ -1063,7 +1094,11 @@ const deleteSingleShift = async (req, res) => {
 
     // Delete requests associated with the schedules of the shift
     const deleteRequests = await prisma.request.deleteMany({
-      where: { FromScheduleId: { in: existingShift.schedule.map(schedule => schedule.id) } },
+      where: {
+        FromScheduleId: {
+          in: existingShift.schedule.map((schedule) => schedule.id),
+        },
+      },
     });
 
     // Delete schedules associated with the shift
@@ -1080,14 +1115,16 @@ const deleteSingleShift = async (req, res) => {
       deleteShift,
       deleteSchedules,
       deleteRequests,
-      message: "Shift, associated schedules, and requests deleted successfully.",
+      message:
+        "Shift, associated schedules, and requests deleted successfully.",
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ message: "Failed to delete shift, schedules, and requests." });
+    return res
+      .status(400)
+      .json({ message: "Failed to delete shift, schedules, and requests." });
   }
 };
-
 
 const swapSingleShift = async (req, res) => {
   try {
@@ -1107,7 +1144,9 @@ const swapSingleShift = async (req, res) => {
     });
 
     if (!scheduleItem1 || !scheduleItem2) {
-      return res.status(400).json({ message: 'One or both schedule items were not found.' });
+      return res
+        .status(400)
+        .json({ message: "One or both schedule items were not found." });
     }
 
     const shiftsId1 = scheduleItem1.shiftsId;
@@ -1128,11 +1167,11 @@ const swapSingleShift = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: 'Rooms swapped successfully',
+      message: "Rooms swapped successfully",
     });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ message: 'Failed to update schedule items' });
+    return res.status(400).json({ message: "Failed to update schedule items" });
   }
 };
 
@@ -1154,7 +1193,9 @@ const swapSingleShiftRequest = async (req, res) => {
     });
 
     if (!scheduleItem1 || !scheduleItem2) {
-      return res.status(400).json({ message: 'One or both schedule items were not found.' });
+      return res
+        .status(400)
+        .json({ message: "One or both schedule items were not found." });
     }
 
     const shiftsId1 = scheduleItem1.shiftsId;
@@ -1175,11 +1216,11 @@ const swapSingleShiftRequest = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: 'Rooms swapped successfully',
+      message: "Rooms swapped successfully",
     });
   } catch (error) {
-    console.error(error);
-    return res.status(400).json({ message: 'Failed to update schedule items' });
+    console.error(error, "error");
+    return res.status(400).json({ message: "Failed to update schedule items" });
   }
 };
 async function sendNotify(title, body, desc, tokens) {
@@ -1207,7 +1248,6 @@ async function sendNotify(title, body, desc, tokens) {
         );
       }
     });
-
   } catch (error) {
     console.error("Error sending notifications:", error);
   }

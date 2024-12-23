@@ -562,12 +562,6 @@ const getSingleUser = async (req, res) => {
       where: {
         userId: userId,
         status: "APPROVED",
-        acceptLeaveFrom: {
-          gte: new Date(new Date().getFullYear(), 0, 1),
-        },
-        acceptLeaveTo: {
-          lte: new Date(new Date().getFullYear(), 11, 31),
-        },
       },
     });
     // Calculate remaining leave days
@@ -741,7 +735,21 @@ const updateSingleUser = async (req, res) => {
     } else {
       annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
     }
+    const today = new Date(); // Get today's date
 
+    // Count public holidays with dates less than or equal to today
+    const publicHolidayCount = await prisma.publicHoliday.count({
+      where: {
+        date: {
+          lte: today, // 'lte' is the equivalent of '$lte' in Prisma
+        },
+      },
+    });
+    let remainingbank =
+      parseFloat(existingUser.bankallowedleave) -
+      parseFloat(publicHolidayCount);
+    let remainingbanks = remainingbank.toString();
+    console.log(`Number of public holidays up to today: ${publicHolidayCount}`);
     // return
     if (!existingUser) {
       return res.status(404).json({
@@ -836,8 +844,7 @@ const updateSingleUser = async (req, res) => {
         bankallowedleave:
           req.body.bankallowedleave || existingUser.bankallowedleave,
         remaingbankallowedleave:
-          req.body.remaingbankallowedleave ||
-          existingUser.remaingbankallowedleave,
+          remainingbanks || existingUser.remaingbankallowedleave,
         annualallowedleave: annualallowedleave,
         remainingannualallowedleave: remainingannualallowedleave,
         designation: req.body.designation || existingUser.designation,
