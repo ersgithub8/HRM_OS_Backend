@@ -4,6 +4,7 @@ const prisma = require("../../../utils/prisma");
 const Sequelize = require("sequelize"); // Assuming you're using Sequelize for PostgreSQL
 const Op = Sequelize.Op;
 const moment = require("moment-timezone");
+const crypto = require("crypto");
 
 const operatorsAliases = {
   $between: Op.between, //create an alias for Op.between
@@ -196,6 +197,7 @@ const createAttendance = async (req, res) => {
         inTimeStatus = null;
       }
       const createdAtDate = moment.utc(dateUTC, "YYYY-MM-DD HH:mm:ss").toDate();
+      const uniqueIp = generateUniqueId(id, dateUTC);
 
       const newAttendance = await prisma.attendance.create({
         data: {
@@ -205,6 +207,7 @@ const createAttendance = async (req, res) => {
           punchBy: req.auth.sub,
           comment: req.body.comment || null,
           date: dateUTC,
+          ip: uniqueIp,
           attendenceStatus: req.body.attendenceStatus || "present",
           inTimeStatus: inTimeStatus,
           outTimeStatus: null,
@@ -1733,10 +1736,12 @@ const search = async (req, res) => {
       return res.status(400).json({ message: "Invalid query parameters." });
     }
   } catch (error) {
-    return res.status(500).json({
-      message: "An error occurred while fetching attendance records.",
-      error: error.message,
-    });
+    return res
+      .status(500)
+      .json({
+        message: "An error occurred while fetching attendance records.",
+        error: error.message,
+      });
   }
 };
 const updateSingleAttendence = async (req, res) => {
@@ -1896,6 +1901,8 @@ const createAttendanceonleave = async (req, res) => {
 
       const formattedDate = moment(today).add(i, "days").format("YYYY-MM-DD"); // Format date as string
       const date = moment(today).add(i, "days").toDate();
+      const uniqueIp = generateUniqueId(id, formattedDate);
+      console.log(uniqueIp, "uniqueIp");
       const attendance = await prisma.attendance.findFirst({
         where: {
           userId: id,
@@ -1918,7 +1925,7 @@ const createAttendanceonleave = async (req, res) => {
             attendenceStatus: req.body.attendenceStatus
               ? req.body.attendenceStatus
               : "leave",
-            ip: null,
+            ip: uniqueIp,
             totalHour: null,
             createdAt: date, // Use new Date() for creation timestamp
           },
@@ -1965,6 +1972,11 @@ function sendnotifiy(Title, Body, Desc, Token) {
   } catch (error) {
     console.log("Error:", error);
   }
+}
+
+function generateUniqueId(userId, date) {
+  const rawId = `${userId}_${date}`;
+  return crypto.createHash("sha256").update(rawId).digest("hex"); // Creates a hashed ID
 }
 
 module.exports = {

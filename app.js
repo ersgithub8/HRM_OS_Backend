@@ -2,48 +2,109 @@ const fs = require("fs");
 const https = require("https");
 const app = require("./data");
 const moment = require("moment");
-const winston = require("winston");
+const winston = require('winston');
 const crypto = require("crypto");
+
 const PORT = process.env.PORT || 5000;
 
 const prisma = require("./utils/prisma");
-const cron = require("node-cron");
+const cron = require('node-cron');
 
+// const updateUsersFields = async () => {
+//   try {
+//     // Fetch all users
+//     const allUsers = await prisma.user.findMany();
+
+//     for (const user of allUsers) {
+//       const updatedBankAllowedLeaveValue = '8'; // Convert to string
+//       const updatedAnnualAllowedLeaveValue = '20'; // Convert to string
+//       const remaingbankallowedleave = '8'; // Convert to string
+//       const remainingannualallowedleave = '20'; // Convert to string
+
+//       // Update the user fields
+//       await prisma.user.update({
+//         where: { id: user.id },
+//         data: {
+//           bankallowedleave: updatedBankAllowedLeaveValue,
+//           remaingbankallowedleave: remaingbankallowedleave,  
+//           annualallowedleave: updatedAnnualAllowedLeaveValue,
+//           remainingannualallowedleave: remainingannualallowedleave  
+//         },
+//       });
+//     }
+
+//     console.log('User fields updated successfully.');
+//   } catch (error) {
+//     console.error('Error updating user fields:', error.message);
+//   }
+// };
 const updateUsersFields = async () => {
   try {
+    // Calculate the date range (Sept 1 of the current year to Aug 31 of the next year)
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const startDate = new Date(`${currentYear}-09-01`);
+    const endDate = new Date(`${currentYear + 1}-08-31`);
+
     // Fetch all users
     const allUsers = await prisma.user.findMany();
 
     for (const user of allUsers) {
-      const updatedBankAllowedLeaveValue = "8"; // Convert to string
-      const updatedAnnualAllowedLeaveValue = "20"; // Convert to string
-      const remaingbankallowedleave = "8"; // Convert to string
-      const remainingannualallowedleave = "20"; // Convert to string
+      // Fetch approved leave applications within the date range
+      const approvedLeaves = await prisma.leaveApplication.findMany({
+        where: {
+          userId: user.id,
+          leavecategory: "paid",
+          status: "APPROVED",
+         leaveFrom: { $gte: startDate },
+        leaveTo: { $lte: endDate },
+        },
+      });
 
-      // Update the user fields
+      // Calculate total leave duration from approved leaves
+      const totalLeaveDuration = approvedLeaves.reduce(
+        (sum, leave) => sum + leave.leaveDuration,
+        0
+      );
+
+      // Define allowed annual leave value
+      const updatedAnnualAllowedLeaveValue = 20;
+      const updatedBankAllowedLeaveValue = 8; // Convert to string
+      const remaingbankallowedleave = 8;
+
+      // Calculate remaining annual leaves
+      const remainingAnnualAllowedLeave = Math.max(
+        updatedAnnualAllowedLeaveValue - totalLeaveDuration,
+        0
+      );
+
+      // Update the user field for remaining annual leaves
       await prisma.user.update({
         where: { id: user.id },
         data: {
-          bankallowedleave: updatedBankAllowedLeaveValue,
-          remaingbankallowedleave: remaingbankallowedleave,
-          annualallowedleave: updatedAnnualAllowedLeaveValue,
-          remainingannualallowedleave: remainingannualallowedleave,
+          annualallowedleave: updatedAnnualAllowedLeaveValue.toString(),
+          remainingannualallowedleave: remainingAnnualAllowedLeave.toString(),
+          bankallowedleave: updatedBankAllowedLeaveValue.toString(),
+          remaingbankallowedleave: remaingbankallowedleave.toString(),
         },
       });
     }
 
-    console.log("User fields updated successfully.");
+    console.log("User annual leave fields updated successfully.");
   } catch (error) {
     console.error("Error updating user fields:", error.message);
   }
 };
 
 // Schedule the cron job to run on August 31st (Month: 8, Day: 31)
-cron.schedule("0 0 31 8 *", updateUsersFields); // passed
+cron.schedule('0 0 31 8 *', updateUsersFields); // passed
+
+
 
 //passed
 const createAttendanceOnLeave = async () => {
   try {
+    console.log("Cron job started.");
     let currentTimeLondon = moment().tz("Europe/London");
     let todayLondon;
     todayLondon = currentTimeLondon.format("YYYY-MM-DD");
@@ -64,7 +125,11 @@ const createAttendanceOnLeave = async () => {
 
     if (isTodayPublicHoliday) {
       // Fetch all users
-      const users = await prisma.user.findMany();
+      const users = await prisma.user.findMany({
+        where: {
+          applicationStatus: "APPROVED",
+        },
+      });
 
       // Check if all users have holiday attendance status
       const usersOnHoliday = await prisma.attendance.findMany({
@@ -83,13 +148,20 @@ const createAttendanceOnLeave = async () => {
 
       // Process each user for attendance
       for (const user of users) {
+          if (parseFloat(user.remaingbankallowedleave) === 0) { // Updated condition
+    console.log(`User ${user._id} has no remaining bank-allowed leave. Skipping attendance marking.`);
+    continue; // Skip this user and move to the next one
+  }
         console.log(`Processing user: ${user.id}`);
+        const uniqueIp = generateUniqueId(user.id, todayLondon);
+
         const attendanceDate = todayLondon;
 
         const attendance = await prisma.attendance.findFirst({
           where: {
             userId: user.id,
             date: attendanceDate,
+            ip: uniqueIp,
           },
         });
 
@@ -118,7 +190,7 @@ const createAttendanceOnLeave = async () => {
               comment: null,
               date: todayLondon,
               attendenceStatus: "holiday",
-              ip: null,
+              ip: uniqueIp,
               totalHour: null,
               createdAt: new Date(`${todayLondon}T00:00:00Z`), // Start of the day in UTC
               updatedAt: new Date(`${todayLondon}T00:00:00Z`),
@@ -139,7 +211,6 @@ const createAttendanceOnLeave = async () => {
     }
   } catch (error) {}
 };
-
 cron.schedule(
   "0 */3 * * *",
   async () => {
@@ -152,17 +223,16 @@ cron.schedule(
   }
 );
 
+
 const logger = winston.createLogger({
-  level: "info",
+  level: 'info',
   format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(
-      (info) => `${info.timestamp} [${info.level}]: ${info.message}`
-    )
+      winston.format.timestamp(),
+      winston.format.printf(info => `${info.timestamp} [${info.level}]: ${info.message}`)
   ),
   transports: [
-    new winston.transports.File({ filename: "error.log", level: "error" }),
-    new winston.transports.File({ filename: "combined.log" }),
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
   ],
 });
 
@@ -173,7 +243,7 @@ const logger = winston.createLogger({
 //passed
 let isCronRunning = false;
 
-cron.schedule("* * * * *", async () => {
+cron.schedule("0 */3 * * *", async () => {
   console.log(`Cron job started.`);
 
   if (isCronRunning) {
@@ -183,7 +253,8 @@ cron.schedule("* * * * *", async () => {
 
   try {
     isCronRunning = true;
-
+//   const batchSize = 10; 
+//   const pageNumber = 1;
     const users = await prisma.user.findMany({
       where: {
         applicationStatus: "APPROVED",
@@ -198,6 +269,8 @@ cron.schedule("* * * * *", async () => {
           },
         },
       },
+    //   skip: (pageNumber - 1) * batchSize, // Skips the records of previous pages
+    //   take: batchSize,
     });
 
     let todayLondon;
@@ -219,10 +292,10 @@ cron.schedule("* * * * *", async () => {
         where: {
           userId: user.id,
           date: twoDaysBefore,
+        //   ip: uniqueIp,
         },
       });
 
-      // Find today's schedule for the user
 
       let scheduleForToday = [];
 
@@ -296,7 +369,7 @@ cron.schedule("* * * * *", async () => {
                 //overtime: overtimeCombine,
                 overtime: null,
                 outTimeStatus: "Check out by system", // Mark as auto-checkout
-                ip: uniqueIp,
+                // ip: uniqueIp,
               },
             });
           }
@@ -311,7 +384,8 @@ cron.schedule("* * * * *", async () => {
               where: {
                 userId: user.id,
                 date: twoDaysBefore,
-                ip: uniqueIp,
+                // ip: uniqueIp,
+
               },
               select: { id: true }, // Only fetch ID to minimize data
             });
@@ -343,7 +417,6 @@ cron.schedule("* * * * *", async () => {
       }
     }
   } catch (error) {
-    console.log("Error in cron job:", error);
     // return res.status(400).json({ message: error.message });
   }
 
@@ -353,6 +426,7 @@ function generateUniqueId(userId, date) {
   const rawId = `${userId}_${date}`;
   return crypto.createHash("sha256").update(rawId).digest("hex"); // Creates a hashed ID
 }
+
 if (process.env.NODE_ENV === "production") {
   https
     .createServer(

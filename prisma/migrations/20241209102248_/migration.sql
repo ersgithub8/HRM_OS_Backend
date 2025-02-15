@@ -1,1 +1,0 @@
-    "dbscheck" TEXT,

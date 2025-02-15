@@ -141,6 +141,206 @@ const validate = async (req, res) => {
   }
 };
 
+// const register = async (req, res) => {
+//   try {
+//       const userwithrole = await prisma.user.findMany({
+//       where: {
+//         roleId: {
+//           in: [1], // Use 'in' operator to match multiple values
+//         },
+//       },
+//     });
+//     const existingUserByEmail = await prisma.user.findFirst({
+//       where: {
+//         email: req.body.email,
+//       },
+//     });
+
+//     // const existingUserByPhone = await prisma.user.findFirst({
+//     //   where: {
+//     //     phone: req.body.phone,
+//     //   },
+//     // });
+//     // const existingUserByuserName = await prisma.user.findFirst({
+//     //   where: {
+//     //     userName: req.body.userName,
+//     //   },
+//     // });
+//     // const existingUserByEmployeeId = await prisma.user.findFirst({
+//     //   where: {
+//     //     employeeId: req.body.employeeId,
+//     //   },
+//     // });
+
+//     if (existingUserByEmail) {
+//       return res.status(400).json({ message: "Email already exists." });
+//     }
+
+//     // if (existingUserByPhone) {
+//     //   return res.status(400).json({ message: "Phone number already exists." });
+//     // }
+//     // if (existingUserByuserName) {
+//     //   return res.status(400).json({ message: "UserName already exists." });
+//     // }
+//     // if (existingUserByEmployeeId) {
+//     //   return res.status(400).json({ message: "EmployeeId already exists." });
+//     // }
+//     const leavs = req.body.leavePolicyId
+//       ? await prisma.leavePolicy.findUnique({
+//           where: {
+//             id: req.body.leavePolicyId,
+//           },
+//         })
+//       : null;
+
+//     let remainingannualallowedleave;
+
+//     if (req.body.manualleave) {
+//       remainingannualallowedleave = req.body.manualleave.toString();
+//     } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+//       remainingannualallowedleave = "";
+//     } else {
+//       remainingannualallowedleave = leavs
+//         ? leavs.paidLeaveCount.toString()
+//         : null;
+//     }
+//     const join_date = new Date();
+//     const leave_date = req.body.leaveDate ? req.body.leaveDate : null;
+//     const splitEmail = req.body.email?.split("@");
+//     const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
+//     splitEmail[0] += randomFourDigit;
+//     let userID = splitEmail[0];
+//     let userNames = userID.replace(/[0-9]/g, "");
+//     const hash = await bcrypt.hash(req.body.password, saltRounds);
+//     const createUser = await prisma.user.create({
+//       data: {
+//         firstName: req.body.firstName,
+//         lastName: req.body.lastName,
+//         userName: req.body.userName ? req.body.userName : userNames,
+//         firebaseToken: req.body.firebaseToken,
+//         password: hash,
+//         email: req.body.email,
+//         phone: req.body.phone,
+//         dob: req.body.dob,
+//         applicationStatus: req.body.applicationStatus,
+//         emergencycontact: req.body.emergencycontact,
+//         nicno: req.body.nicno,
+//         visaStatus: req.body.visaStatus,
+//         visaExpiry: req.body.visaExpiry,
+//         firstaid: req.body.firstaid,
+//         firstaidtext: req.body.firstaidtext,
+//         dbscheck: req.body.dbscheck,
+//         dbschecktext: req.body.dbschecktext,
+//         safeguarding: req.body.safeguarding,
+//         safeguardingtext: req.body.safeguardingtext,
+//         // manualleave:manualleave,
+//         designation: req.body.designation,
+//         address: req.body.address,
+//         companyname: req.body.companyname,
+//         emp_name: req.body.emp_name,
+//         emp_email: req.body.emp_email,
+//         emp_telno: req.body.emp_telno,
+//         joining_date: req.body.joining_date,
+//         end_date: req.body.end_date,
+
+//         reference_contact: req.body.reference_contact,
+//         referencecontacttwo: req.body.referencecontacttwo,
+//         companyname1: req.body.companyname1,
+//         designation1: req.body.designation1,
+//         joining_date1: req.body.joining_date1,
+//         end_date1: req.body.end_date1,
+//         address1: req.body.address1,
+//         emp_name1: req.body.emp_name1,
+//         emp_email1: req.body.emp_email1,
+//         emp_telno1: req.body.emp_telno1,
+//         street: req.body.street ? req.body.street : null,
+//         city: req.body.city ? req.body.city : null,
+//         state: req.body.state ? req.body.state : null,
+//         zipCode: req.body.zipCode ? req.body.zipCode : null,
+//         country: req.body.country ? req.body.country : null,
+//         joinDate: join_date,
+//         leaveDate: leave_date,
+//         employeeId: req.body.employeeId,
+//         bloodGroup: req.body.bloodGroup ? req.body.bloodGroup : null,
+//         image: req.body.image ? req.body.image : null,
+//         documents: req.body.documents ? req.body.documents : null,
+//         employmentStatusId: req.body.employmentStatusId
+//           ? req.body.employmentStatusId
+//           : null,
+//         departmentId: req.body.departmentId ? req.body.departmentId : null,
+//         roleId: req.body.roleId,
+//         //leaves section
+//         bankallowedleave: process.env.totalbankleaves,
+//         remaingbankallowedleave: process.env.totalremainbank,
+//         annualallowedleave: "",
+//         remainingannualallowedleave: remainingannualallowedleave,
+//         // reference_id: req.body.reference_id ? req.body.reference_id : null,
+//         shiftId: req.body.shiftId,
+//         locationId: req.body.locationId ? req.body.locationId : null,
+//         leavePolicyId: req.body.leavePolicyId ? req.body.leavePolicyId : null,
+//         weeklyHolidayId: req.body.weeklyHolidayId
+//           ? req.body.weeklyHolidayId
+//           : null,
+//         designationHistory: req.body.designationId
+//           ? {
+//               create: {
+//                 designationId: req.body.designationId,
+//                 startDate: new Date(),
+//                 endDate: req.body.designationEndDate
+//                   ? new Date(req.body.designationEndDate)
+//                   : null,
+//                 comment: req.body.designationComment,
+//               },
+//             }
+//           : {},
+//         salaryHistory: req.body.salary
+//           ? {
+//               create: {
+//                 salary: req.body.salary,
+//                 startDate: new Date(req.body.salaryStartDate).toISOString(),
+//                 endDate: req.body.salaryEndDate
+//                   ? new Date(req.body.salaryEndDate)
+//                   : null,
+//                 comment: req.body.salaryComment,
+//               },
+//             }
+//           : {},
+//         educations: req.body.educations
+//           ? {
+//               create: req.body.educations.map((e) => {
+//                 return {
+//                   degree: e.degree,
+//                   institution: e.institution,
+//                   fieldOfStudy: e.fieldOfStudy,
+//                   result: e.result,
+//                   startDate: new Date(e.studyStartDate),
+//                   endDate: new Date(e.studyEndDate),
+//                 };
+//               }),
+//             }
+//           : {},
+//       },
+//     });
+//     const { password, ...userWithoutPassword } = createUser;
+//      for (const user of userwithrole) {
+//       await sendEmail("signup", {
+//         email: user.email, // Use the email of the current user
+//         useremail: createUser.email,
+//         firstName: createUser.firstName,
+//         lastName: createUser.lastName,
+//         date: new Date().toDateString(),
+//         adminFirstName: user.firstName, // Optional: Include admin's name
+//         adminLastName: user.lastName, // Optional: Include admin's last name
+//       });
+//     }
+//     return res
+//       .status(200)
+//       .json({ userWithoutPassword, message: "User registered successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 const register = async (req, res) => {
   try {
     const userwithrole = await prisma.user.findMany({
@@ -195,15 +395,21 @@ const register = async (req, res) => {
       : null;
 
     let remainingannualallowedleave;
+    let annualallowedleave;
+    let banktotal;
 
     if (req.body.manualleave) {
       remainingannualallowedleave = req.body.manualleave.toString();
+      annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+      banktotal = leavs ? leavs.unpaidLeaveCount.toString() : null;
     } else if (!req.body.leavePolicyId && !req.body.manualleave) {
       remainingannualallowedleave = "";
     } else {
       remainingannualallowedleave = leavs
         ? leavs.paidLeaveCount.toString()
         : null;
+      annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+      banktotal = leavs ? leavs.unpaidLeaveCount.toString() : null;
     }
     const join_date = new Date();
     const leave_date = req.body.leaveDate ? req.body.leaveDate : null;
@@ -212,6 +418,48 @@ const register = async (req, res) => {
     splitEmail[0] += randomFourDigit;
     let userID = splitEmail[0];
     let userNames = userID.replace(/[0-9]/g, "");
+    const currentYear = moment().tz("Europe/London").year();
+    const startOfRange = moment
+      .tz(`09-01-${currentYear - 1}`, "MM-DD-YYYY", "Europe/London")
+      .startOf("day")
+      .toDate(); // September 1st of the previous year
+    const endOfRange = moment
+      .tz(`08-31-${currentYear}`, "MM-DD-YYYY", "Europe/London")
+      .endOf("day")
+      .toDate(); // August 31st of the current year
+    const totalHolidays = await prisma.publicHoliday.count({
+      where: {
+        date: {
+          gte: startOfRange,
+          lte: endOfRange,
+        },
+      },
+    });
+
+    // Get today's date normalized to the start of the day in London timezone
+    const todayInLondon = moment().tz("Europe/London").startOf("day").toDate();
+    console.log(todayInLondon, "todayInLondon");
+    // Count past holidays that have already passed
+    const pastHolidays = await prisma.publicHoliday.count({
+      where: {
+        date: {
+          gte: startOfRange,
+          lte: todayInLondon, // Holidays before today
+        },
+      },
+    });
+    const remainingLeaves = totalHolidays - pastHolidays;
+
+    // Convert to strings if needed
+    const bankAllowedLeave = totalHolidays.toString(); // Total allowed leaves as string
+    const remainingbanks = remainingLeaves.toString(); // Remaining leaves as string
+
+    // Log the results
+    console.log("Bank Allowed Leaves:", bankAllowedLeave);
+    console.log("Remaining Bank Leaves:", remainingbanks);
+    const bankallow = banktotal - pastHolidays;
+    const bank = bankallow.toString();
+
     const hash = await bcrypt.hash(req.body.password, saltRounds);
     const createUser = await prisma.user.create({
       data: {
@@ -271,10 +519,12 @@ const register = async (req, res) => {
         departmentId: req.body.departmentId ? req.body.departmentId : null,
         roleId: req.body.roleId,
         //leaves section
-        bankallowedleave: process.env.totalbankleaves,
-        remaingbankallowedleave: process.env.totalremainbank,
-        annualallowedleave: "",
-        remainingannualallowedleave: remainingannualallowedleave,
+        bankallowedleave: req.body.leavePolicyId ? banktotal : bankAllowedLeave,
+        remaingbankallowedleave: req.body.leavePolicyId ? bank : remainingbanks,
+        annualallowedleave: annualallowedleave ? annualallowedleave : "20",
+        remainingannualallowedleave: remainingannualallowedleave
+          ? remainingannualallowedleave
+          : "20",
         // reference_id: req.body.reference_id ? req.body.reference_id : null,
         shiftId: req.body.shiftId,
         locationId: req.body.locationId ? req.body.locationId : null,
@@ -562,6 +812,12 @@ const getSingleUser = async (req, res) => {
       where: {
         userId: userId,
         status: "APPROVED",
+        // acceptLeaveFrom: {
+        //   gte: new Date(new Date().getFullYear(), 0, 1),
+        // },
+        // acceptLeaveTo: {
+        //   lte: new Date(new Date().getFullYear(), 11, 31),
+        // },
       },
     });
     // Calculate remaining leave days
@@ -655,6 +911,283 @@ const getSingleUser = async (req, res) => {
       .json({ message: "Server is not responding. Please try again later." });
   }
 };
+// const updateSingleUser = async (req, res) => {
+//   console.log("nice")
+//   const id = parseInt(req.params.id);
+
+//   if (id !== req.auth.sub && !req.auth.permissions.includes("update-user")) {
+//     return res.status(401).json({
+//       message: "Unauthorized. You can only edit your own record.",
+//     });
+//   }
+
+//   try {
+//     const existingUser = await prisma.user.findUnique({
+//       where: {
+//         id: id,
+//       },
+//       include: {
+//         leavePolicy: true,
+//       },
+//     });
+//     if (req.body.employeeId) {
+//       const userWithEmployeeId = await prisma.user.findFirst({
+//         where: {
+//           employeeId: req.body.employeeId,
+//           NOT: {
+//             id: id, // Exclude the current user from the search
+//           },
+//         },
+//       });
+
+//       if (userWithEmployeeId) {
+//         return res.status(400).json({
+//           message: "Employee ID is already in use by another user.",
+//         });
+//       }
+//     }
+
+//     // Check if the phone number is already in use by another user
+//     if (req.body.phone) {
+//       const existingPhoneUser = await prisma.user.findFirst({
+//         where: {
+//           phone: req.body.phone,
+//           NOT: {
+//             id: id, // Exclude the current user from the search
+//           },
+//         },
+//       });
+
+//       if (existingPhoneUser) {
+//         return res.status(400).json({
+//           message: "Phone number is already in use by another user.",
+//         });
+//       }
+//     }
+//     // console.log(existingUser);
+//     const leavs = req.body.leavePolicyId
+//       ? await prisma.leavePolicy.findUnique({
+//           where: {
+//             id: req.body.leavePolicyId,
+//           },
+//         })
+//       : null;
+//     let remainingannualallowedleave;
+
+//     if (req.body.manualleave) {
+//       remainingannualallowedleave = req.body.manualleave.toString();
+//     } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+//       remainingannualallowedleave = "0";
+//     } else {
+//       remainingannualallowedleave = leavs
+//         ? leavs.paidLeaveCount.toString()
+//         : null;
+//     }
+//     let annualallowedleave;
+//     if (req.body.manualleave) {
+//       annualallowedleave = req.body.manualleave.toString();
+//     } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+//       annualallowedleave = "0";
+//     } else {
+//       annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+//     }
+
+//     // return
+//     if (!existingUser) {
+//       return res.status(404).json({
+//         message: "User not found.",
+//       });
+//     }
+//     //  const today = new Date(); // Get today's date
+
+//     // // Count public holidays with dates less than or equal to today
+//     // const publicHolidayCount = await prisma.publicHoliday.count({
+//     //   where: {
+//     //     date: {
+//     //       lte: today, // 'lte' is the equivalent of '$lte' in Prisma
+//     //     },
+//     //   },
+//     // });
+//     // let remainingbank =
+//     //   parseFloat(existingUser.bankallowedleave) -
+//     //   parseFloat(publicHolidayCount);
+//     // let remainingbanks = remainingbank.toString();
+//     // console.log(`Number of public holidays up to today: ${publicHolidayCount}`);
+//      const today = moment().tz("Europe/London").startOf("day").toDate(); // Get today's date
+
+//     // Determine the start (September 1st of the previous year) and end (current date) dates
+//       const currentYear = moment().tz("Europe/London").year();
+//     const startOfRange = moment
+//       .tz(`09-01-${currentYear - 1}`, "MM-DD-YYYY", "Europe/London")
+//       .startOf("day")
+//       .toDate(); // September 1st of the previous year
+//     const endOfRange = today; // Current date
+
+//     // Count public holidays within the specified range (September 1st of the previous year to current date)
+//     const publicHolidayCount = await prisma.publicHoliday.count({
+//       where: {
+//         date: {
+//           gte: startOfRange, // Greater than or equal to September 1st of the previous year
+//           lte: endOfRange, // Less than or equal to the current date
+//         },
+//       },
+//     });
+
+//     // Calculate remaining bank leave
+//     let remainingbank =
+//       parseFloat(existingUser.bankallowedleave) -
+//       parseFloat(publicHolidayCount);
+//     let remainingbanks = remainingbank.toString();
+
+//     console.log(
+//       `Number of public holidays between ${startOfRange.toISOString()} and ${endOfRange.toISOString()}: ${publicHolidayCount}`
+//     );
+//     console.log(`Remaining bank leave: ${remainingbanks}`);
+//     let updateData = {
+//       firstName: req.body.firstName,
+//       lastName: req.body.lastName,
+//       phone: req.body.phone,
+//       street: req.body.street,
+//       city: req.body.city,
+//       state: req.body.state,
+//       documents: req.body.documents ? req.body.documents : null,
+//       applicationStatus: req.body.applicationStatus,
+//       zipCode: req.body.zipCode,
+//       image: req.body.image,
+//       country: req.body.country,
+//       departmentId: req.body.departmentId,
+//       roleId: req.body.roleId,
+//       reference_id: req.body.reference_id,
+//       referenceid_two: req.body.referenceid_two,
+//       shiftId: req.body.shiftId,
+//       locationId: req.body.locationId,
+//       leavePolicyId: req.body.leavePolicyId,
+//       weeklyHolidayId: req.body.weeklyHolidayId,
+//       remainingannualallowedleave: remainingannualallowedleave,
+//       annualallowedleave: annualallowedleave,
+//       contractAttachment: req.body.contractAttachment || null,
+//       firstaid: req.body.firstaid,
+//       dbscheck: req.body.dbscheck,
+//       dbschecktext: req.body.dbschecktext,
+//       contractAttachment: req.body.contractAttachment,
+//       safeguarding: req.body.safeguarding,
+//       designation: req.body.designation,
+//       address: req.body.address,
+//       companyname: req.body.companyname,
+//       emp_name: req.body.emp_name,
+//       emp_email: req.body.emp_email,
+//       emp_telno: req.body.emp_telno,
+//       joining_date: req.body.joining_date,
+//       end_date: req.body.end_date,
+//       companyname1: req.body.companyname1,
+//       designation1: req.body.designation1,
+//       joining_date1: req.body.joining_date1,
+//       end_date1: req.body.end_date1,
+//       address1: req.body.address1,
+//       emp_name1: req.body.emp_name1,
+//       emp_email1: req.body.emp_email1,
+//       emp_telno1: req.body.emp_telno1,
+//       // visaStatus: req.body.visaStatus,
+//       // visaExpiry: req.body.visaExpiry,
+//     };
+
+//     if (req.auth.permissions.includes("update-user")) {
+//       updateData = {
+//         ...updateData,
+//         email: req.body.email || existingUser.email, // Use || operator instead of |
+//         image: req.body.image || existingUser.image,
+//         employeeId: req.body.employeeId || existingUser.employeeId,
+//         bloodGroup: req.body.bloodGroup || existingUser.bloodGroup,
+//         userName: req.body.userName || existingUser.userName,
+//         joinDate: req.body.joinDate || existingUser.joinDate,
+//         leaveDate: req.body.leaveDate || existingUser.leaveDate,
+//         employmentStatusId:
+//           req.body.employmentStatusId || existingUser.employmentStatusId,
+//         emergencycontact:
+//           req.body.emergencycontact || existingUser.emergencycontact,
+//         nicno: req.body.nicno || existingUser.nicno,
+//         visaStatus: req.body.visaStatus || existingUser.visaStatus,
+//         visaExpiry: req.body.visaExpiry || existingUser.visaExpiry,
+//         firstaid: req.body.firstaid || existingUser.firstaid,
+//         firstaidtext: req.body.firstaidtext || existingUser.firstaidtext,
+//         dbscheck: req.body.dbscheck || existingUser.dbscheck,
+//         dbschecktext: req.body.dbschecktext || existingUser.dbschecktext,
+//         contractAttachment:
+//           req.body.contractAttachment || existingUser.contractAttachment,
+//         safeguarding: req.body.safeguarding || existingUser.safeguarding,
+//         safeguardingtext:
+//           req.body.safeguardingtext || existingUser.safeguardingtext,
+//         companyname: req.body.companyname || existingUser.companyname,
+//         designation: req.body.designation || existingUser.designation,
+//         joining_date: req.body.joining_date || existingUser.joining_date,
+//         end_date: req.body.end_date || existingUser.end_date,
+//         address: req.body.address || existingUser.address,
+//         reference_id: req.body.reference_id || existingUser.reference_id,
+//         referenceid_two:
+//           req.body.referenceid_two || existingUser.referenceid_two,
+//         dob: req.body.dob || existingUser.dob,
+//         reference_contact:
+//           req.body.reference_contact || existingUser.reference_contact,
+//         bankallowedleave:
+//           req.body.bankallowedleave || existingUser.bankallowedleave,
+//         remaingbankallowedleave:
+//           remainingbanks || existingUser.remaingbankallowedleave,
+//         annualallowedleave: annualallowedleave,
+//         remainingannualallowedleave: remainingannualallowedleave,
+//         designation: req.body.designation || existingUser.designation,
+//         address: req.body.address || existingUser.address,
+//         companyname: req.body.companyname || existingUser.companyname,
+//         emp_name: req.body.emp_name || existingUser.emp_name,
+//         emp_email: req.body.emp_email || existingUser.emp_email,
+//         emp_telno: req.body.emp_telno || existingUser.emp_telno,
+//         joining_date: req.body.joining_date || existingUser.joining_date,
+//         end_date: req.body.end_date || existingUser.end_date,
+//         companyname1: req.body.companyname1 || existingUser.companyname1,
+//         designation1: req.body.designation1 || existingUser.designation1,
+//         joining_date1: req.body.joining_date1 || existingUser.joining_date1,
+//         end_date1: req.body.end_date1 || existingUser.end_date1,
+//         address1: req.body.address1 || existingUser.address1,
+//         emp_name1: req.body.emp_name1 || existingUser.emp_name1,
+//         emp_email1: req.body.emp_email1 || existingUser.emp_email,
+//         emp_telno1: req.body.emp_telno1 || existingUser.emp_telno1,
+//       };
+//     } else {
+//       // owner can change only password
+//       updateData.password = req.body.password;
+//     }
+
+//     const updateUser = await prisma.user.update({
+//       where: {
+//         id: Number(req.params.id),
+//       },
+//       data: updateData,
+//     });
+
+//     const { password, ...userWithoutPassword } = updateUser;
+
+//     if (existingUser.status && req.body.applicationStatus) {
+//       const Title = req.body.applicationStatus;
+//       const Body =
+//         existingUser.firstName +
+//         " " +
+//         existingUser.lastName +
+//         "  " +
+//         "Your application request has been " +
+//         req.body.applicationStatus;
+//       const Token = existingUser.firebaseToken;
+//       const Desc = "Application notification";
+//       sendnotifiy(Title, Body, Desc, Token);
+//     }
+
+//     return res.status(200).json({
+//       userWithoutPassword,
+//       message: "User  updated successfully",
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 const updateSingleUser = async (req, res) => {
   console.log("nice");
   const id = parseInt(req.params.id);
@@ -709,48 +1242,57 @@ const updateSingleUser = async (req, res) => {
       }
     }
     // console.log(existingUser);
-    const leavs = req.body.leavePolicyId
-      ? await prisma.leavePolicy.findUnique({
-          where: {
-            id: req.body.leavePolicyId,
-          },
-        })
-      : null;
-    let remainingannualallowedleave;
+    // const leavs = req.body.leavePolicyId
+    //   ? await prisma.leavePolicy.findUnique({
+    //       where: {
+    //         id: req.body.leavePolicyId,
+    //       },
+    //     })
+    //   : null;
+    // let remainingannualallowedleave;
+
+    // if (req.body.manualleave) {
+    //   remainingannualallowedleave = req.body.manualleave.toString();
+    // } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+    //   remainingannualallowedleave = "0";
+    // } else {
+    //   remainingannualallowedleave = leavs
+    //     ? leavs.paidLeaveCount.toString()
+    //     : null;
+    // }
+    // let annualallowedleave;
+    // if (req.body.manualleave) {
+    //   annualallowedleave = req.body.manualleave.toString();
+    // } else if (!req.body.leavePolicyId && !req.body.manualleave) {
+    //   annualallowedleave = "0";
+    // } else {
+    //   annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
+    // }
+    let remainingannualallowedleave = existingUser.remainingannualallowedleave;
+    let annualallowedleave = existingUser.annualallowedleave;
+    let remainingbanks = existingUser.remaingbankallowedleave;
+    let bankallowedleave = existingUser.bankallowedleave;
 
     if (req.body.manualleave) {
+      // Use manual leave if provided
       remainingannualallowedleave = req.body.manualleave.toString();
-    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
-      remainingannualallowedleave = "0";
-    } else {
-      remainingannualallowedleave = leavs
-        ? leavs.paidLeaveCount.toString()
-        : null;
-    }
-    let annualallowedleave;
-    if (req.body.manualleave) {
       annualallowedleave = req.body.manualleave.toString();
-    } else if (!req.body.leavePolicyId && !req.body.manualleave) {
-      annualallowedleave = "0";
-    } else {
-      annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-    }
-    const today = new Date(); // Get today's date
+    } else if (
+      req.body.leavePolicyId &&
+      req.body.leavePolicyId !== existingUser.leavePolicyId
+    ) {
+      // Update leave based on new policy
+      const newLeavePolicy = await prisma.leavePolicy.findUnique({
+        where: { id: req.body.leavePolicyId },
+      });
 
-    // Count public holidays with dates less than or equal to today
-    const publicHolidayCount = await prisma.publicHoliday.count({
-      where: {
-        date: {
-          lte: today, // 'lte' is the equivalent of '$lte' in Prisma
-        },
-      },
-    });
-    let remainingbank =
-      parseFloat(existingUser.bankallowedleave) -
-      parseFloat(publicHolidayCount);
-    let remainingbanks = remainingbank.toString();
-    console.log(`Number of public holidays up to today: ${publicHolidayCount}`);
-    // return
+      if (newLeavePolicy) {
+        remainingannualallowedleave = newLeavePolicy.paidLeaveCount.toString();
+        annualallowedleave = newLeavePolicy.paidLeaveCount.toString();
+        bankallowedleave = newLeavePolicy.unpaidLeaveCount.toString();
+        remainingbanks = newLeavePolicy.unpaidLeaveCount.toString();
+      }
+    }
     if (!existingUser) {
       return res.status(404).json({
         message: "User not found.",
@@ -774,10 +1316,10 @@ const updateSingleUser = async (req, res) => {
       referenceid_two: req.body.referenceid_two,
       shiftId: req.body.shiftId,
       locationId: req.body.locationId,
-      leavePolicyId: req.body.leavePolicyId,
+      leavePolicyId: req.body.leavePolicyId || existingUser.leavePolicyId,
       weeklyHolidayId: req.body.weeklyHolidayId,
-      remainingannualallowedleave: remainingannualallowedleave,
-      annualallowedleave: annualallowedleave,
+      remainingannualallowedleave,
+      annualallowedleave,
       contractAttachment: req.body.contractAttachment || null,
       firstaid: req.body.firstaid,
       dbscheck: req.body.dbscheck,
@@ -841,12 +1383,11 @@ const updateSingleUser = async (req, res) => {
         dob: req.body.dob || existingUser.dob,
         reference_contact:
           req.body.reference_contact || existingUser.reference_contact,
-        bankallowedleave:
-          req.body.bankallowedleave || existingUser.bankallowedleave,
+        bankallowedleave: bankallowedleave || existingUser.bankallowedleave,
         remaingbankallowedleave:
           remainingbanks || existingUser.remaingbankallowedleave,
-        annualallowedleave: annualallowedleave,
-        remainingannualallowedleave: remainingannualallowedleave,
+        // annualallowedleave: annualallowedleave,
+        // remainingannualallowedleave: remainingannualallowedleave,
         designation: req.body.designation || existingUser.designation,
         address: req.body.address || existingUser.address,
         companyname: req.body.companyname || existingUser.companyname,

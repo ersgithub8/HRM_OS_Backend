@@ -223,7 +223,7 @@ model attendance {
   userId           Int
   inTime           String?
   outTime          String?
-  ip               String?
+  ip               String        @unique
   comment          String?
   punchBy          Int?
   totalHour        String?

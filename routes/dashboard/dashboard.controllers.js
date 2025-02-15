@@ -47,35 +47,59 @@ const getDashboardData = async (req, res) => {
       }
       return acc;
     }, []).length;
+const formattedToday = today.toISOString().split('T')[0];
 
+// Calculate the 'tomorrow' date correctly
+const tomorrow = new Date(today);
+tomorrow.setDate(today.getDate() + 1);
+const formattedTomorrow = tomorrow.toISOString().split('T')[0];
     // calculate today on leave users from leaveApplication in between if today is between from and to
+    // const todayOnLeave = await prisma.leaveApplication.count({
+    //   where: {
+    //     AND: [
+    //       {
+    //         acceptLeaveFrom: {
+    //           lte: new Date(
+    //             `${today.getFullYear()}-${today.getMonth() + 1}-${
+    //               today.getDate() + 1
+    //             }`
+    //           ),
+    //         },
+    //       },
+    //       {
+    //         acceptLeaveTo: {
+    //           gte: new Date(
+    //             `${today.getFullYear()}-${
+    //               today.getMonth() + 1
+    //             }-${today.getDate()}`
+    //           ),
+    //         },
+    //       },
+    //       {
+    //         status: "ACCEPTED",
+    //       },
+    //     ],
+    //   },
+    // });
     const todayOnLeave = await prisma.leaveApplication.count({
-      where: {
-        AND: [
-          {
-            acceptLeaveFrom: {
-              lte: new Date(
-                `${today.getFullYear()}-${today.getMonth() + 1}-${
-                  today.getDate() + 1
-                }`
-              ),
-            },
-          },
-          {
-            acceptLeaveTo: {
-              gte: new Date(
-                `${today.getFullYear()}-${
-                  today.getMonth() + 1
-                }-${today.getDate()}`
-              ),
-            },
-          },
-          {
-            status: "ACCEPTED",
-          },
-        ],
+  where: {
+    AND: [
+      {
+        acceptLeaveFrom: {
+          lte: new Date(formattedToday),
+        },
       },
-    });
+      {
+        acceptLeaveTo: {
+          gte: new Date(formattedToday),
+        },
+      },
+      {
+        status: "ACCEPTED",
+      },
+    ],
+  },
+});
     // today's absent
     const todayAbsent = totalUsers - todayPresent - todayOnLeave;
     // sum up daily total work hours from all users date wise and format it as above
