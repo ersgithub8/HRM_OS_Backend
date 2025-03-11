@@ -65,7 +65,7 @@ const createRolePermission = async (req, res) => {
     } else {
       const roleId = parseInt(req.body.role_id);
 
-      await logoutUser(roleId, res);
+      // await logoutUser(roleId, res);
       // convert all incoming data to a specific format.
       const data = req.body.permission_id.map((permission_id) => {
         return {

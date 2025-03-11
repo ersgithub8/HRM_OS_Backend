@@ -1,5 +1,6 @@
 const { getPagination } = require("../../../utils/query");
 const prisma = require("../../../utils/prisma");
+const moment = require("moment");
 
 //create a new employee
 const createSingleLeavePolicy = async (req, res) => {
@@ -176,10 +177,10 @@ const getSingeLeavePolicy = async (req, res) => {
 const updateSingleLeavePolicy = async (req, res) => {
   try {
     const leavePolicyId = parseInt(req.params.id);
+
+    // Update the leave policy document
     const updatedLeavePolicy = await prisma.leavePolicy.update({
-      where: {
-        id: leavePolicyId,
-      },
+      where: { id: leavePolicyId },
       data: {
         name: req.body.name,
         paidLeaveCount: parseInt(req.body.paidLeaveCount),
@@ -187,16 +188,85 @@ const updateSingleLeavePolicy = async (req, res) => {
       },
     });
 
-    // After updating leave policy, update all users with the new values
-    const updatedUsers = await prisma.user.updateMany({
+    // Find all users associated with this leave policy
+    const users = await prisma.user.findMany({
+      where: { leavePolicyId: leavePolicyId },
+    });
+
+    // Define date ranges for holidays (Sept 1 of previous year to Aug 31 of current year)
+    const currentYear = moment().tz("Europe/London").year();
+    const startOfRange = moment
+      .tz(`09-01-${currentYear - 1}`, "MM-DD-YYYY", "Europe/London")
+      .startOf("day")
+      .toDate();
+    const endOfRange = moment
+      .tz(`08-31-${currentYear}`, "MM-DD-YYYY", "Europe/London")
+      .endOf("day")
+      .toDate();
+
+    // Count total holidays and past holidays (up to today)
+    const totalHolidays = await prisma.publicHoliday.count({
       where: {
-        leavePolicyId: leavePolicyId,
-      },
-      data: {
-        annualallowedleave: updatedLeavePolicy.paidLeaveCount.toString(),
-        remainingannualallowedleave: updatedLeavePolicy.paidLeaveCount.toString(),
+        date: {
+          gte: startOfRange,
+          lte: endOfRange,
+        },
       },
     });
+    const todayInLondon = moment().tz("Europe/London").startOf("day").toDate();
+    const pastHolidays = await prisma.publicHoliday.count({
+      where: {
+        date: {
+          gte: startOfRange,
+          lte: todayInLondon,
+        },
+      },
+    });
+
+    // Define the current year's date range for leave applications
+    const startOfYear = moment().tz("Europe/London").startOf("year").toDate();
+    const endOfYear = moment().tz("Europe/London").endOf("year").toDate();
+
+    let updatedUsers = [];
+    for (let i = 0; i < users.length; i++) {
+      // Retrieve leave applications for the user for the current year, excluding rejected ones
+     const leaveApplications = await prisma.leaveApplication.findMany({
+  where: {
+    userId: users[i].id,
+   leavecategory: "paid",
+    leaveFrom: { gte: startOfRange, lte: endOfRange },
+    leaveTo: { gte: startOfRange, lte: endOfRange },
+    OR: [
+      { status: "APPROVED" },
+      { status: "PENDING" }
+    ],
+    
+  },
+});
+
+ const totalLeaveDays = leaveApplications
+      .filter((l) => l.leavecategory === "paid")
+      .reduce((acc, item) => acc + item?.leaveDuration, 0);
+
+
+console.log("Total Leave Days:", totalLeaveDays);
+
+      const paidLeavesUsed = totalLeaveDays;
+      const remainingPaidLeaves = updatedLeavePolicy.paidLeaveCount - paidLeavesUsed;
+      const remainingUnpaidLeaves = updatedLeavePolicy.unpaidLeaveCount - pastHolidays;
+  const paidleavescount=Number(updatedLeavePolicy.paidLeaveCount)-totalLeaveDays;
+      // Update the user's leave details individually
+      const updatedUser = await prisma.user.update({
+        where: { id: users[i].id },
+        data: {
+          annualallowedleave: updatedLeavePolicy.paidLeaveCount.toString(),
+          remainingannualallowedleave: paidleavescount.toString(),
+          bankallowedleave: updatedLeavePolicy.unpaidLeaveCount.toString(),
+          remainingannualallowedleave: remainingUnpaidLeaves.toString(),
+        },
+      });
+      updatedUsers.push(updatedUser);
+    }
 
     return res.status(200).json({
       updatedLeavePolicy,
@@ -206,6 +276,7 @@ const updateSingleLeavePolicy = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 
 // const deleteSingleLeavePolicy = async (req, res) => {
 //   try {
