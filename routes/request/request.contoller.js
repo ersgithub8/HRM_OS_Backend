@@ -9,7 +9,7 @@ const sendEmail = require("../../utils/emails");
 const addrequest = async (req, res) => {
   try {
     const { FromScheduleId, ToScheduleId, userId } = req.body;
-    const userwithrole = await prisma.user.findMany({
+     const userwithrole = await prisma.user.findMany({
       where: {
         roleId: {
           in: [1, 3, 4, 5, 6, 7], // Use 'in' operator to match multiple values
@@ -118,7 +118,7 @@ const addrequest = async (req, res) => {
       await sendnotifiy1(Title1, Body1, Desc1, toToken);
       console.log(Title, Body, Desc, fromToken, "fromtoken");
       console.log(Title1, Body1, Desc1, toToken, "totoken");
-      for (const users of userwithrole) {
+for (const users of userwithrole) {
         if (users.id !== fromUser.id) {
           await sendEmail("swaprequest", {
             email: users.email,

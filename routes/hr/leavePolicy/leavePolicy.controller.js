@@ -154,25 +154,6 @@ const getSingeLeavePolicy = async (req, res) => {
   }
 };
 
-// const updateSingleLeavePolicy = async (req, res) => {
-//   try {
-//     const updatedLeavePolicy = await prisma.leavePolicy.update({
-//       where: {
-//         id: parseInt(req.params.id),
-//       },
-//       data: {
-//         name: req.body.name,
-//         paidLeaveCount: parseInt(req.body.paidLeaveCount),
-//         unpaidLeaveCount: parseInt(req.body.unpaidLeaveCount),
-//       },
-//     });
-
-//     return res.status(200).json(updatedLeavePolicy);
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
-
 
 const updateSingleLeavePolicy = async (req, res) => {
   try {
@@ -223,48 +204,44 @@ const updateSingleLeavePolicy = async (req, res) => {
       },
     });
 
-    // Define the current year's date range for leave applications
-    const startOfYear = moment().tz("Europe/London").startOf("year").toDate();
-    const endOfYear = moment().tz("Europe/London").endOf("year").toDate();
-
     let updatedUsers = [];
     for (let i = 0; i < users.length; i++) {
       // Retrieve leave applications for the user for the current year, excluding rejected ones
-     const leaveApplications = await prisma.leaveApplication.findMany({
-  where: {
-    userId: users[i].id,
-   leavecategory: "paid",
-    leaveFrom: { gte: startOfRange, lte: endOfRange },
-    leaveTo: { gte: startOfRange, lte: endOfRange },
-    OR: [
-      { status: "APPROVED" },
-      { status: "PENDING" }
-    ],
-    
-  },
-});
-
- const totalLeaveDays = leaveApplications
-      .filter((l) => l.leavecategory === "paid")
-      .reduce((acc, item) => acc + item?.leaveDuration, 0);
-
-
-console.log("Total Leave Days:", totalLeaveDays);
-
-      const paidLeavesUsed = totalLeaveDays;
-      const remainingPaidLeaves = updatedLeavePolicy.paidLeaveCount - paidLeavesUsed;
-      const remainingUnpaidLeaves = updatedLeavePolicy.unpaidLeaveCount - pastHolidays;
-  const paidleavescount=Number(updatedLeavePolicy.paidLeaveCount)-totalLeaveDays;
-      // Update the user's leave details individually
-      const updatedUser = await prisma.user.update({
-        where: { id: users[i].id },
-        data: {
-          annualallowedleave: updatedLeavePolicy.paidLeaveCount.toString(),
-          remainingannualallowedleave: paidleavescount.toString(),
-          bankallowedleave: updatedLeavePolicy.unpaidLeaveCount.toString(),
-          remainingannualallowedleave: remainingUnpaidLeaves.toString(),
+      const leaveApplications = await prisma.leaveApplication.findMany({
+        where: {
+          userId: users[i].id,
+          leavecategory: "paid",
+          leaveFrom: { gte: startOfRange, lte: endOfRange },
+          leaveTo: { gte: startOfRange, lte: endOfRange },
+          OR: [
+            { status: "APPROVED" },
+            { status: "PENDING" }
+          ],
         },
       });
+
+      // Calculate total paid leave days used by the user
+      const totalLeaveDays = leaveApplications
+        .filter((l) => l.leavecategory === "paid")
+        .reduce((acc, item) => acc + item?.leaveDuration, 0);
+
+      console.log("Total Leave Days:", totalLeaveDays);
+
+      // Calculate remaining paid and unpaid leaves
+      const remainingPaidLeaves = updatedLeavePolicy.paidLeaveCount - totalLeaveDays;
+      const remainingUnpaidLeaves = updatedLeavePolicy.unpaidLeaveCount - pastHolidays;
+
+      // Update the user's leave details
+        const updatedUser = await prisma.user.update({
+        where: { id: users[i].id },
+        data: {
+          annualallowedleave: updatedLeavePolicy.paidLeaveCount.toString(), // Update total allowed paid leaves
+          remainingannualallowedleave: remainingPaidLeaves.toString(), // Update remaining paid leaves
+          bankallowedleave: updatedLeavePolicy.unpaidLeaveCount.toString(), // Update total allowed unpaid leaves
+          remaingbankallowedleave: remainingUnpaidLeaves.toString(), // Update remaining unpaid leaves (corrected field name)
+        },
+      });
+
       updatedUsers.push(updatedUser);
     }
 
@@ -277,30 +254,6 @@ console.log("Total Leave Days:", totalLeaveDays);
   }
 };
 
-
-// const deleteSingleLeavePolicy = async (req, res) => {
-//   try {
-//     const deletedLeavePolicy = await prisma.leavePolicy.delete({
-//       where: {
-//         id: parseInt(req.params.id),
-//       },
-//     });
-//     const updatedUsers = await prisma.user.updateMany({
-//       where: {
-//         leavePolicyId: leavePolicyId,
-//       },
-//       data: {
-//         annualallowedleave: null,
-//         remainingannualallowedleave: null,
-//       },
-//     });
-// console.log(updatedUsers);
-//     return res.status(200).json({deletedLeavePolicy,updatedUsers
-//     });
-//   } catch (error) {
-//     return res.status(400).json({ message: error.message });
-//   }
-// };
 const deleteSingleLeavePolicy = async (req, res) => {
   try {
     const deletedLeavePolicy = await prisma.leavePolicy.delete({

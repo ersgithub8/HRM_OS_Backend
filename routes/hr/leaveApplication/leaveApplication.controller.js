@@ -134,14 +134,14 @@ const createSingleLeave = async (req, res) => {
           });
         }
 
-        user.remainingannualallowedleave -= leaveDuration;
-        await prisma.user.update({
-          where: { id: parseInt(req.body.userId) },
-          data: {
-            remainingannualallowedleave:
-              user.remainingannualallowedleave.toString(),
-          },
-        });
+        // user.remainingannualallowedleave -= leaveDuration;
+        // await prisma.user.update({
+        //   where: { id: parseInt(req.body.userId) },
+        //   data: {
+        //     remainingannualallowedleave:
+        //       user.remainingannualallowedleave.toString(),
+        //   },
+        // });
       }
       let todayDate = new Date();
       var Difference_In_Time2 = leaveFrom.getTime() - todayDate.getTime();
@@ -199,32 +199,29 @@ const createSingleLeave = async (req, res) => {
           leaveDuration: leaveDuration,
           reason: req.body.reason ? req.body.reason : undefined,
           attachment: req.body.attachment ? req.body.attachment : null,
-          createdAt: leaveTo,
-          updatedAt: leaveTo,
+          createdAt: new Date(), // Sets to the current date and time
+          updatedAt: new Date(), // Sets to the current date and time
         },
       });
-    //   if (req.body.daytype === "HALF") {
-    //     leaveDuration = leaveDuration;
-    //   }
-    //   let remainingannualallowedleave = (
-    //      user.remainingannualallowedleave - leaveDuration
-    //   ).toString();
-    //   if (
-    //      req.body.leaveType === "CompassionateLeave(deductible)" ||
-    //      req.body.leaveType === "BereavementLeave(deductible)" ||
-    //      req.body.leaveType === "ParentalLeave(deductible)" ||
-    //      req.body.leaveType === "PaternityLeave(deductible-if-paid)" ||
-    //      req.body.leaveType === "AnnualLeave(deductible)"
-    //   ) {
-    //      await prisma.user.update({
-    //       where: {
-    //          id: parseInt(req.body.userId),
-    //       },
-    //       data: {
-    //          remainingannualallowedleave: remainingannualallowedleave,
-    //       },
-    //      });
-    //   }
+      if (req.body.daytype === "HALF") {
+        leaveDuration = leaveDuration;
+      }
+    
+      if (
+         createdLeave.leavecategory==="paid"
+      ) {
+            let remainingannualallowedleave = (
+         user.remainingannualallowedleave - leaveDuration
+      ).toString();
+         await prisma.user.update({
+          where: {
+             id: parseInt(req.body.userId),
+          },
+          data: {
+             remainingannualallowedleave: remainingannualallowedleave,
+          },
+         });
+      }
       for (const users of userwithrole) {
         if (users.id !== user.id) {
           await sendEmail("leaveapply", {
@@ -375,14 +372,14 @@ const adminSingleLeave = async (req, res) => {
           });
         }
 
-        user.remainingannualallowedleave -= leaveDuration;
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            remainingannualallowedleave:
-              user.remainingannualallowedleave.toString(),
-          },
-        });
+        // user.remainingannualallowedleave -= leaveDuration;
+        // await prisma.user.update({
+        //   where: { id: user.id },
+        //   data: {
+        //     remainingannualallowedleave:
+        //       user.remainingannualallowedleave.toString(),
+        //   },
+        // });
       }
       let todayDate = new Date();
       var Difference_In_Time2 = leaveFrom.getTime() - todayDate.getTime();
@@ -442,40 +439,37 @@ const adminSingleLeave = async (req, res) => {
           leaveDuration: leaveDuration,
           reason: req.body.reason ? req.body.reason : undefined,
           attachment: req.body.attachment ? req.body.attachment : null,
-          createdAt: leaveTo,
-          updatedAt: leaveTo, // Include submitDate inside the data object
+          createdAt: new Date(), // Sets to the current date and time
+         updatedAt: new Date(), // Sets to the current date and time
         },
       });
       console.log(createdLeave);
 
-    //   if (req.body.daytype === "HALF") {
-    //     leaveDuration = leaveDuration;
-    //   }
-    //   console.log(
-    //     user.remainingannualallowedleave,
-    //     "user.remainingannualallowedleave"
-    //   );
-    //   console.log(leaveDuration, "leaveDuration");
-    //   let remainingannualallowedleave = (
-    //      user.remainingannualallowedleave - leaveDuration
-    //   ).toString();
+      if (req.body.daytype === "HALF") {
+        leaveDuration = leaveDuration;
+      }
+      console.log(
+        user.remainingannualallowedleave,
+        "user.remainingannualallowedleave"
+      );
+   
+    
 
-    //   if (
-    //      req.body.leaveType === "CompassionateLeave(deductible)" ||
-    //      req.body.leaveType === "BereavementLeave(deductible)" ||
-    //      req.body.leaveType === "ParentalLeave(deductible)" ||
-    //      req.body.leaveType === "PaternityLeave(deductible-if-paid)" ||
-    //      req.body.leaveType === "AnnualLeave(deductible)"
-    //   ) {
-    //      await prisma.user.update({
-    //       where: {
-    //          employeeId: req.body.employeeId,
-    //       },
-    //       data: {
-    //          remainingannualallowedleave: remainingannualallowedleave,
-    //       },
-    //      });
-    //   }
+      if (
+         createdLeave.leavecategory==="paid"
+      ) {
+            let remainingannualallowedleave = (
+         user.remainingannualallowedleave - leaveDuration
+      ).toString();
+         await prisma.user.update({
+          where: {
+             employeeId: req.body.employeeId,
+          },
+          data: {
+             remainingannualallowedleave: remainingannualallowedleave,
+          },
+         });
+      }
 
       return res.status(200).json({
         createdLeave,
@@ -538,10 +532,10 @@ const getapprovedAllLeave = async (req, res) => {
         status: "APPROVED",
         OR: [
           {
-            createdAt: { gte: todayStart, lt: todayEnd },
+            leaveFrom: { gte: todayStart, lt: todayEnd },
           },
           {
-            updatedAt: { gte: todayStart, lt: todayEnd },
+            leaveTo: { gte: todayStart, lt: todayEnd },
           },
         ],
       },
@@ -1034,20 +1028,30 @@ const deleteSingleLeave = async (req, res) => {
 };
 const todayLeaveState = async (req, res) => {
   try {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay()); // Get the start of the current week (Sunday)
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(startOfWeek.getDate() + 7); // Get the end of the current week (Sunday of the next week)
-    const weeklyLeaves = await prisma.leaveApplication.findMany({
-      where: {
-        OR: [
-          {
-            createdAt: { gte: startOfWeek, lt: endOfWeek },
-          }
-        ],
+  const today = new Date();
+
+// Get start of the week (Monday)
+const startOfWeek = new Date(today);
+startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Adjust for Monday start
+startOfWeek.setHours(0, 0, 0, 0);
+
+// Get end of the week (Sunday)
+const endOfWeek = new Date(startOfWeek);
+endOfWeek.setDate(startOfWeek.getDate() + 6); // End on Sunday
+endOfWeek.setHours(23, 59, 59, 999);
+
+const weeklyLeaves = await prisma.leaveApplication.findMany({
+  where: {
+    AND: [
+      {
+        leaveFrom: { lte: endOfWeek }, // Leave starts before or within this week
       },
-    });
+      {
+        leaveTo: { gte: startOfWeek }, // Leave ends after or within this week
+      },
+    ],
+  },
+});
   const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);  // Set to start of today, local time
     
@@ -1056,10 +1060,18 @@ const todayLeaveState = async (req, res) => {
     
     const todayLeaves = await prisma.leaveApplication.findMany({
       where: {
-        createdAt: {
-          gte: startOfToday,
-          lt: endOfToday,
+         AND: [
+      {
+        leaveFrom: {
+          lt: endOfToday, // leaveFrom is before the end of today
         },
+      },
+      {
+        leaveTo: {
+          gte: startOfToday, // leaveTo is on or after the start of today
+        },
+      },
+    ],
       },
     });
 
@@ -1086,7 +1098,7 @@ const todayLeaveState = async (req, res) => {
 
     // Update counts based on leave status and day of the week
     weeklyLeaves.forEach((leave) => {
-      const dayOfWeek = new Date(leave.createdAt).toLocaleString("en-us", {
+      const dayOfWeek = new Date(leave.leaveFrom).toLocaleString("en-us", {
         weekday: "long",
       });
       const shortDayOfWeek = dayNameMapping[dayOfWeek];
@@ -1137,7 +1149,18 @@ const todayLeaveState = async (req, res) => {
 
     const yesterdayLeaves = await prisma.leaveApplication.findMany({
       where: {
-        createdAt: { gte: startOfYesterday, lt: endOfYesterday },
+         AND: [
+      {
+        leaveFrom: {
+          lt: endOfYesterday, // leaveFrom is before the end of today
+        },
+      },
+      {
+        leaveTo: {
+          gte: startOfYesterday, // leaveTo is on or after the start of today
+        },
+      },
+    ],
       },
     });
 
@@ -1245,20 +1268,16 @@ const MonthlyApprovedLeaves = async (req, res) => {
     }
 
     const startDate = new Date(date);
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 1); // Calculate the next day
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
 
     const approvedLeave = await prisma.leaveApplication.findMany({
       where: {
-        status: "APPROVED",
-        AND: [
-          {
-            leaveFrom: { lte: endDate },
-          },
-          {
-            leaveTo: { gte: startDate },
-          },
-        ],
+         status: "APPROVED",
+    leaveFrom: { lte: endDate }, // Corrected: No `$`
+    leaveTo: { gte: startDate }, // Corrected: No `$`
       },
       orderBy: [
         {

@@ -1249,33 +1249,6 @@ const updateSingleUser = async (req, res) => {
         });
       }
     }
-    // console.log(existingUser);
-    // const leavs = req.body.leavePolicyId
-    //   ? await prisma.leavePolicy.findUnique({
-    //       where: {
-    //         id: req.body.leavePolicyId,
-    //       },
-    //     })
-    //   : null;
-    // let remainingannualallowedleave;
-
-    // if (req.body.manualleave) {
-    //   remainingannualallowedleave = req.body.manualleave.toString();
-    // } else if (!req.body.leavePolicyId && !req.body.manualleave) {
-    //   remainingannualallowedleave = "0";
-    // } else {
-    //   remainingannualallowedleave = leavs
-    //     ? leavs.paidLeaveCount.toString()
-    //     : null;
-    // }
-    // let annualallowedleave;
-    // if (req.body.manualleave) {
-    //   annualallowedleave = req.body.manualleave.toString();
-    // } else if (!req.body.leavePolicyId && !req.body.manualleave) {
-    //   annualallowedleave = "0";
-    // } else {
-    //   annualallowedleave = leavs ? leavs.paidLeaveCount.toString() : null;
-    // }
     let remainingbanks ;
 let banktotal;
     const currentYear = moment().tz("Europe/London").year();
@@ -1343,10 +1316,10 @@ console.log("Total Leave Days:", totalLeaveDays);
     let remainingannualallowedleave = existingUser.remainingannualallowedleave;
     let annualallowedleave = existingUser.annualallowedleave;
     let bankallowedleave = existingUser.bankallowedleave;
-
+ const paidleaves=Number(req.body.manualleave)-totalLeaveDays;
     if (req.body.manualleave) {
       // Use manual leave if provided
-      remainingannualallowedleave = req.body.manualleave.toString();
+      remainingannualallowedleave = paidleaves.toString();
       annualallowedleave = req.body.manualleave.toString();
     } else if (
       req.body.leavePolicyId &&

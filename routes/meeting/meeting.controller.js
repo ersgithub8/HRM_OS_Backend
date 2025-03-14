@@ -444,8 +444,18 @@ const getMeetingByuserId = async (req, res) => {
         return {
           ...meeting,
           assignedBy: assignedByUser,
-          startTime: startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          endTime: endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        //   startTime: startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        //   endTime: endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+         startTime: new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Asia/Karachi", // Set timezone to Pakistan
+          }).format(startTime),
+          endTime: new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Asia/Karachi", // Set timezone to Pakistan
+          }).format(endTime),
           duration,
           status,
         };
