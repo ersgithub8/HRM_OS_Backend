@@ -9,13 +9,7 @@ const sendEmail = require("../../utils/emails");
 const addrequest = async (req, res) => {
   try {
     const { FromScheduleId, ToScheduleId, userId } = req.body;
-     const userwithrole = await prisma.user.findMany({
-      where: {
-        roleId: {
-          in: [1, 3, 4, 5, 6, 7], // Use 'in' operator to match multiple values
-        },
-      },
-    });
+
     const fromSchedule = await prisma.schedule.findUnique({
       where: { id: FromScheduleId },
       include: {
@@ -54,6 +48,18 @@ const addrequest = async (req, res) => {
       },
     });
     const fromUser = fromSchedule.shifts.user;
+    const userwithrole = await prisma.user.findMany({
+      where: {
+        OR: [
+          { id: user.reference_id }, // Match the reference_id
+          { reference_id: null }, // Match null reference_id
+        ],
+        NOT: {
+          id: 1, // Exclude users with id = 1
+        },
+      },
+    });
+    console.log(userwithrole, "userwithrole");
     const toUser = toSchedule.shifts.user;
 
     if (
@@ -118,18 +124,21 @@ const addrequest = async (req, res) => {
       await sendnotifiy1(Title1, Body1, Desc1, toToken);
       console.log(Title, Body, Desc, fromToken, "fromtoken");
       console.log(Title1, Body1, Desc1, toToken, "totoken");
-for (const users of userwithrole) {
-        if (users.id !== fromUser.id) {
+      for (const users of userwithrole) {
+        // Use "of" instead of "in"
+        if (users.id !== user.id) {
+          // Compare with "user.id"
+          console.log(users.email, "users");
           await sendEmail("swaprequest", {
-            email: users.email,
+            email: userwithrole.email,
             fromfirstName: fromUser.firstName,
             fromlastName: fromUser.lastName,
             tofirstName: toUser.firstName,
             tolastName: toUser.lastName,
             swapdate: fromSchedule.shiftDate,
             submittiondate: new Date().toDateString(),
-            adminFirstName: users.firstName,
-            adminLastName: users.lastName,
+            adminFirstName: userwithrole.firstName,
+            adminLastName: userwithrole.lastName,
           });
         }
       }

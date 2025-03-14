@@ -22,7 +22,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.400.0",
     "@aws-sdk/s3-request-presigner": "^3.400.0",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "6.5.0",
     "@sendgrid/mail": "^7.7.0",
     "aws-sdk": "^2.1518.0",
     "bcrypt": "^5.0.1",
@@ -61,6 +61,6 @@
   "devDependencies": {
     "cross-env": "^7.0.3",
     "prettier": "2.7.1",
-    "prisma": "^5.22.0"
+    "prisma": "6.5.0"
   }
 }
