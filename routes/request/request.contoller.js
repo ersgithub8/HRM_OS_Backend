@@ -48,17 +48,11 @@ const addrequest = async (req, res) => {
       },
     });
     const fromUser = fromSchedule.shifts.user;
-    const userwithrole = await prisma.user.findMany({
-      where: {
-        OR: [
-          { id: user.reference_id }, // Match the reference_id
-          { reference_id: null }, // Match null reference_id
-        ],
-        NOT: {
-          id: 1, // Exclude users with id = 1
-        },
-      },
-    });
+    const userHierarchy = await getUsersHierarchy(parseInt(fromUser.id));
+
+    console.log(userHierarchy, "User Hierarchy"); // This will log all users in the hierarchy
+
+    const userwithrole = userHierarchy.filter((user) => user.roleId !== 1);
     console.log(userwithrole, "userwithrole");
     const toUser = toSchedule.shifts.user;
 
@@ -155,6 +149,25 @@ const addrequest = async (req, res) => {
     console.error(error);
     return res.status(400).json({ message: "Failed to create a request." });
   }
+};
+const getUsersHierarchy = async (userId, users = []) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user || users.some((u) => u.id === user.id)) return users; // Prevent cycles
+
+  users.push(user); // Add user to the list
+
+  // Fetch referenced users recursively
+  if (user.reference_id) {
+    await getUsersHierarchy(user.reference_id, users);
+  }
+  if (user.referenceid_two) {
+    await getUsersHierarchy(user.referenceid_two, users);
+  }
+
+  return users;
 };
 //get single request
 const getSinglerequest = async (req, res) => {

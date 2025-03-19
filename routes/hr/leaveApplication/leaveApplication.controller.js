@@ -32,18 +32,29 @@ const createSingleLeave = async (req, res) => {
           id: parseInt(req.body.userId),
         },
       });
-      const userwithrole = await prisma.user.findMany({
-        where: {
-          OR: [
-            { id: user.reference_id }, // Match the reference_id
-            { reference_id: null }, // Match null reference_id
-          ],
-          NOT: {
-            id: 1, // Exclude users with id = 1
-          },
-        },
-      });
+      // const userwithrole = await prisma.user.findMany({
+      //   where: {
+      //     OR: [
+      //       {
+      //         id: user.reference_id ? user.reference_id : undefined,
+      //       },
+      //       {
+      //         id: user.referenceid_two ? user.referenceid_two : undefined,
+      //       },
+      //     ],
+      //     NOT: {
+      //       roleId: 1, // Exclude users with id = 1
+      //     },
+      //   },
+      // });
+      // }
+      const userHierarchy = await getUsersHierarchy(parseInt(req.body.userId));
+
+      console.log(userHierarchy, "User Hierarchy"); // This will log all users in the hierarchy
+
+      const userwithrole = userHierarchy.filter((user) => user.roleId !== 1);
       console.log(userwithrole, "userwithrole");
+      // return;
       // return;
       const locationfind = await prisma.location.findFirst({
         where: {
@@ -258,6 +269,25 @@ const createSingleLeave = async (req, res) => {
         .json({ message: "Failed to submit leave application." });
     }
   }
+};
+const getUsersHierarchy = async (userId, users = []) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user || users.some((u) => u.id === user.id)) return users; // Prevent cycles
+
+  users.push(user); // Add user to the list
+
+  // Fetch referenced users recursively
+  if (user.reference_id) {
+    await getUsersHierarchy(user.reference_id, users);
+  }
+  if (user.referenceid_two) {
+    await getUsersHierarchy(user.referenceid_two, users);
+  }
+
+  return users;
 };
 
 const adminSingleLeave = async (req, res) => {
