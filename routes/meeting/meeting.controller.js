@@ -6,8 +6,16 @@ var FCM = require("fcm-node");
 
 const createmeeting = async (req, res) => {
   try {
-    const { userId, departmentId, locationId, meetingdate, startTime, endTime, meetingType, meetingLink } = req.body;
-
+    const {
+      userId,
+      departmentId,
+      locationId,
+      meetingdate,
+      startTime,
+      endTime,
+      meetingType,
+      meetingLink,
+    } = req.body;
 
     // Check for conflicting meetings
     const conflictingMeeting = await prisma.meeting.findFirst({
@@ -61,9 +69,10 @@ const createmeeting = async (req, res) => {
     });
 
     if (conflictingMeeting) {
-      return res.status(400).json({ message: 'Meeting is already scheduled for the same date.' });
+      return res
+        .status(400)
+        .json({ message: "Meeting is already scheduled for the same date." });
     }
-
 
     const newMeeting = await prisma.meeting.create({
       data: {
@@ -76,11 +85,11 @@ const createmeeting = async (req, res) => {
         locationId,
         assignedBy: req.auth.sub,
         user: {
-          connect: userId.map(id => ({ id })),
+          connect: userId.map((id) => ({ id })),
         },
       },
     });
-    const userIds = userId.map(id => id); // Extract user IDs from userId array
+    const userIds = userId.map((id) => id); // Extract user IDs from userId array
 
     const userTokens = await prisma.user.findMany({
       where: {
@@ -90,28 +99,27 @@ const createmeeting = async (req, res) => {
       },
       select: {
         firebaseToken: true,
-        status:true,
+        status: true,
       },
     });
     const tokens = userTokens
-      .filter((user) => user.firebaseToken&& user.status === true)
+      .filter((user) => user.firebaseToken && user.status === true)
       .map((user) => user.firebaseToken);
 
-    const Title = 'Meeting notification';
+    const Title = "Meeting notification";
     const Body = req.body.meetingdate;
-    const Desc = 'Meeting notification';
+    const Desc = "Meeting notification";
 
     console.log(Title, Body, Desc, tokens);
     await sendNotify(Title, Body, Desc, tokens);
 
-
     return res.status(200).json({
       newMeeting,
-      message: 'Meeting created successfully.',
+      message: "Meeting created successfully.",
     });
   } catch (error) {
-    console.error('Error creating meeting:', error);
-    return res.status(400).json({ message: 'Failed to create meeting' });
+    console.error("Error creating meeting:", error);
+    return res.status(400).json({ message: "Failed to create meeting" });
   }
 };
 //get all meetings behalf of date
@@ -123,7 +131,6 @@ const getAllMeeting = async (req, res) => {
       // If date query parameter is provided, return meetings for that specific date
       const meetingDate = new Date(date);
       const meetings = await prisma.meeting.findMany({
-        
         where: {
           meetingdate: meetingDate,
         },
@@ -166,7 +173,7 @@ const getAllMeeting = async (req, res) => {
           updatedAt: true,
         },
       });
-      
+
       return res.status(200).json(meetings);
     } else {
       // If no date query parameter is provided, return all meetings
@@ -210,7 +217,7 @@ const getAllMeeting = async (req, res) => {
           updatedAt: true,
         },
       });
-      
+
       return res.status(200).json(meetings);
     }
   } catch (error) {
@@ -246,9 +253,11 @@ const getMeetingById = async (req, res) => {
       return res.status(200).json(meeting);
     }
 
-    return res.status(404).json({ message: 'Meeting not found' });
+    return res.status(404).json({ message: "Meeting not found" });
   } catch (error) {
-    return res.status(400).json({ message: 'Failed to get meeting', error: error.message });
+    return res
+      .status(400)
+      .json({ message: "Failed to get meeting", error: error.message });
   }
 };
 
@@ -318,7 +327,7 @@ const getMeetingById = async (req, res) => {
 
 //     const tasks = await prisma.meeting.findMany({
 //       where: {
-//         user: { some: { id: userId } }, 
+//         user: { some: { id: userId } },
 //       },
 //       include: {
 //         // priority: { select: { id: true, name: true } },
@@ -371,7 +380,6 @@ const getMeetingById = async (req, res) => {
 //       })
 //     );
 
-
 //     return res.status(200).json({ tasks: tasksWithAssignedBy });
 //   } catch (error) {
 //     return res.status(400).json({ message:"Failed to get meeting" });
@@ -411,8 +419,7 @@ const getMeetingByuserId = async (req, res) => {
       orderBy: [{ id: "desc" }],
     });
 
-    if (meetings.length === 0)
-      return res.status(200).json({ meeting: [] });
+    if (meetings.length === 0) return res.status(200).json({ meeting: [] });
 
     const tasksWithAssignedBy = await Promise.all(
       meetings.map(async (meeting) => {
@@ -431,22 +438,31 @@ const getMeetingByuserId = async (req, res) => {
         const durationInMinutes = (endTime - startTime) / (1000 * 60);
         const durationHours = Math.floor(durationInMinutes / 60);
         const durationMinutes = Math.round(durationInMinutes % 60);
-        const duration = `${durationHours.toString().padStart(2, '0')} hours and ${durationMinutes.toString().padStart(2, '0')} minutes`;
+        const duration = `${durationHours
+          .toString()
+          .padStart(2, "0")} hours and ${durationMinutes
+          .toString()
+          .padStart(2, "0")} minutes`;
 
         let assignedByUser = null;
         if (meeting.assignedBy) {
           assignedByUser = await prisma.user.findUnique({
             where: { id: meeting.assignedBy },
-            select: { id: true, firstName: true, lastName: true, userName: true },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+            },
           });
         }
 
         return {
           ...meeting,
           assignedBy: assignedByUser,
-        //   startTime: startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        //   endTime: endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-         startTime: new Intl.DateTimeFormat("en-US", {
+          //   startTime: startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          //   endTime: endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          startTime: new Intl.DateTimeFormat("en-US", {
             hour: "2-digit",
             minute: "2-digit",
             timeZone: "Asia/Karachi", // Set timezone to Pakistan
@@ -464,13 +480,16 @@ const getMeetingByuserId = async (req, res) => {
 
     return res.status(200).json({ meeting: tasksWithAssignedBy });
   } catch (error) {
-    return res.status(400).json({ message: "Failed to get meeting", error: error.message });
+    return res
+      .status(400)
+      .json({ message: "Failed to get meeting", error: error.message });
   }
 };
 
 const updateMeeting = async (req, res) => {
   try {
-    const { userId, meetingType, meetingLink, departmentId, locationId } = req.body;
+    const { userId, meetingType, meetingLink, departmentId, locationId } =
+      req.body;
 
     const meetingdate = new Date(req.body.meetingdate);
     const startTime = new Date(req.body.startTime);
@@ -490,7 +509,7 @@ const updateMeeting = async (req, res) => {
         locationId,
         assignedBy: req.auth.sub,
         user: {
-          connect: userId.map(id => ({ id })),
+          connect: userId.map((id) => ({ id })),
         },
       },
     });
@@ -513,16 +532,23 @@ const deleteMeeting = async (req, res) => {
       },
     });
     return res.status(200).json({
-      message: "Meeting deleted successfully"
+      message: "Meeting deleted successfully",
     });
   } catch (error) {
     return res.status(400).json({ message: "Failed to delete meeting" });
   }
 };
-//funtion for send notification of meeting for all user 
+//funtion for send notification of meeting for all user
 async function sendNotify(title, body, desc, tokens) {
   try {
+    if (!Array.isArray(tokens)) {
+      console.error("Error: tokens is not an array. Received:", tokens);
+      tokens = tokens ? [tokens] : []; // Convert to array if it's a string, or make it an empty array
+    }
     const messages = tokens.map((token) => ({
+      data: {
+        screen: "Meetings", // Specify the screen to navigate to
+      },
       notification: {
         title: title,
         body: body,
@@ -535,19 +561,20 @@ async function sendNotify(title, body, desc, tokens) {
     );
 
     const results = await Promise.allSettled(sendPromises);
+    console.log("Results:", results);
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
-        console.log(`Notification sent to token ${tokens[index]}`);
+        console.log(`✅ Notification sent to token: ${tokens[index]}`);
+        console.log(`🔹 Screen: ${messages[index].data.screen}`); // ✅ Corrected
       } else {
         console.log(
-          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+          `❌ Failed to send notification to token ${tokens[index]}: ${result.reason}`
         );
       }
     });
-
   } catch (error) {
-    console.error("Error sending notifications:", error);
+    console.error("🚨 Error sending notifications:", error);
   }
 }
 module.exports = {

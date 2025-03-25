@@ -19,7 +19,7 @@ const createSingleTraining = async (req, res) => {
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
-  }else {
+  } else {
     try {
       const leaveFrom = new Date(req.body.leaveFrom);
       // leaveFrom.setHours(0,0,0,0)
@@ -34,33 +34,39 @@ const createSingleTraining = async (req, res) => {
           ],
         },
       });
-    console.log(overlappingTraining);
+      console.log(overlappingTraining);
       if (overlappingTraining) {
-        return res.status(400).json({ message: "Training day already exists within this date range." });
+        return res
+          .status(400)
+          .json({
+            message: "Training day already exists within this date range.",
+          });
       }
-     
+
       const createdTraining = await prisma.training.create({
         data: {
           day: req.body.day,
           leaveFrom: leaveFrom,
-          leaveTo:leaveTo,
+          leaveTo: leaveTo,
         },
       });
-      const user = await prisma.user.findMany({ where: { status: true } })
+      const user = await prisma.user.findMany({ where: { status: true } });
       // console.log(user);
-      const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
-      const newTokens = tokenArray.filter(item => item !== null)
+      const tokenArray = user.map((item) =>
+        item.firebaseToken ? item.firebaseToken : null
+      );
+      const newTokens = tokenArray.filter((item) => item !== null);
 
       const Title = "Training Added";
-      const Body = "From"+req.body.leaveFrom+"To"+req.body.leaveTo
+      const Body = "From" + req.body.leaveFrom + "To" + req.body.leaveTo;
 
-      const Desc = 'Training notification';
+      const Desc = "Training notification";
       // const Device = user.device;
       console.log(Title, Body, Desc, newTokens);
       sendNotify(Title, Body, Desc, newTokens);
       return res.status(200).json({
         createdTraining,
-        message:"Training added successfully"
+        message: "Training added successfully",
       });
     } catch (error) {
       return res.status(400).json({ message: "Failed to add training" });
@@ -85,11 +91,9 @@ const getAllTrining = async (req, res) => {
           {
             id: "desc",
           },
-
         ],
         skip: Number(skip),
         take: Number(limit),
-        
       });
       return res.status(200).json(allTraining);
     } catch (error) {
@@ -105,7 +109,6 @@ const getSingleTrining = async (req, res) => {
       },
     });
 
-
     return res.status(200).json(singleTraing);
   } catch (error) {
     return res.status(400).json({ message: "Failed to get training" });
@@ -114,24 +117,24 @@ const getSingleTrining = async (req, res) => {
 const updateSingleTrining = async (req, res) => {
   try {
     const leaveFrom = new Date(req.body.leaveFrom);
-      // leaveFrom.setHours(0,0,0,0)
-      const leaveTo = new Date(req.body.leaveTo);
+    // leaveFrom.setHours(0,0,0,0)
+    const leaveTo = new Date(req.body.leaveTo);
     const updatedTraining = await prisma.training.update({
       where: {
         id: Number(req.params.id),
       },
       data: {
         day: req.body.day,
-          leaveFrom:leaveFrom,
-          leaveTo:leaveTo,
+        leaveFrom: leaveFrom,
+        leaveTo: leaveTo,
       },
     });
     return res.status(200).json({
       updatedTraining,
-      message:"Training day updated successfully."
+      message: "Training day updated successfully.",
     });
   } catch (error) {
-    return res.status(400).json({ message:"Failed to update training day" });
+    return res.status(400).json({ message: "Failed to update training day" });
   }
 };
 const deleteSingleTrining = async (req, res) => {
@@ -141,19 +144,26 @@ const deleteSingleTrining = async (req, res) => {
         id: Number(req.params.id),
       },
     });
-    return res.status(200).json({ 
+    return res.status(200).json({
       // deletedTraing,
-      message:"Training day deleted successfully."
-     });
+      message: "Training day deleted successfully.",
+    });
   } catch (error) {
     return res.status(400).json({
-      message:"Failed to delete training day"
+      message: "Failed to delete training day",
     });
   }
 };
 async function sendNotify(title, body, desc, tokens) {
   try {
+    if (!Array.isArray(tokens)) {
+      console.error("Error: tokens is not an array. Received:", tokens);
+      tokens = tokens ? [tokens] : []; // Convert to array if it's a string, or make it an empty array
+    }
     const messages = tokens.map((token) => ({
+      data: {
+        screen: "Training", // Specify the screen to navigate to
+      },
       notification: {
         title: title,
         body: body,
@@ -166,26 +176,27 @@ async function sendNotify(title, body, desc, tokens) {
     );
 
     const results = await Promise.allSettled(sendPromises);
+    console.log("Results:", results);
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
-        console.log(`Notification sent to token ${tokens[index]}`);
+        console.log(`✅ Notification sent to token: ${tokens[index]}`);
+        console.log(`🔹 Screen: ${messages[index].data.screen}`); // ✅ Corrected
       } else {
         console.log(
-          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+          `❌ Failed to send notification to token ${tokens[index]}: ${result.reason}`
         );
       }
     });
-
   } catch (error) {
-    console.error("Error sending notifications:", error);
+    console.error("🚨 Error sending notifications:", error);
   }
 }
 
 module.exports = {
   createSingleTraining,
-    getAllTrining,
-    getSingleTrining,
-    updateSingleTrining,
-    deleteSingleTrining,
-  };
+  getAllTrining,
+  getSingleTrining,
+  updateSingleTrining,
+  deleteSingleTrining,
+};

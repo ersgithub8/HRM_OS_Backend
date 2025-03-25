@@ -20,7 +20,6 @@ const createSingleAnnouncement = async (req, res) => {
     }
   } else {
     try {
-      
       // create single designation from an object
       const createdAnnouncement = await prisma.announcement.create({
         data: {
@@ -29,15 +28,17 @@ const createSingleAnnouncement = async (req, res) => {
         },
       });
 
-      const user = await prisma.user.findMany({ where: { status: true } })
+      const user = await prisma.user.findMany({ where: { status: true } });
       // console.log(user);
-      const tokenArray = user.map(item => item.firebaseToken ? item.firebaseToken : null);
-      const newTokens = tokenArray.filter(item => item !== null)
+      const tokenArray = user.map((item) =>
+        item.firebaseToken ? item.firebaseToken : null
+      );
+      const newTokens = tokenArray.filter((item) => item !== null);
 
-      const Title = "Announcement:"+req.body.title;
+      const Title = "Announcement:" + req.body.title;
       const Body = req.body.description;
 
-      const Desc = 'Announcement notification';
+      const Desc = "Announcement notification";
       // const Device = user.device;
       console.log(Title, Body, Desc, newTokens);
       sendNotify(Title, Body, Desc, newTokens);
@@ -149,7 +150,14 @@ const deletedAnnouncement = async (req, res) => {
 //send notification to all user function
 async function sendNotify(title, body, desc, tokens) {
   try {
+    if (!Array.isArray(tokens)) {
+      console.error("Error: tokens is not an array. Received:", tokens);
+      tokens = tokens ? [tokens] : []; // Convert to array if it's a string, or make it an empty array
+    }
     const messages = tokens.map((token) => ({
+      data: {
+        screen: "Announcements", // Specify the screen to navigate to
+      },
       notification: {
         title: title,
         body: body,
@@ -162,22 +170,22 @@ async function sendNotify(title, body, desc, tokens) {
     );
 
     const results = await Promise.allSettled(sendPromises);
+    console.log("Results:", results);
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
-        console.log(`Notification sent to token ${tokens[index]}`);
+        console.log(`✅ Notification sent to token: ${tokens[index]}`);
+        console.log(`🔹 Screen: ${messages[index].data.screen}`); // ✅ Corrected
       } else {
         console.log(
-          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+          `❌ Failed to send notification to token ${tokens[index]}: ${result.reason}`
         );
       }
     });
-
   } catch (error) {
-    console.error("Error sending notifications:", error);
+    console.error("🚨 Error sending notifications:", error);
   }
 }
-
 
 module.exports = {
   createSingleAnnouncement,

@@ -763,7 +763,10 @@ const deleteRequest = async (req, res) => {
 };
 function sendnotifiy(Title, Body, Desc, fromToken) {
   try {
-    const message = {
+    const messages = {
+      data: {
+        screen: "Shift", // Specify the screen to navigate to
+      },
       notification: {
         title: Title,
         body: Body,
@@ -773,7 +776,7 @@ function sendnotifiy(Title, Body, Desc, fromToken) {
     };
     admin
       .messaging()
-      .send(message)
+      .send(messages)
       .then((response) => {
         console.log("Notification Send ....");
       })
@@ -786,7 +789,10 @@ function sendnotifiy(Title, Body, Desc, fromToken) {
 }
 function sendnotifiy1(Title1, Body1, Desc1, toToken) {
   try {
-    const message = {
+    const messages = {
+      data: {
+        screen: "Shift", // Specify the screen to navigate to
+      },
       notification: {
         title: Title1,
         body: Body1,
@@ -796,7 +802,7 @@ function sendnotifiy1(Title1, Body1, Desc1, toToken) {
     };
     admin
       .messaging()
-      .send(message)
+      .send(messages)
       .then((response) => {
         console.log("Notification Send ....");
       })

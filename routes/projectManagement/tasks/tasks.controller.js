@@ -5,36 +5,48 @@ var FCM = require("fcm-node");
 
 const createTask = async (req, res) => {
   try {
-    const { userId, name, startDate, endDate, description, completionTime, adminattachment, userAttachment, priorityId,departmentId } = req.body;
+    const {
+      userId,
+      name,
+      startDate,
+      endDate,
+      description,
+      completionTime,
+      adminattachment,
+      userAttachment,
+      priorityId,
+      departmentId,
+    } = req.body;
 
     const newTask = await prisma.task.create({
       data: {
         name,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        department: departmentId !== 0
-      ? {
-          connect: {
-            id: departmentId,
-          }
-        }
-      : undefined,
+        department:
+          departmentId !== 0
+            ? {
+                connect: {
+                  id: departmentId,
+                },
+              }
+            : undefined,
         description,
         completionTime: parseFloat(completionTime),
         adminattachment,
         userAttachment,
-        assignedBy:req.auth.sub,
+        assignedBy: req.auth.sub,
         priority: {
           connect: {
             id: priorityId,
           },
         },
         user: {
-          connect: userId.map(id => ({ id })),
-        }
+          connect: userId.map((id) => ({ id })),
+        },
       },
     });
-    const userIds = userId.map(id => id); // Extract user IDs from userId array
+    const userIds = userId.map((id) => id); // Extract user IDs from userId array
 
     const userTokens = await prisma.user.findMany({
       where: {
@@ -44,23 +56,23 @@ const createTask = async (req, res) => {
       },
       select: {
         firebaseToken: true,
-        status:true,
+        status: true,
       },
     });
-    
+
     const tokens = userTokens
-      .filter((user) => user.firebaseToken&& user.status === true)
+      .filter((user) => user.firebaseToken && user.status === true)
       .map((user) => user.firebaseToken);
-    
-    const Title = 'Task:'+req.body.name;
-    const Body =req.body.description;
-    const Desc = 'Task notification';
-    
+
+    const Title = "Task:" + req.body.name;
+    const Body = req.body.description;
+    const Desc = "Task notification";
+
     console.log(Title, Body, Desc, tokens);
     await sendNotify(Title, Body, Desc, tokens);
     return res.status(200).json({
       newTask,
-      message: "Task created Successfully"
+      message: "Task created Successfully",
     });
   } catch (error) {
     console.log(error);
@@ -69,10 +81,10 @@ const createTask = async (req, res) => {
 };
 
 const getAllTasks = async (req, res) => {
-  if (req.query.query === 'all') {
+  if (req.query.query === "all") {
     try {
       const allTasks = await prisma.task.findMany({
-        orderBy: [{ id: 'desc' }],
+        orderBy: [{ id: "desc" }],
         include: {
           priority: {
             select: {
@@ -93,39 +105,38 @@ const getAllTasks = async (req, res) => {
       });
 
       // Fetch the updatedBy user information for each task
-      const tasksWithUpdatedBy = await Promise.all(allTasks.map(async task => {
-        if (task.updatedBy) {
-          const updatedByUser = await prisma.user.findUnique({
-            where: { id: task.updatedBy },
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              userName: true,
-            },
-          });
-      
-          return {
-            ...task,
-            updatedByUser: updatedByUser || undefined,
-          };
-        } else {
-          return {
-            ...task,
-            updatedByUser: undefined,
-          };
-        }
-      }));
-      
-      
+      const tasksWithUpdatedBy = await Promise.all(
+        allTasks.map(async (task) => {
+          if (task.updatedBy) {
+            const updatedByUser = await prisma.user.findUnique({
+              where: { id: task.updatedBy },
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                userName: true,
+              },
+            });
+
+            return {
+              ...task,
+              updatedByUser: updatedByUser || undefined,
+            };
+          } else {
+            return {
+              ...task,
+              updatedByUser: undefined,
+            };
+          }
+        })
+      );
 
       return res.status(200).json(tasksWithUpdatedBy);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
-  } 
+  }
 };
-
 
 //get task by id controller
 const getTaskById = async (req, res) => {
@@ -177,26 +188,31 @@ const getTaskById = async (req, res) => {
       return res.status(200).json(taskWithAssignedByAndCount);
     }
 
-    return res.status(404).json({ message: 'Task not found or assignedBy user not available.' });
+    return res
+      .status(404)
+      .json({ message: "Task not found or assignedBy user not available." });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 
-
 const getTaskByuserId = async (req, res) => {
   try {
     const userId = Number(req.params.id);
-    const taskStatus = req.query.taskStatus;  // Extract taskStatus from query
+    const taskStatus = req.query.taskStatus; // Extract taskStatus from query
 
     let taskFilter = {};
-    if (taskStatus === 'PENDING' || taskStatus === 'INPROGRESS'|| taskStatus === 'COMPLETED') {
+    if (
+      taskStatus === "PENDING" ||
+      taskStatus === "INPROGRESS" ||
+      taskStatus === "COMPLETED"
+    ) {
       taskFilter = { taskStatus: taskStatus }; // Filter tasks based on taskStatus
     }
     const tasks = await prisma.task.findMany({
       where: {
         user: { some: { id: userId } },
-        ...taskFilter, 
+        ...taskFilter,
       },
       include: {
         priority: { select: { id: true, name: true } },
@@ -207,15 +223,14 @@ const getTaskByuserId = async (req, res) => {
             lastName: true,
             userName: true,
             employeeId: true,
-            department:true,
+            department: true,
           },
         },
       },
       orderBy: [{ id: "desc" }],
     });
 
-    if (tasks.length === 0)
-      return res.status(200).json([]);
+    if (tasks.length === 0) return res.status(200).json([]);
     const tasksFilteredByUserId = tasks.map((task) => ({
       ...task,
       user: task.user.filter((user) => user.id === userId),
@@ -226,23 +241,34 @@ const getTaskByuserId = async (req, res) => {
         if (task.assignedBy) {
           assignedByUser = await prisma.user.findUnique({
             where: { id: task.assignedBy },
-            select: { id: true, firstName: true, lastName: true, userName: true },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              userName: true,
+            },
           });
         }
         const startDate = new Date(task.startDate);
         startDate.setHours(0, 0, 0, 0);
-        
+
         const endDate = new Date(task.endDate);
         endDate.setHours(0, 0, 0, 0);
-        
+
         // Add one day to endDate to include it in the count
         endDate.setDate(endDate.getDate() + 1);
-        
+
         // Calculate the difference in days
-        const durationInDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+        const durationInDays = Math.floor(
+          (endDate - startDate) / (1000 * 60 * 60 * 24)
+        );
         console.log(durationInDays);
 
-        return { ...task, assignedBy: assignedByUser, durationInDays: durationInDays };
+        return {
+          ...task,
+          assignedBy: assignedByUser,
+          durationInDays: durationInDays,
+        };
 
         // return { ...task, assignedBy: assignedByUser };
       })
@@ -254,14 +280,9 @@ const getTaskByuserId = async (req, res) => {
   }
 };
 
-
-
-
-
-
 //update task controller
 // const updateTask = async (req, res) => {
-  
+
 //     try {
 //       const updatedTask = await prisma.task.update({
 //         where: {
@@ -283,7 +304,7 @@ const getTaskByuserId = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const taskId = Number(req.params.id);
-    const userId = Number(req.body.userId); 
+    const userId = Number(req.body.userId);
     // Update the task by its ID
     const updatedTask = await prisma.task.update({
       where: {
@@ -306,7 +327,6 @@ const updateTask = async (req, res) => {
   }
 };
 
-
 //delete task controller
 const deleteTask = async (req, res) => {
   try {
@@ -316,76 +336,76 @@ const deleteTask = async (req, res) => {
       },
     });
     return res.status(200).json({
-    message:"Task deleted successfully"});
+      message: "Task deleted successfully",
+    });
   } catch (error) {
-    return res.status(400).json({ message:"Failed to delete task" });
+    return res.status(400).json({ message: "Failed to delete task" });
   }
 };
 
 const getAlluserHirarchy = async (req, res) => {
-  const userId = parseInt(req.query.userId); 
+  const userId = parseInt(req.query.userId);
   const { skip, limit, status } = req.query;
 
   let users = [];
 
   try {
     if (isNaN(userId) || userId <= 0) {
-      return res.status(400).json({ message: 'Invalid userId provided' });
+      return res.status(400).json({ message: "Invalid userId provided" });
     }
     const fetchUsers = async (referenceId, userIdToExclude) => {
       const users = await prisma.user.findMany({
         where: {
-          OR: [
-            { reference_id: referenceId },
-            { referenceid_two: referenceId }
-          ],
-        }, 
+          OR: [{ reference_id: referenceId }, { referenceid_two: referenceId }],
+        },
       });
-    
+
       const linkedUsers = await Promise.all(
         users.map(async (user) => {
-
-            let dd = await fetchUsers(user.id);
-            dd.push(user);
-            return dd;
-            
+          let dd = await fetchUsers(user.id);
+          dd.push(user);
+          return dd;
         })
       );
-    
+
       return linkedUsers.flat();
     };
     const usersData = await fetchUsers(userId);
     let array = [];
-    for (let x of usersData){
+    for (let x of usersData) {
       array.push(x.id);
     }
     console.log(array);
 
     const leave = await prisma.user.findMany({
       where: {
-        id: { in: array }
+        id: { in: array },
       },
       orderBy: [
         {
           id: "desc",
         },
       ],
-      
     });
 
-
-    
     return res.status(200).json(
-      leave,
+      leave
       // array
-      );
+    );
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
 };
 async function sendNotify(title, body, desc, tokens) {
   try {
+    if (!Array.isArray(tokens)) {
+      console.error("Error: tokens is not an array. Received:", tokens);
+      tokens = tokens ? [tokens] : []; // Convert to array if it's a string, or make it an empty array
+    }
     const messages = tokens.map((token) => ({
+      data: {
+        screen: "Task", // Specify the screen to navigate to
+      },
       notification: {
         title: title,
         body: body,
@@ -398,19 +418,20 @@ async function sendNotify(title, body, desc, tokens) {
     );
 
     const results = await Promise.allSettled(sendPromises);
+    console.log("Results:", results);
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
-        console.log(`Notification sent to token ${tokens[index]}`);
+        console.log(`✅ Notification sent to token: ${tokens[index]}`);
+        console.log(`🔹 Screen: ${messages[index].data.screen}`); // ✅ Corrected
       } else {
         console.log(
-          `Failed to send notification to token ${tokens[index]}: ${result.reason}`
+          `❌ Failed to send notification to token ${tokens[index]}: ${result.reason}`
         );
       }
     });
-
   } catch (error) {
-    console.error("Error sending notifications:", error);
+    console.error("🚨 Error sending notifications:", error);
   }
 }
 module.exports = {

@@ -808,7 +808,7 @@ const getSingleUser = async (req, res) => {
     if (!singleUser) {
       return res.status(404).json({ message: "User not found." });
     }
-     const currentYear = moment().tz("Europe/London").year();
+    const currentYear = moment().tz("Europe/London").year();
     const startOfRange = moment
       .tz(`09-01-${currentYear - 1}`, "MM-DD-YYYY", "Europe/London")
       .startOf("day")
@@ -821,11 +821,8 @@ const getSingleUser = async (req, res) => {
       where: {
         userId: userId,
         leaveFrom: { gte: startOfRange, lte: endOfRange },
-    leaveTo: { gte: startOfRange, lte: endOfRange },
-    OR: [
-      { status: "APPROVED" },
-      { status: "PENDING" }
-    ],
+        leaveTo: { gte: startOfRange, lte: endOfRange },
+        OR: [{ status: "APPROVED" }, { status: "PENDING" }],
       },
     });
     // Calculate remaining leave days
@@ -1249,8 +1246,8 @@ const updateSingleUser = async (req, res) => {
         });
       }
     }
-    let remainingbanks ;
-let banktotal;
+    let remainingbanks;
+    let banktotal;
     const currentYear = moment().tz("Europe/London").year();
     const startOfRange = moment
       .tz(`09-01-${currentYear - 1}`, "MM-DD-YYYY", "Europe/London")
@@ -1283,23 +1280,20 @@ let banktotal;
     });
     let remainingLeaves = totalHolidays - pastHolidays;
     const leaveApplications = await prisma.leaveApplication.findMany({
-  where: {
-    userId: id,
-    leavecategory: "paid",
-    leaveFrom: { gte: startOfRange, lte: endOfRange },
-    leaveTo: { gte: startOfRange, lte: endOfRange },
-    OR: [
-      { status: "APPROVED" },
-      { status: "PENDING" }
-    ],
-  },
-});
+      where: {
+        userId: id,
+        leavecategory: "paid",
+        leaveFrom: { gte: startOfRange, lte: endOfRange },
+        leaveTo: { gte: startOfRange, lte: endOfRange },
+        OR: [{ status: "APPROVED" }, { status: "PENDING" }],
+      },
+    });
 
-const totalLeaveDays = leaveApplications
+    const totalLeaveDays = leaveApplications
       .filter((l) => l.leavecategory === "paid")
       .reduce((acc, item) => acc + item?.leaveDuration, 0);
 
-console.log("Total Leave Days:", totalLeaveDays);
+    console.log("Total Leave Days:", totalLeaveDays);
     // Convert to strings if needed
     let bankAllowedLeave = totalHolidays.toString(); // Total allowed leaves as string
     //  remainingbanks = remainingLeaves.toString(); // Remaining leaves as string
@@ -1316,7 +1310,7 @@ console.log("Total Leave Days:", totalLeaveDays);
     let remainingannualallowedleave = existingUser.remainingannualallowedleave;
     let annualallowedleave = existingUser.annualallowedleave;
     let bankallowedleave = existingUser.bankallowedleave;
- const paidleaves=Number(req.body.manualleave)-totalLeaveDays;
+    const paidleaves = Number(req.body.manualleave) - totalLeaveDays;
     if (req.body.manualleave) {
       // Use manual leave if provided
       remainingannualallowedleave = paidleaves.toString();
@@ -1326,16 +1320,20 @@ console.log("Total Leave Days:", totalLeaveDays);
       req.body.leavePolicyId !== existingUser.leavePolicyId
     ) {
       // Update leave based on new policy
-    
 
       if (newLeavePolicy) {
-          const unpaidLeaveCount = Number(newLeavePolicy.unpaidLeaveCount);
-          const paidleavescount=Number(newLeavePolicy.paidLeaveCount)-totalLeaveDays;
-const calculatedRemaining = unpaidLeaveCount - pastHolidays;
-        remainingannualallowedleave =paidleavescount?paidleavescount.toString():annualallowedleave.toString();
+        const unpaidLeaveCount = Number(newLeavePolicy.unpaidLeaveCount);
+        const paidleavescount =
+          Number(newLeavePolicy.paidLeaveCount) - totalLeaveDays;
+        const calculatedRemaining = unpaidLeaveCount - pastHolidays;
+        remainingannualallowedleave = paidleavescount
+          ? paidleavescount.toString()
+          : annualallowedleave.toString();
         annualallowedleave = newLeavePolicy.paidLeaveCount.toString();
         bankallowedleave = newLeavePolicy.unpaidLeaveCount.toString();
-             remainingbanks = calculatedRemaining ? calculatedRemaining.toString() : remainingLeaves.toString();
+        remainingbanks = calculatedRemaining
+          ? calculatedRemaining.toString()
+          : remainingLeaves.toString();
       }
     }
     if (!existingUser) {
@@ -1387,7 +1385,7 @@ const calculatedRemaining = unpaidLeaveCount - pastHolidays;
       emp_name1: req.body.emp_name1,
       emp_email1: req.body.emp_email1,
       emp_telno1: req.body.emp_telno1,
-      isLogin:req.body.isLogin,
+      isLogin: req.body.isLogin,
       // visaStatus: req.body.visaStatus,
       // visaExpiry: req.body.visaExpiry,
     };
@@ -1450,7 +1448,7 @@ const calculatedRemaining = unpaidLeaveCount - pastHolidays;
         emp_name1: req.body.emp_name1 || existingUser.emp_name1,
         emp_email1: req.body.emp_email1 || existingUser.emp_email,
         emp_telno1: req.body.emp_telno1 || existingUser.emp_telno1,
-        isLogin:req.body.isLogin || existingUser.isLogin,
+        isLogin: req.body.isLogin || existingUser.isLogin,
       };
     } else {
       // owner can change only password
@@ -2124,7 +2122,10 @@ const users_resetpassword = async (req, res) => {
 };
 function sendnotifiy(Title, Body, Desc, Token) {
   try {
-    const message = {
+    const messages = {
+      data: {
+        screen: "ProfileSetting", // Specify the screen to navigate to
+      },
       notification: {
         title: Title,
         body: Body,
@@ -2133,9 +2134,10 @@ function sendnotifiy(Title, Body, Desc, Token) {
     };
     admin
       .messaging()
-      .send(message)
+      .send(messages)
       .then((response) => {
         console.log("Notification Send ....");
+        console.log("🔹 Screen:", message.data.screen); // ✅ Log screen correctly
       })
       .catch((error) => {
         console.log("Error sending notification:", error);

@@ -502,7 +502,6 @@ const adminSingleLeave = async (req, res) => {
           },
         });
       }
-
       return res.status(200).json({
         createdLeave,
         message: "Your leave application is submitted successfully.",
@@ -1417,7 +1416,10 @@ const getAllLeave = async (req, res) => {
 
 function sendnotifiy(Title, Body, Desc, Token) {
   try {
-    const message = {
+    const messages = {
+      data: {
+        screen: "MyLeaves", // Specify the screen to navigate to
+      },
       notification: {
         title: Title,
         body: Body,
@@ -1426,9 +1428,10 @@ function sendnotifiy(Title, Body, Desc, Token) {
     };
     admin
       .messaging()
-      .send(message)
+      .send(messages)
       .then((response) => {
         console.log("Notification Send ....");
+        console.log("🔹 Screen:", messages.data.screen); // ✅ Log screen correctly
       })
       .catch((error) => {
         console.log("Error sending notification:", error);
