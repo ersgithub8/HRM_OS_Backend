@@ -1006,7 +1006,9 @@ const getAttendanceByUserId = async (req, res) => {
           (attendance) => attendance.attendenceStatus === "present"
         ).length,
         totalLeave: allAttendance.filter(
-          (attendance) => attendance.attendenceStatus === "leave"
+          (attendance) =>
+            attendance.attendenceStatus === "leave" ||
+            attendance.attendenceStatus === "Halfday leave"
         ).length,
         totalAbsent: allAttendance.filter(
           (attendance) => attendance.attendenceStatus === "absent"
@@ -1981,7 +1983,7 @@ function sendnotifiy(Title, Body, Desc, Token) {
   try {
     const messages = {
       data: {
-        screen: "MyLeaves", // Specify the screen to navigate to
+        screen: "Attendance", // Specify the screen to navigate to
       },
       notification: {
         title: Title,
