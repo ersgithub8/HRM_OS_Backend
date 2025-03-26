@@ -1250,7 +1250,10 @@ const search = async (req, res) => {
           presentCount++;
         } else if (attendance.attendenceStatus === "absent") {
           absentCount++;
-        } else if (attendance.attendenceStatus === "leave") {
+        } else if (
+          attendance.attendenceStatus === "leave" ||
+          attendance.attendenceStatus === "Halfday leave"
+        ) {
           leaveCount++;
         } else if (attendance.attendenceStatus === "holiday") {
           holidayCount++;
@@ -1456,7 +1459,10 @@ const search = async (req, res) => {
             presentCount++;
           } else if (attendance.attendenceStatus === "absent") {
             absentCount++;
-          } else if (attendance.attendenceStatus === "leave") {
+          } else if (
+            attendance.attendenceStatus === "leave" ||
+            attendance.attendenceStatus === "Halfday leave"
+          ) {
             leaveCount++;
           } else if (attendance.attendenceStatus === "holiday") {
             holidayCount++;
@@ -1572,7 +1578,10 @@ const search = async (req, res) => {
           presentCount++;
         } else if (attendance.attendenceStatus === "absent") {
           absentCount++;
-        } else if (attendance.attendenceStatus === "leave") {
+        } else if (
+          attendance.attendenceStatus === "leave" ||
+          attendance.attendenceStatus === "Halfday leave"
+        ) {
           leaveCount++;
         } else if (attendance.attendenceStatus === "holiday") {
           holidayCount++;
@@ -1675,6 +1684,9 @@ const search = async (req, res) => {
             absentCount++;
             break;
           case "leave":
+            leaveCount++;
+            break;
+          case "Halfday leave":
             leaveCount++;
             break;
           case "holiday":
@@ -1937,9 +1949,8 @@ const createAttendanceonleave = async (req, res) => {
             overtime: null,
             comment: null,
             date: formattedDate, // Use formatted string date
-            attendenceStatus: req.body.attendenceStatus
-              ? req.body.attendenceStatus
-              : "leave",
+            attendenceStatus:
+              leave.daytype === "HALF" ? "Halfday leave" : "leave",
             ip: uniqueIp,
             totalHour: null,
             createdAt: date, // Use new Date() for creation timestamp
