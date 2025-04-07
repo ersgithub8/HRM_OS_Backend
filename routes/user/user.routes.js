@@ -39,7 +39,7 @@ userRoutes.put("/phone/:id", authorize("update-user"), updateSingleUserphone); /
 userRoutes.patch("/:id", authorize("delete-user"), deleteSingleUser); // deleteUser only
 userRoutes.patch(
   "/deleteUser/:id",
-  authorize("delete-user"),
+  // authorize("delete-user"),
   deletePermanentUser
 ); // Permanent Delete user
 userRoutes.post("/changepassword", authorize(""), changepassword);

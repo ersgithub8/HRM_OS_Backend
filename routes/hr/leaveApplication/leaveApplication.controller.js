@@ -900,6 +900,7 @@ const grantedLeave = async (req, res, next) => {
           ? req.body.reviewComment
           : undefined,
         status: req.body.status,
+        updatedAt: existingLeave.createdAt,
       },
     });
     if (existingLeave.status === "PENDING" && req.body.status === "APPROVED") {
