@@ -1418,9 +1418,11 @@ const search = async (req, res) => {
       return res.status(200).json(result);
     } else if (id && createdAtFrom && createdAtTo) {
       try {
-        const startDate = new Date(createdAtFrom);
-        const endDate = new Date(createdAtTo);
-        endDate.setHours(23, 59, 59);
+        const startDate = moment.tz(createdAtFrom, "Europe/London").toDate();
+        const endDate = moment
+          .tz(createdAtTo, "Europe/London")
+          .endOf("day")
+          .toDate();
         console.log(id, "id");
         let validUserId = !isNaN(id);
         console.log(validUserId, "validUserId");
@@ -1651,9 +1653,11 @@ const search = async (req, res) => {
       return res.status(200).json(result);
     } else if (createdAtFrom && createdAtTo) {
       console.log("Filtering by dates");
-      const startDate = new Date(createdAtFrom);
-      const endDate = new Date(createdAtTo);
-      endDate.setHours(23, 59, 59, 999); // Ensure the endDate includes all activities of the last day
+      const startDate = moment.tz(createdAtFrom, "Europe/London").toDate();
+      const endDate = moment
+        .tz(createdAtTo, "Europe/London")
+        .endOf("day")
+        .toDate();
 
       // Check the validity of startDate and endDate
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
@@ -1682,15 +1686,14 @@ const search = async (req, res) => {
           case "present":
             presentCount++;
             break;
-          case "absent":
-            absentCount++;
-            break;
           case "leave":
-            leaveCount++;
-            break;
           case "Halfday leave":
             leaveCount++;
             break;
+          case "absent":
+            absentCount++;
+            break;
+
           case "holiday":
             holidayCount++;
             break;
@@ -1991,13 +1994,13 @@ function sendnotifiy(Title, Body, Desc, Token) {
       },
       token: Token,
     };
-    console.log("🔹 Screenkjjkjkjk:", messages); // ✅ Log screen correctly
+    console.log("ðŸ”¹ Screenkjjkjkjk:", messages); // âœ… Log screen correctly
     admin
       .messaging()
       .send(messages)
       .then((response) => {
         console.log("Notification Send ....");
-        console.log("🔹 Screen:", messages); // ✅ Log screen correctly
+        console.log("ðŸ”¹ Screen:", messages); // âœ… Log screen correctly
       })
       .catch((error) => {
         console.log("Error sending notification:", error);
